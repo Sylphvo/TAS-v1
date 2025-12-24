@@ -1,6 +1,4 @@
-﻿@{
-    ViewData["Title"] = "Cập nhật Số liệu";
-}
+﻿
 @section Style {
     <link rel="stylesheet" href="../Contents/css/RubberGarden/RubberGarden.css">
 }
@@ -10,29 +8,17 @@
             <div class="card-header">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="div_cbo">
-                            <label class="form-label" for="inputState" data-i18n="key_agent"></label>
-                            <select id="ListCboAgent" class="form-select cboSelect2NoSearch"></select>
-                        </div>
-                        <div class="div_cbo">
-                            <label class="form-label" for="inputState">Loại Nguyên liệu</label>
-                            <select id="ListCboType" class="form-select cboSelect2NoSearch">
-                                <option value="1" selected>Mủ Nước</option>
-                                <option value="2">Mủ Đông</option>
-                                <option value="3">Mủ Ly Tâm</option>
-                            </select>
-                        </div>
                     </div>
                     <div class="d-flex">
                         <!-- Nút chọn file -->
-                        <label for="importExcel" class="btn btn-primary"><i class="ti ti-upload f-20"></i>&nbsp; <span
+                        @* <label for="importExcel" class="btn btn-primary"><i class="ti ti-upload f-20"></i>&nbsp; <span
                                 data-i18n="key_importexcel"></span></label>
                         <input type="file" id="importExcel" hidden>
                         <span id="file-name" class="ms-2 d-none"></span>
                         <button onclick="InputNameFile(1)" class="btn btn-primary buttonSearch"><i
                                 class="ti ti-download f-20"></i>&nbsp; <span data-i18n="key_xuatexcel"></span></button>
                         <button onclick="onExportTemplateExcel()" class="btn btn-primary buttonSearch"><i
-                                class="ti ti-file-x f-20"></i>&nbsp; <span data-i18n="key_mauexcel"></span></button>
+                                class="ti ti-file-x f-20"></i>&nbsp; <span data-i18n="key_mauexcel"></span></button> *@
                         <button class="btn btn-primary buttonSearch" data-bs-toggle="modal"
                             data-bs-target="#AddNewRubber"><i class="ti ti-plus f-20"></i>&nbsp; <span
                                 data-i18n="key_themmoi"></span></button>
@@ -53,42 +39,7 @@
                     </div> *@
                     <div class="datatable-top_custom">
                         <div class="button_filter">
-                            <div class="statusOrder divboxOrder">
-                                <label class="form-label" for="ListCboStatusOrder">
-                                    <span data-i18n="key_trangthai"></span>:
-                                    <select id="ListCboStatusOrder" class="form-select cboSelect2NoSearch">
-                                        <option value="*" selected data-i18n="key_vuilongchon"></option>
-                                        <option value="1" data-i18n="key_dangxuly"></option>
-                                        <option value="2" data-i18n="key_taodonhang"></option>
-                                    </select>
-                                </label>
-                                <button onclick="ApproveAllDataByStatus(1)" class="btn btn-primary buttonSearch">
-                                    <i class="ti ti-arrow-up-right-circle f-20"></i>&nbsp; <span
-                                        data-i18n="key_apdung"></span>
-                                </button>
-                            </div>
-                            <div class="Order divboxOrder">
-                                <label class="form-label" for="ListCboOrder">
-                                    <span data-i18n="key_donhang"></span>:
-                                    <select id="ListCboOrder" class="form-select cboSelect2Search"></select>
-                                </label>
-                                <button data-bs-toggle="modal" data-bs-target="#AddNewOrder"
-                                    class="btn btn-primary buttonSearch">
-                                    <i class="ti ti-arrow-up-right-circle f-20"></i>&nbsp; <span
-                                        data-i18n="key_taodonhangmoi"></span>
-                                </button>
-                            </div>
-                            <div class="Order1 divboxOrder">
-                                <label class="form-label" for="ListCboLake">
-                                    <span data-i18n="key_ho"></span>:
-                                    <select id="ListCboLake" class="form-select cboSelect2NoSearch"></select>
-                                </label>
-                                <button data-bs-toggle="modal" data-bs-target="#AddNewOrder"
-                                    class="btn btn-primary buttonSearch">
-                                    <i class="ti ti-arrow-up-right-circle f-20"></i>&nbsp; <span
-                                        data-i18n="key_taodonhangmoi"></span>
-                                </button>
-                            </div>
+                            
 
                         </div>
                     </div>

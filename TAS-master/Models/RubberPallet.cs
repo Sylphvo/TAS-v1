@@ -3,44 +3,58 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TAS.Models
 {
-	[Table("RubberPallets")]
-	public class RubberPalletDb
+	// ========================================
+	// RUBBER PALLET
+	// ========================================
+	public class RubberPallet
 	{
 		[Key]
-		public long PalletId { get; set; } // identity
+		public long PalletId { get; set; }
 
 		[Required]
-		public long OrderId { get; set; }   // FK -> RubberOrderSummary.OrderId
+		public long OrderId { get; set; }
 
-		// ✅ NEW: pallet được đóng ra từ hồ nào
-		public long? PondId { get; set; }  // để nullable cho an toàn migration, sau này muốn siết NOT NULL thì update tiếp
-		[Required, StringLength(50)]
-		public string PalletCode { get; set; } = default!; // VD: ORD__12112025__001__PL_001
-		public string PalletName { get; set; } = default!; // VD: ORD001-P001
+		public long? PondId { get; set; }
 
-		public int PalletNo { get; set; } // 1..n
+		[Required]
+		[MaxLength(50)]
+		public string PalletCode { get; set; } = string.Empty;
 
-		[Column(TypeName = "decimal(12,3)")]
-		public decimal WeightKg { get; set; }// Trọng lượng kg
-		public int IsActive { get; set; }// trạng thái pallet
-		public DateTime RegisterDate { get; set; }//thời gian tạo
-		public string? RegisterPerson { get; set; }//người tạo 
-		public DateTime? UpdateDate { get; set; }//thời gian cập nhật
-		public string? UpdatePerson { get; set; }//người cập nhật
-	}
-	public class RubberPalletRequest
-	{
-		public int? rowNo { get; set; } // identity
-		public long palletId { get; set; } // identity
-		public long orderId { get; set; }   // FK -> RubberOrderSummary.OrderId
-		public string palletCode { get; set; } = default!; // VD: ORD__12112025__001__PL_001
-		public string palletName { get; set; } = default!; // VD: tên Pallet
-		public int palletNo { get; set; } // 1..n
-		public decimal weightKg { get; set; }// Trọng lượng kg
-		public int isActive { get; set; }// trạng thái pallet
-		public DateTime registerDate { get; set; }//thời gian tạo
-		public string? registerPerson { get; set; }//người tạo 
-		public DateTime? updateDate { get; set; }//thời gian cập nhật
-		public string? updatePerson { get; set; }//người cập nhật
+		[MaxLength(255)]
+		public string? PalletName { get; set; }
+
+		[Required]
+		public int PalletNo { get; set; }
+
+		[Required]
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal WeightKg { get; set; }
+
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal StandardWeightKg { get; set; } = 2325.00m;
+
+		public bool IsActive { get; set; } = true;
+
+		/// <summary>
+		/// 1: Trong kho, 2: Đã xuất, 3: Đã giao
+		/// </summary>
+		public byte Status { get; set; } = 1;
+
+		public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
+
+		[MaxLength(50)]
+		public string? RegisterPerson { get; set; }
+
+		public DateTime? UpdateDate { get; set; }
+
+		[MaxLength(50)]
+		public string? UpdatePerson { get; set; }
+
+		// Navigation Properties
+		[ForeignKey(nameof(OrderId))]
+		public virtual RubberOrder? Order { get; set; }
+
+		[ForeignKey(nameof(PondId))]
+		public virtual RubberPond? Pond { get; set; }
 	}
 }

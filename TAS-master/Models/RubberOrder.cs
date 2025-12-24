@@ -1,79 +1,96 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TAS.Helpers;
 
 namespace TAS.Models
 {
-	[Table("RubberOrder")]
-	public class RubberOrderDb
+	// ========================================
+	// RUBBER ORDER (Đơn hàng)
+	// ========================================
+	public class RubberOrder
 	{
 		[Key]
 		public long OrderId { get; set; }
 
-		[StringLength(50)]
-		public string? OrderCode { get; set; }  // mã đơn
+		[Required]
+		[MaxLength(50)]
+		public string OrderCode { get; set; } = string.Empty;
 
-		[StringLength(50)]
-		public string? AgentCode { get; set; }  // mã đại lý tạo/đẩy đơn
+		[Required]
+		[MaxLength(50)]
+		public string AgentCode { get; set; } = string.Empty;
 
-		public DateTime? OrderDate { get; set; }
-		public DateTime? ExpectedShipDate { get; set; }
-		public DateTime? ShippedAt { get; set; }
-
-		[StringLength(120)]
+		[MaxLength(255)]
 		public string? BuyerName { get; set; }
 
-		[StringLength(200)]
+		[MaxLength(255)]
 		public string? BuyerCompany { get; set; }
 
-		[StringLength(80)]
-		public string? ContractNo { get; set; }
+		[Required]
+		public DateTime OrderDate { get; set; } = DateTime.UtcNow.Date;
 
-		[StringLength(200)]
-		public string? Destination { get; set; }
+		public DateTime? ExpectedShipDate { get; set; }
 
-		[StringLength(300)]
-		public string? DeliveryAddress { get; set; }
+		public DateTime? ShippedAt { get; set; }
 
-		[StringLength(50)]
+		[MaxLength(50)]
 		public string? ProductType { get; set; }
 
-		[Column(TypeName = "decimal(5,2)")]
-		public decimal? TargetTSC { get; set; }
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal TotalNetKg { get; set; } = 0.00m;
 
-		[Column(TypeName = "decimal(5,2)")]
-		public decimal? TargetDRC { get; set; }
+		/// <summary>
+		/// 1: Mới, 2: Đang xử lý, 3: Hoàn thành, 4: Hủy
+		/// </summary>
+		public byte Status { get; set; } = 1;
 
-		[Column(TypeName = "decimal(12,3)")]
-		public decimal? TotalNetKg { get; set; }
-
-		[Column(TypeName = "decimal(18,2)")]
-		public decimal? UnitPrice { get; set; }
-
-		// 0=draft, 1=confirmed, 2=loading, 3=shipped, 9=cancelled (tự quy ước)
-		public int? Status { get; set; }
-
-		[StringLength(500)]
 		public string? Note { get; set; }
 
-		public DateTime? RegisterDate { get; set; }
-		[StringLength(50)]
+		public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
+
+		[MaxLength(50)]
 		public string? RegisterPerson { get; set; }
 
 		public DateTime? UpdateDate { get; set; }
-		[StringLength(50)]
+
+		[MaxLength(50)]
 		public string? UpdatePerson { get; set; }
+
+		// Navigation Properties
+		[ForeignKey(nameof(AgentCode))]
+		public virtual RubberAgent? Agent { get; set; }
+
+		public virtual ICollection<RubberOrderPond> OrderPonds { get; set; } = new List<RubberOrderPond>();
+		public virtual ICollection<RubberPallet> Pallets { get; set; } = new List<RubberPallet>();
 	}
-	[Table("RubberOrderPond")]
-	public class RubberOrderPondDb
+	// ========================================
+	// RUBBER ORDER POND (Bridge: Đơn hàng ← Hồ)
+	// ========================================
+	public class RubberOrderPond
 	{
+		[Key]
+		public long OrderPondId { get; set; }
+
+		[Required]
 		public long OrderId { get; set; }
+
+		[Required]
 		public long PondId { get; set; }
 
-		[Column(TypeName = "decimal(12,3)")]
-		public decimal? AllocatedKg { get; set; } // đơn lấy từ hồ bao nhiêu kg
+		[Required]
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal AllocatedKg { get; set; }
 
 		public DateTime? LoadedAt { get; set; }
 
-		public string? BatchNo { get; set; } // mã mẻ xuất (nếu cần)
+		[MaxLength(50)]
+		public string? BatchNo { get; set; }
+
+		// Navigation Properties
+		[ForeignKey(nameof(OrderId))]
+		public virtual RubberOrder? Order { get; set; }
+
+		[ForeignKey(nameof(PondId))]
+		public virtual RubberPond? Pond { get; set; }
 	}
 }

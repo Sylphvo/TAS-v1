@@ -91,6 +91,11 @@ namespace TAS.TagHelpers
 			var result = conn.Query<T>(sql, param);
 			return result.ToList();
 		}
+		public T? QueryFirstOrDefault<T>(string sql, object? param = null)
+		{
+			using var conn = new SqlConnection(_connectionString);
+			return conn.QueryFirstOrDefault<T>(sql, param);
+		}
 
 	}
 }

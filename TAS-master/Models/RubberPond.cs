@@ -1,57 +1,87 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TAS.Helpers;
 
 namespace TAS.Models
 {
-	[Table("RubberPond")]
-	public class RubberPondDb
+	// ========================================
+	// RUBBER POND (Hồ sản xuất)
+	// ========================================
+	public class RubberPond
 	{
 		[Key]
 		public long PondId { get; set; }
 
-		[StringLength(50)]
-		public string? PondCode { get; set; }   // mã hồ/bồn
+		[Required]
+		[MaxLength(50)]
+		public string PondCode { get; set; } = string.Empty;
 
-		[StringLength(50)]
-		public string? AgentCode { get; set; }  // mã đại lý sở hữu hồ
+		[Required]
+		[MaxLength(50)]
+		public string AgentCode { get; set; } = string.Empty;
 
-		[StringLength(120)]
-		public string? PondName { get; set; }   // tên hồ/bồn
+		[Required]
+		[MaxLength(255)]
+		public string PondName { get; set; } = string.Empty;
 
-		[StringLength(200)]
-		public string? Location { get; set; }   // vị trí
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal CapacityKg { get; set; } = 50000.00m;
 
-		[Column(TypeName = "decimal(12,3)")]
-		public decimal? CapacityKg { get; set; } // sức chứa
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal DailyCapacityKg { get; set; } = 5000.00m;
 
-		[Column(TypeName = "decimal(12,3)")]
-		public decimal? CurrentNetKg { get; set; } // tồn hiện tại
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal CurrentNetKg { get; set; } = 0.00m;
 
-		// 1=active, 2=locked, 3=cleaning, 0=archived (tự quy ước)
-		public int? Status { get; set; }
+		/// <summary>
+		/// 1: Sẵn sàng, 2: Đang sản xuất, 3: Bảo trì
+		/// </summary>
+		public byte Status { get; set; } = 1;
 
-		public DateTime? LastCleanedAt { get; set; }
+		public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
 
-		[StringLength(500)]
-		public string? Note { get; set; }
-
-		public DateTime? RegisterDate { get; set; }
-		[StringLength(50)]
+		[MaxLength(50)]
 		public string? RegisterPerson { get; set; }
 
 		public DateTime? UpdateDate { get; set; }
-		[StringLength(50)]
+
+		[MaxLength(50)]
 		public string? UpdatePerson { get; set; }
+
+		// Navigation Properties
+		[ForeignKey(nameof(AgentCode))]
+		public virtual RubberAgent? Agent { get; set; }
+
+		public virtual ICollection<RubberPondIntake> PondIntakes { get; set; } = new List<RubberPondIntake>();
+		public virtual ICollection<RubberOrderPond> OrderPonds { get; set; } = new List<RubberOrderPond>();
+		public virtual ICollection<RubberPallet> Pallets { get; set; } = new List<RubberPallet>();
 	}
-	[Table("RubberPondIntake")]
-	public class RubberPondIntakeDb
+	// ========================================
+	// RUBBER POND INTAKE (Bridge: Hồ ← Intake)
+	// ========================================
+	public class RubberPondIntake
 	{
+		[Key]
+		public long PondIntakeId { get; set; }
+
+		[Required]
 		public long PondId { get; set; }
-		public long IntakeId { get; set; } // FK -> RubberIntakeDb.IntakeId
 
-		[Column(TypeName = "decimal(12,3)")]
-		public decimal? PouredKg { get; set; } // đổ vào hồ bao nhiêu kg
+		[Required]
+		public long IntakeId { get; set; }
 
-		public DateTime? PouredAt { get; set; }
+		[Required]
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal PouredKg { get; set; }
+
+		[Required]
+		public DateTime PouredAt { get; set; } = DateTime.UtcNow;
+
+		// Navigation Properties
+		[ForeignKey(nameof(PondId))]
+		public virtual RubberPond? Pond { get; set; }
+
+		[ForeignKey(nameof(IntakeId))]
+		public virtual RubberIntake? Intake { get; set; }
 	}
 }

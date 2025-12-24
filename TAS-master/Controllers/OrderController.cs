@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TAS.Helpers;
-using TAS.ViewModels;
 using TAS.Models;
+using TAS.Models.DTOs;
+using TAS.ViewModels;
 
 namespace TAS.Controllers
 {
@@ -9,7 +10,8 @@ namespace TAS.Controllers
 	{
 		private readonly OrderModels models;
 		private readonly CommonModels _common;
-		public OrderController(OrderModels _models, CommonModels common)
+		
+		public OrderController(OrderModels _models, CommonModels common, ILanguageService lang)
 		{
 			models = _models;
 			_common = common;
@@ -18,6 +20,7 @@ namespace TAS.Controllers
 		[Breadcrumb("key_orderinfo")]
 		public IActionResult Order()
 		{
+			ViewData["Title"] = _common.GetValueByKey("key_orderinfo");
 			return View();
 		}
 
@@ -38,14 +41,14 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] RubberOrderDb rubberOrder)
+		public JsonResult AddOrUpdate([FromBody] RubberOrderDto rubberOrder)
 		{
 			int result = models.AddOrUpdateRubberOrder(rubberOrder);
 			return Json(result);
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdateFull([FromBody] List<RubberOrderDb> rubberOrders)
+		public JsonResult AddOrUpdateFull([FromBody] List<RubberOrderDto> rubberOrders)
 		{
 			int result = models.AddOrUpdateRubberOrderFull(rubberOrders);
 			return Json(result);

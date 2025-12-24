@@ -297,4 +297,7 @@
   <data name="key_quanlynguoidung">
     <value>Quản lý người dùng</value>
   </data>
+  <data name="key_orderinfo">
+    <value>Đơn hàng</value>
+  </data>
 </root>

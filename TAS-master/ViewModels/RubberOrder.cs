@@ -1,7 +1,8 @@
 using TAS.Helpers;
+using TAS.Models;
+using TAS.Models.DTOs;
 using TAS.Repository;
 using TAS.TagHelpers;
-using TAS.Models;
 
 namespace TAS.ViewModels
 {
@@ -20,7 +21,7 @@ namespace TAS.ViewModels
         #region Get Data
 
         // Lấy tất cả đơn hàng
-        public async Task<List<RubberOrderDb>> GetRubberOrderAsync()
+        public async Task<List<RubberOrderDto>> GetRubberOrderAsync()
         {
             var sql = @"
 			SELECT 
@@ -50,11 +51,11 @@ namespace TAS.ViewModels
 			FROM RubberOrder
 			ORDER BY OrderId DESC
 			";
-            return await dbHelper.QueryAsync<RubberOrderDb>(sql);
+            return await dbHelper.QueryAsync<RubberOrderDto>(sql);
         }
 
         // Lấy đơn hàng theo ID
-        public async Task<RubberOrderDb> GetRubberOrderByIdAsync(long orderId)
+        public async Task<RubberOrderDto> GetRubberOrderByIdAsync(long orderId)
         {
             try
             {
@@ -85,7 +86,7 @@ namespace TAS.ViewModels
                     FROM RubberOrder
                     WHERE OrderId = @OrderId
                 ";
-                var result = await dbHelper.QueryAsync<RubberOrderDb>(sql, new { OrderId = orderId });
+                var result = await dbHelper.QueryAsync<RubberOrderDto>(sql, new { OrderId = orderId });
                 return result.FirstOrDefault()!;
             }
             catch (Exception ex)
@@ -97,7 +98,7 @@ namespace TAS.ViewModels
         }
 
         // Lấy đơn hàng theo mã đại lý
-        public async Task<List<RubberOrderDb>> GetRubberOrdersByAgentAsync(string agentCode)
+        public async Task<List<RubberOrderDto>> GetRubberOrdersByAgentAsync(string agentCode)
         {
             var sql = @"
 			SELECT 
@@ -126,11 +127,11 @@ namespace TAS.ViewModels
 			WHERE AgentCode = @AgentCode
 			ORDER BY OrderId DESC
 			";
-            return await dbHelper.QueryAsync<RubberOrderDb>(sql, new { AgentCode = agentCode });
+            return await dbHelper.QueryAsync<RubberOrderDto>(sql, new { AgentCode = agentCode });
         }
 
         // Lấy đơn hàng theo trạng thái
-        public async Task<List<RubberOrderDb>> GetRubberOrdersByStatusAsync(int status)
+        public async Task<List<RubberOrderDto>> GetRubberOrdersByStatusAsync(int status)
         {
             var sql = @"
 			SELECT 
@@ -159,11 +160,11 @@ namespace TAS.ViewModels
 			WHERE Status = @Status
 			ORDER BY OrderId DESC
 			";
-            return await dbHelper.QueryAsync<RubberOrderDb>(sql, new { Status = status });
+            return await dbHelper.QueryAsync<RubberOrderDto>(sql, new { Status = status });
         }
 
         // Lấy đơn hàng theo khoảng thời gian
-        public async Task<List<RubberOrderDb>> GetRubberOrdersByDateRangeAsync(DateTime fromDate, DateTime toDate)
+        public async Task<List<RubberOrderDto>> GetRubberOrdersByDateRangeAsync(DateTime fromDate, DateTime toDate)
         {
             var sql = @"
 			SELECT 
@@ -192,7 +193,7 @@ namespace TAS.ViewModels
 			WHERE OrderDate BETWEEN @FromDate AND @ToDate
 			ORDER BY OrderId DESC
 			";
-            return await dbHelper.QueryAsync<RubberOrderDb>(sql, new { FromDate = fromDate, ToDate = toDate });
+            return await dbHelper.QueryAsync<RubberOrderDto>(sql, new { FromDate = fromDate, ToDate = toDate });
         }
 
         #endregion
@@ -200,7 +201,7 @@ namespace TAS.ViewModels
         #region Add/Update Data
 
         // Thêm hoặc cập nhật đơn hàng
-        public int AddOrUpdateRubberOrder(RubberOrderDb rubberOrder)
+        public int AddOrUpdateRubberOrder(RubberOrderDto rubberOrder)
         {
             try
             {
@@ -282,7 +283,7 @@ namespace TAS.ViewModels
         }
 
         // Thêm hoặc cập nhật nhiều đơn hàng
-        public int AddOrUpdateRubberOrderFull(List<RubberOrderDb> rubberOrders)
+        public int AddOrUpdateRubberOrderFull(List<RubberOrderDto> rubberOrders)
         {
             try
             {
@@ -308,7 +309,7 @@ namespace TAS.ViewModels
         }
 
         // Import danh sách đơn hàng
-        public int ImportRubberOrders(List<RubberOrderDb> rubberOrders)
+        public int ImportRubberOrders(List<RubberOrderDto> rubberOrders)
         {
             try
             {

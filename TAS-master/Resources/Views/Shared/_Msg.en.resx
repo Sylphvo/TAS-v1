@@ -297,4 +297,7 @@
   <data name="key_quanlynguoidung">
     <value>User Management</value>
   </data>
+  <data name="key_orderinfo">
+    <value>Order</value>
+  </data>
 </root>

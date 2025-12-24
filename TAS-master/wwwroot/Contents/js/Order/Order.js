@@ -88,7 +88,7 @@ function CreateColModelOrder() {
     return [{
         headerName: 'STT',
         field: 'STT',
-        width: 60,
+        minWidth: 60,
         editable: false,
         valueGetter: 'node.rowIndex + 1',
         cellStyle: { 'text-align': 'center' }
@@ -96,21 +96,21 @@ function CreateColModelOrder() {
     {
         headerName: 'Mã Đơn',
         field: 'orderCode',
-        width: 120,
+        minWidth: 120,
         editable: false,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Mã Đại Lý',
         field: 'agentCode',
-        width: 120,
+        minWidth: 120,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Ngày Đặt Hàng',
         field: 'orderDate',
-        width: 130,
+        minWidth: 130,
         editable: true,
         cellEditor: 'agDateCellEditor',
         valueFormatter: params => params.value ? formatDate(params.value) : '',
@@ -119,7 +119,7 @@ function CreateColModelOrder() {
     {
         headerName: 'Ngày Dự Kiến Giao',
         field: 'expectedShipDate',
-        width: 150,
+        minWidth: 150,
         editable: true,
         cellEditor: 'agDateCellEditor',
         valueFormatter: params => params.value ? formatDate(params.value) : '',
@@ -128,7 +128,7 @@ function CreateColModelOrder() {
     {
         headerName: 'Ngày Đã Giao',
         field: 'shippedAt',
-        width: 130,
+        minWidth: 130,
         editable: true,
         cellEditor: 'agDateCellEditor',
         valueFormatter: params => params.value ? formatDate(params.value) : '',
@@ -137,49 +137,49 @@ function CreateColModelOrder() {
     {
         headerName: 'Tên Người Mua',
         field: 'buyerName',
-        width: 150,
+        minWidth: 150,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Công Ty Người Mua',
         field: 'buyerCompany',
-        width: 180,
+        minWidth: 180,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Số Hợp Đồng',
         field: 'contractNo',
-        width: 130,
+        minWidth: 130,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Điểm Đến',
         field: 'destination',
-        width: 150,
+        minWidth: 150,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Địa Chỉ Giao Hàng',
         field: 'deliveryAddress',
-        width: 200,
+        minWidth: 200,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Loại Sản Phẩm',
         field: 'productType',
-        width: 130,
+        minWidth: 130,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'TSC Mục Tiêu (%)',
         field: 'targetTSC',
-        width: 140,
+        minWidth: 140,
         editable: true,
         cellEditor: 'agNumberCellEditor',
         valueFormatter: params => params.value ? params.value.toFixed(2) : '',
@@ -188,7 +188,7 @@ function CreateColModelOrder() {
     {
         headerName: 'DRC Mục Tiêu (%)',
         field: 'targetDRC',
-        width: 140,
+        minWidth: 140,
         editable: true,
         cellEditor: 'agNumberCellEditor',
         valueFormatter: params => params.value ? params.value.toFixed(2) : '',
@@ -197,7 +197,7 @@ function CreateColModelOrder() {
     {
         headerName: 'Tổng Khối Lượng (Kg)',
         field: 'totalNetKg',
-        width: 160,
+        minWidth: 160,
         editable: true,
         cellEditor: 'agNumberCellEditor',
         valueFormatter: params => params.value ? params.value.toFixed(3) : '',
@@ -206,7 +206,7 @@ function CreateColModelOrder() {
     {
         headerName: 'Đơn Giá',
         field: 'unitPrice',
-        width: 130,
+        minWidth: 130,
         editable: true,
         cellEditor: 'agNumberCellEditor',
         valueFormatter: params => params.value ? formatCurrency(params.value) : '',
@@ -215,7 +215,7 @@ function CreateColModelOrder() {
     {
         headerName: 'Trạng Thái',
         field: 'status',
-        width: 130,
+        minWidth: 130,
         editable: true,
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: {
@@ -251,14 +251,14 @@ function CreateColModelOrder() {
     {
         headerName: 'Ghi Chú',
         field: 'note',
-        width: 200,
+        minWidth: 200,
         editable: true,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Ngày Đăng Ký',
         field: 'registerDate',
-        width: 130,
+        minWidth: 130,
         editable: false,
         valueFormatter: params => params.value ? formatDateTime(params.value) : '',
         cellStyle: { 'text-align': 'center' }
@@ -266,14 +266,14 @@ function CreateColModelOrder() {
     {
         headerName: 'Người Đăng Ký',
         field: 'registerPerson',
-        width: 130,
+        minWidth: 130,
         editable: false,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Ngày Cập Nhật',
         field: 'updateDate',
-        width: 130,
+        minWidth: 130,
         editable: false,
         valueFormatter: params => params.value ? formatDateTime(params.value) : '',
         cellStyle: { 'text-align': 'center' }
@@ -281,14 +281,14 @@ function CreateColModelOrder() {
     {
         headerName: 'Người Cập Nhật',
         field: 'updatePerson',
-        width: 130,
+        minWidth: 130,
         editable: false,
         cellStyle: { 'text-align': 'left' }
     },
     {
         headerName: 'Thao Tác',
         field: 'action',
-        width: 150,
+        minWidth: 150,
         editable: false,
         cellRenderer: params => {
             return `
@@ -397,7 +397,7 @@ const num = v => {
 // Lưu thứ tự hiện tại sau khi kéo thả
 function resizeGridOrder() {
     setTimeout(function () {
-        setWidthHeightGrid(45);
+        setWidthHeightGrid();
     }, 100);
 }
 
