@@ -15,7 +15,7 @@ namespace TAS.ViewModels
 			_logger = logger;
 		}
 		// Model
-		public async Task<List<RubberFarmRequest>> GetRubberFarmAsync()
+		public async Task<List<RubberFarm>> GetRubberFarmAsync()
 		{
 			var sql = @"
 				SELECT 
@@ -38,10 +38,10 @@ namespace TAS.ViewModels
 				FROM RubberFarm A
 				LEFT JOIN RubberAgent B ON A.AgentCode = B.AgentCode
 			";
-			return await dbHelper.QueryAsync<RubberFarmRequest>(sql);
+			return await dbHelper.QueryAsync<RubberFarm>(sql);
 		}
 
-		public int ImportPolygon(RubberFarmRequest rubberFarmRequest)
+		public int ImportPolygon(RubberFarm rubberFarmRequest)
 		{
 			try
 			{
@@ -71,7 +71,7 @@ namespace TAS.ViewModels
 				return 0;
 			}
 		}
-		public int AddOrUpdateRubberFarm(RubberFarmRequest rubberFarmRequest)
+		public int AddOrUpdateRubberFarm(RubberFarm rubberFarmRequest)
 		{
 			try
 			{
@@ -118,10 +118,10 @@ namespace TAS.ViewModels
 					FarmerName = rubberFarmRequest.FarmerName,
 					FarmPhone = rubberFarmRequest.FarmPhone,
 					FarmAddress = rubberFarmRequest.FarmAddress,
-					Certificates = rubberFarmRequest.Certificates,
-					TotalAreaHa = rubberFarmRequest.TotalAreaHa,   // 4.62m
-					RubberAreaHa = rubberFarmRequest.RubberAreaHa, // 6.93m
-					TotalExploit = rubberFarmRequest.TotalExploit, // 6.93m
+					//Certificates = rubberFarmRequest.Certificates,
+					//TotalAreaHa = rubberFarmRequest.TotalAreaHa,   // 4.62m
+					//RubberAreaHa = rubberFarmRequest.RubberAreaHa, // 6.93m
+					//TotalExploit = rubberFarmRequest.TotalExploit, // 6.93m
 					IsActive = rubberFarmRequest.IsActive,
 					UpdatePerson = _userManage.Name,
 					RegisterPerson = _userManage.Name,

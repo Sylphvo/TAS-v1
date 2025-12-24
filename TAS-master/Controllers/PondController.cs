@@ -38,14 +38,14 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] RubberPondDb rubberPond)
+		public JsonResult AddOrUpdate([FromBody] RubberPond rubberPond)
 		{
 			int result = models.AddOrUpdateRubberPond(rubberPond);
 			return Json(result);
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdateFull([FromBody] List<RubberPondDb> rubberPonds)
+		public JsonResult AddOrUpdateFull([FromBody] List<RubberPond> rubberPonds)
 		{
 			int result = models.AddOrUpdateRubberPondFull(rubberPonds);
 			return Json(result);
@@ -76,7 +76,7 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult ImportDataLstData([FromBody] List<RubberPondDb> rubberPonds)
+		public JsonResult ImportDataLstData([FromBody] List<RubberPond> rubberPonds)
 		{
 			int result = models.ImportRubberPonds(rubberPonds);
 			return Json(result);

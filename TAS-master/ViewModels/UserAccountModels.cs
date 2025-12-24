@@ -18,7 +18,7 @@ namespace TAS.ViewModels
 		}
 
 		// Model
-		public async Task<List<UserAccountRep>> GetUserAccountAsync()
+		public async Task<List<UserAccount>> GetUserAccountAsync()
 		{
 			var sql = @"
 				SELECT 
@@ -42,10 +42,10 @@ namespace TAS.ViewModels
 					UpdatedAtUtc = CONVERT(VARCHAR, ISNULL(UpdatedAtUtc, CreatedAtUtc), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdatedAtUtc, CreatedAtUtc), 108)
 				FROM dbo.USER_ACCOUNT
 				";
-			return await dbHelper.QueryAsync<UserAccountRep>(sql);
+			return await dbHelper.QueryAsync<UserAccount>(sql);
 		}
 
-		public int AddOrUpdateUserAccount(UserAccountRep userAccount)
+		public int AddOrUpdateUserAccount(UserAccount userAccount)
 		{
 			try
 			{

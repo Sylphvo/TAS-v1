@@ -113,10 +113,10 @@ namespace TAS.ViewModels
 				ORDER BY OrderCode DESC, AgentCode, CASE WHEN FarmCode IS NULL THEN 0 ELSE 1 END
 				DROP TABLE #TempOrder;
 			";
-			return await dbHelper.QueryAsync<RubberOrderReuqest>(sql);
+			return await dbHelper.QueryAsync<RubberOrder>(sql);
 		}
 		#region Pallet
-		public async Task<List<RubberPalletRequest>> GetPallets(int orderId)
+		public async Task<List<RubberPallet>> GetPallets(int orderId)
 		{
 			var sql = @"
 				SELECT 
@@ -131,7 +131,7 @@ namespace TAS.ViewModels
 				LEFT JOIN RubberOrderSummary rubOrder ON Pallet.OrderId = rubOrder.OrderId
 				WHERE Pallet.OrderId = '" + orderId + @"'
 			";
-			return await dbHelper.QueryAsync<RubberPalletRequest>(sql);
+			return await dbHelper.QueryAsync<RubberPallet>(sql);
 		}
 		#endregion
 	}

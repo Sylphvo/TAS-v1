@@ -30,7 +30,7 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] RubberFarmRequest rubberFarmRequest)
+		public JsonResult AddOrUpdate([FromBody] RubberFarm rubberFarmRequest)
 		{
 			int result = models.AddOrUpdateRubberFarm(rubberFarmRequest);
 			return Json(result);
@@ -43,7 +43,7 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult ImportPolygon([FromBody] RubberFarmRequest rubberFarmRequest)
+		public JsonResult ImportPolygon([FromBody] RubberFarm rubberFarmRequest)
 		{
 			int result = models.ImportPolygon(rubberFarmRequest);
 			return Json(result);

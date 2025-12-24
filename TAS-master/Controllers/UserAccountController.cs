@@ -32,7 +32,7 @@ namespace TAS.Controllers
 		}
 		
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] UserAccountRep userAccount)
+		public JsonResult AddOrUpdate([FromBody] UserAccount userAccount)
 		{
 			int result = models.AddOrUpdateUserAccount(userAccount);
 			return Json(result);

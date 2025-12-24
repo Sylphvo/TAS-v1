@@ -46,6 +46,7 @@ namespace TAS.Models
 		[ForeignKey(nameof(AgentCode))]
 		public virtual RubberAgent? Agent { get; set; }
 
-		public virtual ICollection<RubberIntake> Intakes { get; set; } = new List<RubberIntake>();
+        public string? Polygon { get; set; }
+        public virtual ICollection<RubberIntake> Intakes { get; set; } = new List<RubberIntake>();
 	}
 }

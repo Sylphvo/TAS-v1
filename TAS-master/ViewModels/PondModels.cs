@@ -1,4 +1,5 @@
 using TAS.Models;
+using TAS.Models.DTOs;
 using TAS.Repository;
 using TAS.TagHelpers;
 
@@ -19,7 +20,7 @@ namespace TAS.ViewModels
         #region Get Data
 
         // Lấy tất cả hồ/bồn
-        public async Task<List<RubberPondDb>> GetRubberPondAsync()
+        public async Task<List<RubberPondDto>> GetRubberPondAsync()
         {
             var sql = @"
 			SELECT 
@@ -41,11 +42,11 @@ namespace TAS.ViewModels
 			FROM RubberPond
 			ORDER BY PondId DESC
 			";
-            return await dbHelper.QueryAsync<RubberPondDb>(sql);
+            return await dbHelper.QueryAsync<RubberPondDto>(sql);
         }
 
         // Lấy hồ/bồn theo ID
-        public async Task<RubberPondDb> GetRubberPondByIdAsync(long pondId)
+        public async Task<RubberPondDto> GetRubberPondByIdAsync(long pondId)
         {
             var sql = @"
 			SELECT 
@@ -66,12 +67,12 @@ namespace TAS.ViewModels
 			FROM RubberPond
 			WHERE PondId = @PondId
 			";
-            var result = await dbHelper.QueryAsync<RubberPondDb>(sql, new { PondId = pondId });
+            var result = await dbHelper.QueryAsync<RubberPondDto>(sql, new { PondId = pondId });
             return result.FirstOrDefault()!;
         }
 
         // Lấy hồ/bồn theo mã đại lý
-        public async Task<List<RubberPondDb>> GetRubberPondsByAgentAsync(string agentCode)
+        public async Task<List<RubberPondDto>> GetRubberPondsByAgentAsync(string agentCode)
         {
             var sql = @"
 			SELECT 
@@ -92,11 +93,11 @@ namespace TAS.ViewModels
 			WHERE AgentCode = @AgentCode
 			ORDER BY PondId DESC
 			";
-            return await dbHelper.QueryAsync<RubberPondDb>(sql, new { AgentCode = agentCode });
+            return await dbHelper.QueryAsync<RubberPondDto>(sql, new { AgentCode = agentCode });
         }
 
         // Lấy hồ/bồn theo trạng thái
-        public async Task<List<RubberPondDb>> GetRubberPondsByStatusAsync(int status)
+        public async Task<List<RubberPondDto>> GetRubberPondsByStatusAsync(int status)
         {
             var sql = @"
 			SELECT 
@@ -117,11 +118,11 @@ namespace TAS.ViewModels
 			WHERE Status = @Status
 			ORDER BY PondId DESC
 			";
-            return await dbHelper.QueryAsync<RubberPondDb>(sql, new { Status = status });
+            return await dbHelper.QueryAsync<RubberPondDto>(sql, new { Status = status });
         }
 
         // Lấy các hồ/bồn đang hoạt động
-        public async Task<List<RubberPondDb>> GetActivePondsAsync()
+        public async Task<List<RubberPondDto>> GetActivePondsAsync()
         {
             var sql = @"
 			SELECT 
@@ -142,7 +143,7 @@ namespace TAS.ViewModels
 			WHERE Status = 1
 			ORDER BY PondId DESC
 			";
-            return await dbHelper.QueryAsync<RubberPondDb>(sql);
+            return await dbHelper.QueryAsync<RubberPondDto>(sql);
         }
 
         #endregion
@@ -150,7 +151,7 @@ namespace TAS.ViewModels
         #region Add/Update Data
 
         // Thêm hoặc cập nhật hồ/bồn
-        public int AddOrUpdateRubberPond(RubberPondDb rubberPond)
+        public int AddOrUpdateRubberPond(RubberPondDto rubberPond)
         {
             try
             {
@@ -194,12 +195,12 @@ namespace TAS.ViewModels
                     PondCode = rubberPond.PondCode,
                     AgentCode = rubberPond.AgentCode,
                     PondName = rubberPond.PondName,
-                    Location = rubberPond.Location,
+                    //Location = rubberPond.Location,
                     CapacityKg = rubberPond.CapacityKg,
                     CurrentNetKg = rubberPond.CurrentNetKg,
                     Status = rubberPond.Status,
-                    LastCleanedAt = rubberPond.LastCleanedAt,
-                    Note = rubberPond.Note,
+                    //LastCleanedAt = rubberPond.LastCleanedAt,
+                    //Note = rubberPond.Note,
                     UpdatePerson = _userManage.Name
                 });
                 return lstResult;
@@ -212,7 +213,7 @@ namespace TAS.ViewModels
         }
 
         // Thêm hoặc cập nhật nhiều hồ/bồn
-        public int AddOrUpdateRubberPondFull(List<RubberPondDb> rubberPonds)
+        public int AddOrUpdateRubberPondFull(List<RubberPondDto> rubberPonds)
         {
             try
             {
@@ -238,7 +239,7 @@ namespace TAS.ViewModels
         }
 
         // Import danh sách hồ/bồn
-        public int ImportRubberPonds(List<RubberPondDb> rubberPonds)
+        public int ImportRubberPonds(List<RubberPondDto> rubberPonds)
         {
             try
             {
