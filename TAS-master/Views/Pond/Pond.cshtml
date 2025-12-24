@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Thông Tin Hồ";
+}
+@section Style {
+    <link rel="stylesheet" href="../Contents/css/InformationGarden/InformationGarden.css">
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card table-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                    </div>
+                    <div class="d-flex">
+                        <!-- Nút chọn file -->
+                        <label for="importExcel" class="btn btn-primary"><i class="ti ti-upload f-20"></i>&nbsp; <span data-i18n="key_importexcel"></span></label>
+                        <input type="file" id="importExcel" hidden>
+                        <span id="file-name" class="ms-2 d-none"></span>
+                        @* <button onclick="onExportTemplateExcel()" class="btn btn-primary buttonSearch"><i class="ti ti-file-x f-20"></i>&nbsp; Mẫu Excel Polygon</button> *@
+                        <button class="btn btn-primary buttonSearch" data-bs-toggle="modal" data-bs-target="#AddNewRubberFarm"><i class="ti ti-plus f-20"></i>&nbsp;  <span data-i18n="key_themmoi"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="datatable-top">
+                        <div>
+                            <label></label>
+                        </div>
+                    </div>
+                    <!-- [ Main Content ] end -->
+                    <div id="PondGrid" style="height: 500px;width:100%" class="ag-theme-alpine"></div>
+                    <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Shared/Modal/_PopupAddNew.cshtml" />
+@section Scripts {
+    <script type="text/javascript" src="~/Contents/js/Pond/Pond.js"></script>
+    <script>
+        var listdataEventsActual;
+        var IsOptionAll = false;
+        var PondGrid = '#PondGrid';
+        var agPaging = 'ag-paging-footer';
+        var ListAgent = @Json.Serialize(ViewBag.ComboAgent)
+        CreateGridPond(true);
+        $('.selector-paging').select2({
+            minimumResultsForSearch: Infinity
+        });
+        SetLabel('labelRowPage', arrMsg.key_rowperpage);
+    </script>
+}

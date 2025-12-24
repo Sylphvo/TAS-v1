@@ -1,0 +1,169 @@
+<div class="modal fade" id="AddNewUserAccount" tabindex="-1" aria-labelledby="AddNewUserAccountLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="AddNewUserAccountLabel">
+                    <i class="ti ti-user-plus"></i> Thêm/Sửa User
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formUserAccount">
+                    <input type="hidden" id="userId" name="userId" value="0" />
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="userName" class="form-label">
+                                    <i class="ti ti-user"></i> Tên đăng nhập <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="userName" name="userName" 
+                                       placeholder="Nhập tên đăng nhập" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="ti ti-mail"></i> Email <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Nhập email" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">
+                                    <i class="ti ti-user-circle"></i> Tên
+                                </label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" 
+                                       placeholder="Nhập tên">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label">
+                                    <i class="ti ti-user-circle"></i> Họ
+                                </label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" 
+                                       placeholder="Nhập họ">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="phoneNumber" class="form-label">
+                                    <i class="ti ti-phone"></i> Số điện thoại
+                                </label>
+                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" 
+                                       placeholder="Nhập số điện thoại">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="ti ti-settings"></i> Cài đặt tài khoản
+                                </label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                                    <label class="form-check-label" for="isActive">
+                                        <i class="ti ti-check"></i> Kích hoạt tài khoản
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="emailConfirmed" name="emailConfirmed">
+                                    <label class="form-check-label" for="emailConfirmed">
+                                        <i class="ti ti-mail-check"></i> Email đã xác nhận
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="phoneNumberConfirmed" name="phoneNumberConfirmed">
+                                    <label class="form-check-label" for="phoneNumberConfirmed">
+                                        <i class="ti ti-phone-check"></i> Số điện thoại đã xác nhận
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="twoFactorEnabled" name="twoFactorEnabled">
+                                    <label class="form-check-label" for="twoFactorEnabled">
+                                        <i class="ti ti-shield-check"></i> Bật xác thực 2 yếu tố (2FA)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lockoutEnabled" name="lockoutEnabled">
+                                    <label class="form-check-label" for="lockoutEnabled">
+                                        <i class="ti ti-lock"></i> Cho phép khóa tài khoản khi đăng nhập sai
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="ti ti-info-circle"></i>
+                        <strong>Lưu ý:</strong> Khi tạo mới user, mật khẩu mặc định sẽ được tạo tự động. 
+                        Bạn có thể reset mật khẩu sau khi tạo user thành công.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-primary" onclick="UpdateDataAfterEdit(1, null)">
+                    <i class="ti ti-device-floppy"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Reset form khi đóng modal
+    $('#AddNewUserAccount').on('hidden.bs.modal', function () {
+        $('#formUserAccount')[0].reset();
+        $('#userId').val('0');
+    });
+
+    // Hàm để edit user (gọi từ grid nếu cần)
+    function EditUserAccount(userData) {
+        $('#userId').val(userData.id);
+        $('#userName').val(userData.userName);
+        $('#email').val(userData.email);
+        $('#firstName').val(userData.firstName);
+        $('#lastName').val(userData.lastName);
+        $('#phoneNumber').val(userData.phoneNumber);
+        $('#isActive').prop('checked', userData.isActive);
+        $('#emailConfirmed').prop('checked', userData.emailConfirmed);
+        $('#phoneNumberConfirmed').prop('checked', userData.phoneNumberConfirmed);
+        $('#twoFactorEnabled').prop('checked', userData.twoFactorEnabled);
+        $('#lockoutEnabled').prop('checked', userData.lockoutEnabled);
+        
+        $('#AddNewUserAccount').modal('show');
+    }
+</script>

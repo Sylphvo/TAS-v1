@@ -1,0 +1,67 @@
+﻿@{
+    var ListAgent = ViewBag.ComboAgent;
+    var ListFarmCode = ViewBag.ComboFarmCode;
+
+}
+<div class="modal fade bd-example-modal-lg" id="AddNewRubber" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm mới Rubber</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- [ form-element ] start -->
+                    <div class="col-lg-12">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="mb-3 ps-2">
+                                    <label class="form-label">Mã nhà vườn: *</label>
+                                    <select id="ListCboFarmCode" class="form-select form-control cboSelect2NoSearch">
+                                    </select>
+                                    @* <small class="form-text text-muted">Please enter your full name</small> *@
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3 pe-2">
+                                    <label class="form-label">Tên nhà vườn: *</label>
+                                    <select id="ListCboFarmerName" class="form-select form-control cboSelect2NoSearch">
+                                        @{
+                                            if (ListFarmCode != null)
+                                            {
+                                                foreach (var item in ListFarmCode)
+                                                {
+                                                    <option value="@item.Value">@item.Name</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="mb-3 ps-2">
+                                    <label class="form-label">Khối lượng</label>
+                                    <input type="number" class="form-control p-2" placeholder="nhập khối lượng" id="RubberKg">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3 pe-2">
+                                    <label class="form-label">TSC</label>
+                                    <input type="number" class="form-control p-2" placeholder="nhập TSC" id="TSCPercent">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- [ form-element ] end -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="key_close"></button>
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="UpdateDataAfterEdit(1)" data-i18n="key_save">Save</button>
+            </div>
+        </div>
+    </div>
+</div>

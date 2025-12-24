@@ -1,0 +1,51 @@
+﻿
+.grid-info {
+	display: inline-block;
+}
+
+.datatable-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+div.ag-cell-value[col-id="status"] > span {
+	margin-top: -3px !important;
+	display: block;
+}
+
+.button_filter {
+	justify-content: flex-end;
+	display: block;
+	align-items: flex-start;
+	flex-direction: column;
+}
+.ag-picker-field-wrapper {
+	height: 39px;
+	width: 105px;
+}
+.button_filter label {
+	display: inline;
+	align-items: center;
+}
+.button_filter select {
+	margin-right: 5px;
+}
+
+#ListCboOrder, #ListCboStatusOrder {
+	margin: 5px !important;
+}
+.divboxOrder {
+	display: inline-block;
+	margin: 5px 15px;
+	align-items: center;
+}
+.card.table-card{
+	margin-bottom:85px;
+}
+.datatable-top {
+	padding: 0 15px !important;
+}
+.RubberGaden-page{
+	padding-top:0 !important;
+}

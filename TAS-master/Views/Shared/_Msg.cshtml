@@ -1,0 +1,74 @@
+@using Microsoft.Extensions.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<TAS.Resources.SharedResource> localizerShared
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+			
+<script>
+var arrMsg = {
+	key_agent: '@localizer["key_agent"]',
+	key_agentinfo: '@localizer["key_agentinfo"]',
+	key_apdung: '@localizer["key_apdung"]',
+	key_capnhat: '@localizer["key_capnhat"]',
+	key_capnhatdulieuthanhcong: '@localizer["key_capnhatdulieuthanhcong"]',
+	key_capnhatsolieu: '@localizer["key_capnhatsolieu"]',
+	key_chuacotaikhoan: '@localizer["key_chuacotaikhoan"]',
+	key_close: '@localizer["key_close"]',
+	key_dangkytaikhoan: '@localizer["key_dangkytaikhoan"]',
+	key_dangxuly: '@localizer["key_dangxuly"]',
+	key_doitrangthaithanhcong: '@localizer["key_doitrangthaithanhcong"]',
+	key_doitrangthaithatbai: '@localizer["key_doitrangthaithatbai"]',
+	key_donhang: '@localizer["key_donhang"]',
+	key_ho: '@localizer["key_ho"]',
+	key_home: '@localizer["key_home"]',
+	key_hoso: '@localizer["key_hoso"]',
+	key_importexcel: '@localizer["key_importexcel"]',
+	key_Lake: '@localizer["key_Lake"]',
+	key_lammoi: '@localizer["key_lammoi"]',
+	key_loainguyenlieu: '@localizer["key_loainguyenlieu"]',
+	key_login: '@localizer["key_login"]',
+	key_loginemail: '@localizer["key_loginemail"]',
+	key_management_info: '@localizer["key_management_info"]',
+	key_mauexcel: '@localizer["key_mauexcel"]',
+	key_ngonngu: '@localizer["key_ngonngu"]',
+	key_nhaptenfileexcel: '@localizer["key_nhaptenfileexcel"]',
+	key_of: '@localizer["key_of"]',
+	key_Order: '@localizer["key_Order"]',
+	key_quanlynguoidung: '@localizer["key_quanlynguoidung"]',
+	key_quenmatkhau: '@localizer["key_quenmatkhau"]',
+	key_rowperpage: '@localizer["key_rowperpage"]',
+	key_save: '@localizer["key_save"]',
+	key_setting: '@localizer["key_setting"]',
+	key_showall: '@localizer["key_showall"]',
+	key_signup: '@localizer["key_signup"]',
+	key_taodonhang: '@localizer["key_taodonhang"]',
+	key_taodonhangmoi: '@localizer["key_taodonhangmoi"]',
+	key_taodonhangthanhcong: '@localizer["key_taodonhangthanhcong"]',
+	key_taodonhangthatbai: '@localizer["key_taodonhangthatbai"]',
+	key_taotaikhoan: '@localizer["key_taotaikhoan"]',
+	key_templatepdf: '@localizer["key_templatepdf"]',
+	key_themmoi: '@localizer["key_themmoi"]',
+	key_thongbaonhapexcel: '@localizer["key_thongbaonhapexcel"]',
+	key_thongbaonhapexcelthanhcong: '@localizer["key_thongbaonhapexcelthanhcong"]',
+	key_thongbaonhapexcelthatbai: '@localizer["key_thongbaonhapexcelthatbai"]',
+	key_thongbaoxuatexcel: '@localizer["key_thongbaoxuatexcel"]',
+	key_thongbaoxuatexcelthanhcong: '@localizer["key_thongbaoxuatexcelthanhcong"]',
+	key_thongbaoxuatexcelthatbai: '@localizer["key_thongbaoxuatexcelthatbai"]',
+	key_thongtindonhang: '@localizer["key_thongtindonhang"]',
+	key_thongtinnhavuon: '@localizer["key_thongtinnhavuon"]',
+	key_tongquan: '@localizer["key_tongquan"]',
+	key_trangthai: '@localizer["key_trangthai"]',
+	key_truyxuatnguongoc: '@localizer["key_truyxuatnguongoc"]',
+	key_vuilongchon: '@localizer["key_vuilongchon"]',
+	key_vuilongchontrangthai: '@localizer["key_vuilongchontrangthai"]',
+	key_xoa: '@localizer["key_xoa"]',
+	key_xoadulieunay: '@localizer["key_xoadulieunay"]',
+	key_xoathanhcong: '@localizer["key_xoathanhcong"]',
+	key_xoathatbai: '@localizer["key_xoathatbai"]',
+	key_xuatexcel: '@localizer["key_xuatexcel"]',
+};
+document.querySelectorAll("[data-i18n]").forEach(el => {
+	const key = el.getAttribute("data-i18n");
+	if (arrMsg[key]) {
+		el.textContent = arrMsg[key];
+	}
+});
+</script>

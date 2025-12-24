@@ -1,0 +1,20 @@
+﻿div.ag-cell-value[col-id="isActive"] .ag-checkbox-cell {
+	justify-content: center;
+}
+div.ag-cell-value[col-id="isActive"] > span, div.ag-cell-value[col-id="polygon"] > div {
+	margin-top: -3px !important;
+	display: block;
+}
+
+	div.ag-cell-value[col-id="polygon"] > div i, div.ag-cell-value[col-id="action"] > div i {
+		margin-bottom: 3px;
+	}
+.box_polygon{
+	display:flex;
+}
+	.box_polygon .button_action_custom {
+		margin-bottom: 0 !important;
+	}
+div[col-id="action"] > div {
+	display: flex;
+}

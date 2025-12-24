@@ -1,0 +1,8 @@
+﻿.validation-summary-errors ul li{
+	list-style-type: none;
+}
+
+.validation-summary-errors ul {
+	margin-bottom: 0 !important;
+	padding: 0;
+}

@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    @await RenderSectionAsync("Style", required: false)
+    <partial name="./Header/_HeaderLink.cshtml" />
+</head>
+<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-layout="vertical" data-pc-direction="ltr" data-pc-theme_contrast data-pc-theme="light">
+    <partial name="./_ChatBot.cshtml" />
+    <partial name="./Header/_PreLoader.cshtml" />
+    <partial name="./Header/_Nav.cshtml" />
+    @await Component.InvokeAsync("Header")
+    <div class="pc-container">
+        <div class="pc-content">
+            @await Component.InvokeAsync("Breadcrumb")
+            @RenderBody()
+        </div>
+    </div>
+
+    @await Component.InvokeAsync("Footer")
+    <partial name="./_Msg.cshtml" />
+    <partial name="./Footer/_FooterLink.cshtml" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

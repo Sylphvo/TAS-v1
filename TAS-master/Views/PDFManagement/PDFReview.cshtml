@@ -1,0 +1,164 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Cập nhật Số liệu";
+}
+@section Style {
+    <link rel="stylesheet" href="../Contents/css/PDFManagement/PDFManagement.css">
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card table-card">
+            <div class="card-header">
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" id="pdfReviewDiv">
+                    <div class="datatable-top">
+                    </div>
+
+                    <div class="container">
+                        <div class="form-section">
+                            <div class="section-title">📋 Operator Information</div>
+
+                            <div class="form-group">
+                                <label>Operator Name</label>
+                                <input type="text" id="operatorName" placeholder="Enter company name">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Address</label>
+                                <textarea id="operatorAddress" placeholder="Enter full address"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>City & Postal Code</label>
+                                <input type="text" id="operatorCity" placeholder="e.g., CHINA 361022">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tel</label>
+                                <input type="text" id="operatorTel" placeholder="Phone number">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Fax</label>
+                                <input type="text" id="operatorFax" placeholder="Fax number">
+                            </div>
+
+                            <div class="section-title">🚢 Shipper Information</div>
+
+                            <div class="form-group">
+                                <label>Shipper Name</label>
+                                <input type="text" id="shipperName" placeholder="Enter company name">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Address</label>
+                                <textarea id="shipperAddress" placeholder="Enter full address"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>City</label>
+                                <input type="text" id="shipperCity" placeholder="City/Province">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Country</label>
+                                <input type="text" id="shipperCountry" placeholder="Country">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tel</label>
+                                <input type="text" id="shipperTel" placeholder="Phone number">
+                            </div>
+
+                            <button class="btn btn-preview" onclick="previewPdf()">Preview PDF</button>
+                            <button class="btn btn-download" onclick="downloadPdf()">Download PDF</button>
+                        </div>
+
+                        <div class="preview-section">
+                            <div id="pdfPreview">
+                                <div class="preview-placeholder">
+                                    <h2>📄 PDF Preview</h2>
+                                    <p>Fill in the form and click "Preview PDF" to see the result</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getFormData() {
+        return {
+            operatorName: document.getElementById('operatorName').value,
+            operatorAddress: document.getElementById('operatorAddress').value,
+            operatorCity: document.getElementById('operatorCity').value,
+            operatorTel: document.getElementById('operatorTel').value,
+            operatorFax: document.getElementById('operatorFax').value,
+            shipperName: document.getElementById('shipperName').value,
+            shipperAddress: document.getElementById('shipperAddress').value,
+            shipperCity: document.getElementById('shipperCity').value,
+            shipperCountry: document.getElementById('shipperCountry').value,
+            shipperTel: document.getElementById('shipperTel').value
+        };
+    }
+
+    async function previewPdf() {
+        const previewDiv = document.getElementById('pdfPreview');
+        previewDiv.innerHTML = '<div class="loading">⏳ Generating PDF...</div>';
+
+        try {
+            const data = getFormData();
+            const response = await fetch('/PDFManagement/PreviewPdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            previewDiv.innerHTML = `<iframe src="${url}" width="100%" height="1000px" style="border: none;"></iframe>`;
+        } catch (error) {
+            previewDiv.innerHTML = `<div class="preview-placeholder"><h2>❌ Error</h2><p>${error.message}</p></div>`;
+        }
+    }
+
+    async function downloadPdf() {
+        try {
+            const data = getFormData();
+            const response = await fetch('/PDFManagement/GeneratePdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'File_' + new Date().getTime() + '.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>

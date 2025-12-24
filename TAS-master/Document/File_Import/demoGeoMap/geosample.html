@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tạo File Excel Mẫu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 900px;
+        width: 100%;
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        padding: 3rem;
+      }
+
+      h1 {
+        color: #1f2937;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      .subtitle {
+        color: #6b7280;
+        text-align: center;
+        margin-bottom: 3rem;
+        font-size: 1.1rem;
+      }
+
+      .templates {
+        display: grid;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .template-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        border: 2px solid #e0e7ff;
+        transition: all 0.3s;
+      }
+
+      .template-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: #818cf8;
+      }
+
+      .template-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .template-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      .template-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+      }
+
+      .template-desc {
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+
+      .columns-list {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .columns-title {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+      }
+
+      .columns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .column-tag {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .sample-data {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .sample-title {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+      }
+
+      .sample-row {
+        font-size: 0.875rem;
+        color: #6b7280;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border-radius: 0.25rem;
+        margin-bottom: 0.5rem;
+        font-family: "Courier New", monospace;
+      }
+
+      .download-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+
+      .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+      }
+
+      .download-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .download-all {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        margin-top: 1.5rem;
+        font-size: 1.2rem;
+        padding: 1.25rem;
+      }
+
+      .download-all:hover {
+        box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+      }
+
+      .note {
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 2rem;
+      }
+
+      .note-title {
+        font-weight: 600;
+        color: #92400e;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .note-text {
+        color: #78350f;
+        font-size: 0.875rem;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📊 File Excel Mẫu</h1>
+      <p class="subtitle">Tải xuống file mẫu để bắt đầu nhập dữ liệu</p>
+
+      <div class="templates">
+        <!-- Farm Data Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">🌾</div>
+            <div class="template-title">Farm Data</div>
+          </div>
+          <p class="template-desc">
+            File chứa thông tin về các nông trại, diện tích và tọa độ polygon
+          </p>
+
+          <div class="columns-list">
+            <div class="columns-title">Các cột dữ liệu:</div>
+            <div class="columns">
+              <span class="column-tag">FarmId</span>
+              <span class="column-tag">FarmCode</span>
+              <span class="column-tag">AgentCode</span>
+              <span class="column-tag">FarmerName</span>
+              <span class="column-tag">FarmPhone</span>
+              <span class="column-tag">FarmAddress</span>
+              <span class="column-tag">Certificates</span>
+              <span class="column-tag">TotalAreaHa</span>
+              <span class="column-tag">RubberAreaHa</span>
+              <span class="column-tag">TotalExploit</span>
+              <span class="column-tag">IsActive</span>
+              <span class="column-tag">Polygon</span>
+            </div>
+          </div>
+
+          <div class="sample-data">
+            <div class="sample-title">Dữ liệu mẫu:</div>
+            <div class="sample-row">
+              FarmId: 1 | FarmCode: NV_1 | FarmerName: Nguyễn Văn A
+            </div>
+            <div class="sample-row">
+              FarmId: 2 | FarmCode: NV_2 | FarmerName: Trần Thị B
+            </div>
+            <div class="sample-row">
+              FarmId: 3 | FarmCode: NV_3 | FarmerName: Lê Văn C
+            </div>
+          </div>
+
+          <button class="download-btn" onclick="downloadFarmTemplate()">
+            <svg
+              class="download-icon"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Tải Farm Data Template
+          </button>
+        </div>
+
+        <!-- Shipping Data Template -->
+        <div class="template-card">
+          <div class="template-header">
+            <div class="template-icon">🚚</div>
+            <div class="template-title">Shipping Data</div>
+          </div>
+          <p class="template-desc">
+            File chứa thông tin về các lô hàng xuất, số lượng và ngày sản xuất
+          </p>
+
+          <div class="columns-list">
+            <div class="columns-title">Các cột dữ liệu:</div>
+            <div class="columns">
+              <span class="column-tag">ShippingId</span>
+              <span class="column-tag">FarmId</span>
+              <span class="column-tag">FarmCode</span>
+              <span class="column-tag">LotId</span>
+              <span class="column-tag">OriginID</span>
+              <span class="column-tag">ProductName</span>
+              <span class="column-tag">Quantity</span>
+              <span class="column-tag">ProducerName</span>
+              <span class="column-tag">ProductionDate</span>
+              <span class="column-tag">Species</span>
+            </div>
+          </div>
+
+          <div class="sample-data">
+            <div class="sample-title">Dữ liệu mẫu:</div>
+            <div class="sample-row">
+              ShippingId: 1001 | FarmId: 1 | LotId: LOT_001 | Quantity: 5000
+            </div>
+            <div class="sample-row">
+              ShippingId: 1002 | FarmId: 1 | LotId: LOT_002 | Quantity: 3500
+            </div>
+            <div class="sample-row">
+              ShippingId: 1003 | FarmId: 2 | LotId: LOT_003 | Quantity: 4200
+            </div>
+          </div>
+
+          <button class="download-btn" onclick="downloadShippingTemplate()">
+            <svg
+              class="download-icon"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Tải Shipping Data Template
+          </button>
+        </div>
+      </div>
+
+      <button
+        class="download-btn download-all"
+        onclick="downloadBothTemplates()"
+      >
+        <svg
+          class="download-icon"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+        Tải Cả 2 File Mẫu
+      </button>
+
+      <div class="note">
+        <div class="note-title">
+          <svg
+            style="width: 20px; height: 20px"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Lưu ý quan trọng:
+        </div>
+        <div class="note-text">
+          • Cột <strong>Polygon</strong>: Có thể để trống hoặc nhập tọa độ theo
+          định dạng JSON: [[lon1,lat1],[lon2,lat2],...]<br />
+          • Ví dụ Polygon:
+          [[106.48,11.67],[106.47,11.67],[106.47,11.68],[106.48,11.68],[106.48,11.67]]<br />
+          • <strong>FarmId</strong> hoặc <strong>FarmCode</strong> phải khớp
+          giữa 2 file để ghép dữ liệu<br />
+          • Các file mẫu đã có dữ liệu ví dụ, bạn có thể sửa đổi hoặc thêm dòng
+          mới
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function downloadFarmTemplate() {
+        const farmData = [
+          {
+            FarmId: 1,
+            FarmCode: "NV_1",
+            AgentCode: "Agent_1",
+            FarmerName: "Nguyễn Văn A",
+            FarmPhone: "0901000001",
+            FarmAddress: "Huyện Hớn Quản, Bình Phước",
+            Certificates: "VietGAP",
+            TotalAreaHa: 5.5,
+            RubberAreaHa: 4.2,
+            TotalExploit: 1200.0,
+            IsActive: 1,
+            Polygon:
+              "[[106.48031529039143,11.672824226397438],[106.47832844406366,11.672461079639662],[106.47682406008244,11.671988265788558],[106.47526871412992,11.671704248747448],[106.48031529039143,11.672824226397438]]",
+          },
+          {
+            FarmId: 2,
+            FarmCode: "NV_2",
+            AgentCode: "Agent_1",
+            FarmerName: "Trần Thị B",
+            FarmPhone: "0901000002",
+            FarmAddress: "Huyện Bù Đăng, Bình Phước",
+            Certificates: "VietGAP",
+            TotalAreaHa: 8.3,
+            RubberAreaHa: 6.5,
+            TotalExploit: 1800.0,
+            IsActive: 1,
+            Polygon:
+              "[[106.50,11.65],[106.49,11.65],[106.49,11.66],[106.50,11.66],[106.50,11.65]]",
+          },
+          {
+            FarmId: 3,
+            FarmCode: "NV_3",
+            AgentCode: "Agent_2",
+            FarmerName: "Lê Văn C",
+            FarmPhone: "0901000003",
+            FarmAddress: "Huyện Đồng Phú, Bình Phước",
+            Certificates: "VietGAP, FSC",
+            TotalAreaHa: 12.0,
+            RubberAreaHa: 10.0,
+            TotalExploit: 2500.0,
+            IsActive: 1,
+            Polygon: "NULL",
+          },
+        ];
+
+        const ws = XLSX.utils.json_to_sheet(farmData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Farm Data");
+
+        // Set column widths
+        ws["!cols"] = [
+          { wch: 10 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 20 },
+          { wch: 15 },
+          { wch: 30 },
+          { wch: 15 },
+          { wch: 12 },
+          { wch: 15 },
+          { wch: 15 },
+          { wch: 10 },
+          { wch: 60 },
+        ];
+
+        XLSX.writeFile(wb, "Farm_Data_Template.xlsx");
+      }
+
+      function downloadShippingTemplate() {
+        const shippingData = [
+          {
+            ShippingId: 1737627042558,
+            FarmId: 1,
+            FarmCode: "NV_1",
+            LotId: "1737124950403",
+            OriginID: 1726111852397,
+            ProductName: "Latex",
+            Quantity: 4836,
+            ProducerName: "CONG TY CO PHAN THE KY",
+            ProductionDate: "2025-01-17",
+            Species: "Hevea brasiliensis",
+          },
+          {
+            ShippingId: 1737627042558,
+            FarmId: 1,
+            FarmCode: "NV_1",
+            LotId: "1737124924398",
+            OriginID: 1726111852397,
+            ProductName: "Latex",
+            Quantity: 7166,
+            ProducerName: "CONG TY CO PHAN THE KY",
+            ProductionDate: "2025-01-17",
+            Species: "Hevea brasiliensis",
+          },
+          {
+            ShippingId: 1737627042559,
+            FarmId: 2,
+            FarmCode: "NV_2",
+            LotId: "1737158423720",
+            OriginID: 1726111852398,
+            ProductName: "Latex",
+            Quantity: 5075,
+            ProducerName: "CONG TY CO PHAN THE KY",
+            ProductionDate: "2025-01-18",
+            Species: "Hevea brasiliensis",
+          },
+          {
+            ShippingId: 1737627042559,
+            FarmId: 2,
+            FarmCode: "NV_2",
+            LotId: "1737624502416",
+            OriginID: 1726111852398,
+            ProductName: "Latex",
+            Quantity: 3829,
+            ProducerName: "CONG TY CO PHAN THE KY",
+            ProductionDate: "2025-01-23",
+            Species: "Hevea brasiliensis",
+          },
+          {
+            ShippingId: 1737627042560,
+            FarmId: 3,
+            FarmCode: "NV_3",
+            LotId: "1737125653061",
+            OriginID: 1726111852399,
+            ProductName: "Latex",
+            Quantity: 2368,
+            ProducerName: "CONG TY CO PHAN THE KY",
+            ProductionDate: "2025-01-17",
+            Species: "Hevea brasiliensis",
+          },
+        ];
+
+        const ws = XLSX.utils.json_to_sheet(shippingData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Shipping Data");
+
+        // Set column widths
+        ws["!cols"] = [
+          { wch: 15 },
+          { wch: 10 },
+          { wch: 12 },
+          { wch: 18 },
+          { wch: 15 },
+          { wch: 15 },
+          { wch: 10 },
+          { wch: 30 },
+          { wch: 15 },
+          { wch: 25 },
+        ];
+
+        XLSX.writeFile(wb, "Shipping_Data_Template.xlsx");
+      }
+
+      function downloadBothTemplates() {
+        downloadFarmTemplate();
+        setTimeout(() => {
+          downloadShippingTemplate();
+        }, 500);
+      }
+    </script>
+  </body>
+</html>

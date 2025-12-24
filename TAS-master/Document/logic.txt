@@ -1,0 +1,98 @@
+Sơ đồ quan hệ (logic)
+RubberAgent (đại lý)
+   ↑ (AgentCode)
+RubberFarmDb (nhà vườn)
+   ↑ (FarmCode)
+RubberIntakeDb (phiếu nhập từ nhà vườn)
+
+RubberPondDb (hồ/bồn của đại lý)
+   ↑ (PondId)
+RubberPondIntakeDb (bridge: hồ nhận từ các phiếu nhập)
+
+RubberOrderDb (đơn hàng xuất của đại lý)
+   ↑ (OrderId)
+RubberOrderPondDb (bridge: đơn hàng lấy từ các hồ)
+
+1) RubberPondDb — “Hồ/Bồn”
+
+Tác dụng
+
+Đại diện một hồ/bồn chứa của đại lý (theo AgentCode).
+
+Dùng để gom mủ từ nhiều lần nhập (nhiều RubberIntakeDb) và sau đó cấp cho nhiều đơn hàng.
+
+CapacityKg, CurrentNetKg, Status giúp quản lý tồn + trạng thái hồ.
+
+Bạn dùng nó để
+
+Lọc tồn theo đại lý, xem hồ nào đang active/locked.
+
+Là “điểm trung gian” để trace nguồn gốc.
+
+2) RubberOrderDb — “Đơn hàng”
+
+Tác dụng
+
+Đại diện đơn xuất hàng của đại lý (AgentCode).
+
+Chứa thông tin buyer/contract/điểm giao/ngày xuất.
+
+TotalNetKg, UnitPrice, Status phục vụ báo cáo doanh thu và trạng thái giao.
+
+Bạn dùng nó để
+
+Trang “Truy xuất nguồn gốc theo đơn hàng”
+
+Thống kê theo ngày, theo đại lý, theo trạng thái.
+
+3) RubberOrderPondDb — “Đơn hàng lấy từ hồ nào” (bridge)
+
+Tác dụng
+
+Là bảng nối N-N giữa RubberOrderDb và RubberPondDb.
+
+Ghi rõ đơn này lấy bao nhiêu kg từ hồ nào (AllocatedKg).
+
+Có thể lưu thêm LoadedAt, BatchNo để audit xuất hàng.
+
+Bạn dùng nó để
+
+Truy xuất: Đơn X → lấy từ các Hồ A/B/C → mỗi hồ bao nhiêu kg.
+
+Thống kê: tổng kg theo hồ, theo đơn.
+
+4) RubberPondIntakeDb — “Hồ nhận từ phiếu nhập nào” (bridge)
+
+Tác dụng
+
+Là bảng nối N-N giữa RubberPondDb và RubberIntakeDb.
+
+Ghi rõ phiếu nhập nào đã đổ vào hồ nào và đổ bao nhiêu kg (PouredKg).
+
+Đây là đoạn “cực quan trọng” để trace về nhà vườn.
+
+Bạn dùng nó để
+
+Truy xuất: Hồ A → nhận từ các Intake 1/2/3 → mỗi intake bao nhiêu kg.
+
+Từ RubberIntakeDb bạn biết FarmCode/FarmerName ⇒ ra nhà vườn.
+
+“Trace” end-to-end (đúng cấp bạn muốn)
+
+Order → Pond → Agent → Farm
+
+RubberOrderDb (OrderCode)
+   -> RubberOrderPondDb (OrderId, PondId, AllocatedKg)
+      -> RubberPondDb (PondCode, AgentCode)
+         -> RubberPondIntakeDb (PondId, IntakeId, PouredKg)
+            -> RubberIntakeDb (FarmCode, FarmerName, ...)
+               -> RubberFarmDb (FarmCode, AgentCode, ...)
+                  -> RubberAgent (AgentCode, AgentName)
+
+Bạn sẽ có 2 kiểu màn hình truy xuất
+
+Theo đơn hàng: “đơn này lấy từ hồ nào → hồ đó lấy từ nhà vườn nào”
+
+Theo hồ: “hồ này đang chứa mủ từ các nhà vườn nào → đã cấp cho các đơn nào”
+
+Nếu bạn muốn mình “vẽ lại” thành ERD chuẩn (dạng bảng + PK/FK rõ ràng theo đúng key bạn đang dùng AgentCode/FarmCode/PondId/OrderId/IntakeId), paste DbContext + các config hiện tại, mình sẽ chuẩn hóa luôn quan hệ FK (hiện tại bạn đang dùng code string nên cần quyết định FK thật hay join logic bằng code).

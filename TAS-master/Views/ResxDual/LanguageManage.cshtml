@@ -1,0 +1,176 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Cập nhật Số liệu";
+}
+@section Style {
+    <link rel="stylesheet" href="../Contents/css/ResxDual/LanguageManage.css">
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card table-card">
+            <div class="card-header">
+                        
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="datatable-top">
+                    </div>
+
+                    <div class="row p-3 validate-me align-items-baseline">
+                        <div class="cold-">
+
+
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <label>Key</label>
+                                </div>
+                                <div class="col-md-9">
+                                    <input id="txtKey" class="form-control text_control" placeholder="Key" />
+                                    <div class="error-message" id="bouncer-error_time" style="position: absolute;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <label>Tiếng Việt</label>
+                                </div>
+                                <div class="col-md-9">
+                                    <input id="txtVi" class="form-control text_control" placeholder="Tiếng Việt" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <label>Tiếng Anh</label>
+                                </div>
+                                <div class="col-md-9">
+                                    <input id="txtEn" class="form-control text_control" placeholder="English" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button id="btnAdd" class="btn btn-primary w-100">Thêm</button>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <table class="table table-bordered p-5 w-100" id="tblData">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Tiếng Việt</th>
+                                <th>English</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<script>
+    let listKeys = [];
+    $(function () {       
+        loadData();
+          $("#txtKey").on("input", function () {
+            const key = $(this).val().trim();
+            if (!key) {
+               $(this).css("border", "");
+                return;
+            }
+            if (listKeys.includes(key)) {
+                $(this).addClass('error');
+            } else {
+                $(this).removeClass('error');
+            }
+        });
+        $("#btnAdd").click(function () {
+            if($("#txtKey").val() == ''){
+                $("#txtKey").addClass('error');
+                $(".error-message").html('Vui lòng nhập key');
+                return false;
+            }
+            $.ajax({
+                url: "/ResxDual/create",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    key: $("#txtKey").val(),
+                    vi: $("#txtVi").val(),
+                    en: $("#txtEn").val(),
+                }),
+                success: res => {
+                    appendRow(res);
+                    $("#txtKey, #txtVi, #txtEn").val("");
+                }
+            });
+        });
+    });
+
+    function loadData() {
+        $.ajax({
+            url: "/ResxDual/list",
+            method: "GET",
+            contentType: "application/json",
+            success: function (res) {
+                $("#tblData tbody").html("");
+                res.forEach(x => appendRow(x));
+                listKeys = res.map(x => x.key.trim().toLowerCase());
+            },
+        });
+        $.get("/ResxDual/list", res => {
+            $("#tblData tbody").html("");
+            res.forEach(x => appendRow(x));
+        });
+    }
+
+    function appendRow(x) {
+        $("#tblData tbody").append(`
+        <tr data-key="${x.key}">
+            <td>${x.key}</td>
+            <td><input class="form-control vi text_control" value="${x.vi}"></td>
+            <td><input class="form-control en text_control" value="${x.en}"></td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="del('${x.key}')">delete</button>
+                <button class="btn btn-success btn-sm" onclick="save('${x.key}')">Save</button>
+            </td>
+        </tr>`);
+    }
+
+    function save(key) {
+        $.ajax({
+            url: "/ResxDual/update",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                key,
+                vi: $(`tr[data-key='${key}'] .vi`).val(),
+                en: $(`tr[data-key='${key}'] .en`).val(),
+            }),
+            success: () => NotificationToast("success", "Cập nhật ngôn ngữ thành công")
+        });
+    }
+
+    function del(key) {
+        if (!confirm("Xóa thật?")) return;
+
+        $.ajax({
+            url: "/ResxDual/delete",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ key }),
+            success: () => {
+                $(`tr[data-key='${key}']`).remove();
+            }
+        });
+    }
+</script>

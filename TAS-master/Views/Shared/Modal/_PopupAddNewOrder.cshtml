@@ -1,0 +1,29 @@
+﻿@{
+    var ListAgent = ViewBag.ComboAgent;
+}
+<div class="modal fade bd-example-modal-lg" id="AddNewOrder" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm mới thông tin đơn hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- [ form-element ] start -->
+                    <div class="col-lg-12">
+                        <div class="mb-3 pe-2">
+                            <label class="form-label">Tên đơn hàng: *</label>
+                            <input type="text" class="form-control p-2" placeholder="Tên đơn hàng" id="OrderName">
+                        </div>
+                    </div>
+                    <!-- [ form-element ] end -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="key_close"></button>
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="CreateOrder()" data-i18n="key_save">Save</button>
+            </div>
+        </div>
+    </div>
+</div>

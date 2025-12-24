@@ -1,0 +1,10 @@
+﻿#tblData {
+	width: calc(100% - 20px) !important;
+	margin: 0 auto;
+}
+.text_control, td{
+	padding: 5px !important;
+}
+.table thead th {
+	padding: 7px !important;
+}

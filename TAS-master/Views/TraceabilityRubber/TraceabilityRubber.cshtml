@@ -1,0 +1,85 @@
+﻿@* <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>HR Example - Vanilla JS</title>
+
+    <!-- AG-Grid CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-quartz.css">
+
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body> *@
+@section Style {
+    <link rel="stylesheet" href="../Contents/css/TraceabilityRubber/TraceabilityRubber.css">
+}
+<div class="row">
+    <div class="col-12">
+        <div class="card table-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        @* <label class="form-label" for="inputState">Đại lý</label>
+                            <select id="inputState" class="form-select">
+                                <option selected="selected">select</option>
+                                <option>Large select</option>
+                            </select> *@
+                        <div class="form-check form-switch switch-lg">
+                            <input class="form-check-input input-primary f-16" type="checkbox" id="ChkAll" checked="checked">
+                            <label class="form-check-label" for="ChkAll" id="labelChkAll">@* @localizer["key_showall"] *@</label>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="datatable-top">
+                        <div class="datatable-dropdown">
+                            <label> </label>
+                        </div>
+                        <div>
+                            <label></label>
+                        </div>
+                    </div>
+                    <!-- [ Main Content ] end -->
+                    <div id="myGrid" style="height: 500px;width:100%" class="ag-theme-alpine"></div>
+                    <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script type="text/javascript" src="~/Contents/js/TraceabilityRubber/TraceabilityRubber.js"></script>
+    <script>
+        // var agPaging = 'ag-paging-footer';
+        // var Traceability = '#TraceabilityGrid';
+        // var IsOptionAll = false;
+        // CreateGridTraceability(true);
+        // RegEventTraceability();
+        // SetLabel();
+        // function SetLabel(){
+        //     $('#labelChkAll').text(arrMsg.key_showall);
+        // }
+    </script>
+}
+@* 
+    <!-- AG Grid Vanilla JS -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+
+    <script src="./renderers/EmployeeCellRenderer.js"></script>
+    <script src="./renderers/FlagCellRenderer.js"></script>
+    <script src="./renderers/TagCellRenderer.js"></script>
+    <script src="./renderers/StatusCellRenderer.js"></script>
+    <script src="./renderers/ContactCellRenderer.js"></script>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+</body>
+</html>
+ *@

@@ -1,0 +1,11 @@
+dotnet ef migrations remove --force --project .\TAS.csproj --startup-project .\TAS.csproj
+dotnet ef migrations add InitData  --project .\TAS.csproj --startup-project .\TAS.csproj
+dotnet ef database update --project .\TAS.csproj --startup-project .\TAS.csproj
+
+connect database
+"DefaultConnection": "Server=PC16\\SQLEXPRESS2016;Database=TAS;User Id=sa;Password=P@ss123;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True"
+    //"DefaultConnection": "Server=DESKTOP-RCNUK7B\\CILSE;Database=TAS;User Id=sa;Password=352571630Phuu;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True"
+
+
+dotnet ef database update --project .\TAS.csproj --startup-project .\TAS.csproj --connection "Server=.\SQLEXPRESS2016;Database=TAS;User Id=sa;Password=P@ss123;TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=.\SQLEXPRESS2016;Database=TAS;User Id=sa;Password=P@ss123;TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True"

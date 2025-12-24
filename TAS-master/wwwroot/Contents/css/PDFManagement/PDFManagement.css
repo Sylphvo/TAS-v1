@@ -1,0 +1,123 @@
+﻿#pdfReviewDiv .header {
+	background: white;
+	padding: 20px 40px;
+	border-bottom: 1px solid #ddd;
+}
+
+#pdfReviewDiv .header h1 {
+	font-size: 28px;
+	color: #333;
+}
+
+#pdfReviewDiv .container {
+	display: flex;
+	height: calc(100vh - 80px);
+}
+
+#pdfReviewDiv .form-section {
+	width: 400px;
+	background: white;
+	padding: 30px;
+	overflow-y: auto;
+	border-right: 1px solid #ddd;
+}
+
+#pdfReviewDiv .preview-section {
+	flex: 1;
+	background: #525659;
+	padding: 20px;
+	overflow: auto;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+#pdfReviewDiv .form-group {
+	margin-bottom: 20px;
+}
+
+#pdfReviewDiv .form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: #333;
+}
+
+#pdfReviewDiv .form-group input,
+#pdfReviewDiv .form-group textarea {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	font-family: Arial, sans-serif;
+}
+
+#pdfReviewDiv .form-group textarea {
+	resize: vertical;
+	min-height: 80px;
+}
+
+#pdfReviewDiv .section-title {
+	font-size: 18px;
+	font-weight: bold;
+	margin: 25px 0 15px 0;
+	color: #2563eb;
+	border-bottom: 2px solid #2563eb;
+	padding-bottom: 5px;
+}
+
+#pdfReviewDiv .btn {
+	width: 100%;
+	padding: 12px;
+	border: none;
+	border-radius: 4px;
+	font-size: 16px;
+	font-weight: 500;
+	cursor: pointer;
+	margin-top: 10px;
+}
+
+#pdfReviewDiv .btn-preview {
+	background: #2563eb;
+	color: white;
+}
+
+#pdfReviewDiv .btn-preview:hover {
+	background: #1d4ed8;
+}
+
+#pdfReviewDiv .btn-download {
+	background: #059669;
+	color: white;
+}
+
+#pdfReviewDiv .btn-download:hover {
+	background: #047857;
+}
+
+#pdfReviewDiv .btn:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+}
+
+#pdfPreview {
+	background: white;
+	box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+	max-width: 800px;
+	width: 100%;
+}
+
+#pdfReviewDiv .preview-placeholder {
+	background: white;
+	padding: 60px 40px;
+	text-align: center;
+	color: #666;
+	border-radius: 8px;
+}
+
+#pdfReviewDiv .loading {
+	text-align: center;
+	padding: 20px;
+	color: white;
+}

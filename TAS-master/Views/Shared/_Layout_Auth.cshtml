@@ -1,0 +1,34 @@
+﻿<!doctype html>
+<html lang="en">
+<!-- [Head] start -->
+<!-- Mirrored from ableproadmin.com/pages/login-v1.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 15 Oct 2025 17:23:18 GMT -->
+<head>
+    <title>@ViewData["Title"] | TAS</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Phoenixcoded">
+    <link rel="icon" href="../Logo/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../assets/css/style.css" id="main-style-link">
+    <script src="../assets/js/tech-stack.js"></script>
+    <link rel="stylesheet" href="../assets/css/style-preset.css">
+    @await RenderSectionAsync("Style", required: false)
+</head>
+<!-- [Head] end --><!-- [Body] Start -->
+<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-layout="vertical" data-pc-direction="ltr" data-pc-theme_contrast="" data-pc-theme="light">
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    @RenderBody()
+    <partial name="./_Msg.cshtml" />
+    <!-- [ Main Content ] end --><!-- Required Js -->
+    <script src="../assets/js/plugins/simplebar.min.js"></script>
+    <script src="../assets/js/plugins/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="../assets/js/theme.js"></script>
+</body>
+</html>

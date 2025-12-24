@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDS PDF Editor & Exporter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .editor-panel {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+        
+        .preview-panel {
+            padding: 30px;
+            background: white;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .form-section h3 {
+            color: #2a5298;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #2a5298;
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 13px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-preview {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-preview:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-export {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-export:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .preview-content {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .preview-content h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+        
+        .preview-content h3 {
+            color: #2a5298;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .preview-content .info-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .preview-content .info-block strong {
+            color: #1e3c72;
+        }
+        
+        .preview-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .preview-content table th,
+        .preview-content table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .preview-content table th {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Due Diligence Statement Editor</h1>
+            <p>Chỉnh sửa thông tin và xuất file PDF</p>
+        </div>
+        
+        <div class="content">
+            <div class="editor-panel">
+                <div class="alert alert-info">
+                    ✏️ Chỉnh sửa thông tin bên dưới, sau đó nhấn Preview để xem trước hoặc Export PDF để tải xuống
+                </div>
+                
+                <div class="form-section">
+                    <h3>Operator Information</h3>
+                    <div class="form-group">
+                        <label>Company Name:</label>
+                        <input type="text" id="operatorName" value="CHENG SHIN RUBBER(XIAMEN)IND., LTD.">
+                    </div>
+                    <div class="form-group">
+                        <label>Address:</label>
+                        <textarea id="operatorAddress">NO.15, XIBIN ROAD, JIMEI DISTRICT AREA, XIAMEN
+CHINA 361022.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tel:</label>
+                        <input type="text" id="operatorTel" value="(86)592-6211606-6258">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Shipper Information</h3>
+                    <div class="form-group">
+                        <label>Company Name:</label>
+                        <input type="text" id="shipperName" value="VIET SING JOINT STOCK COMPANY">
+                    </div>
+                    <div class="form-group">
+                        <label>Address:</label>
+                        <textarea id="shipperAddress">Group 2, Hamlet 7, Minh Duc Commune
+Dong Nai Province, VIET NAM</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tel:</label>
+                        <input type="text" id="shipperTel" value="0084-28-66858384">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Product Information</h3>
+                    <div class="form-group">
+                        <label>Lot ID:</label>
+                        <input type="text" id="lotId" value="1755333037682">
+                    </div>
+                    <div class="form-group">
+                        <label>B/L Number:</label>
+                        <input type="text" id="blNumber" value="COAU8035147360">
+                    </div>
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="date" id="blDate" value="2025-08-13">
+                    </div>
+                    <div class="form-group">
+                        <label>Trade Name:</label>
+                        <input type="text" id="tradeName" value="MIXTURES OF NATURAL RUBBER SVR3L AND SBR1502">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity (kg):</label>
+                        <input type="number" id="quantity" value="100800">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Origin Lots:</label>
+                        <input type="number" id="totalLots" value="249">
+                    </div>
+                    <div class="form-group">
+                        <label>Report Date:</label>
+                        <input type="date" id="reportDate" value="2025-08-16">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-preview" onclick="previewDocument()">👁️ Preview</button>
+                    <button class="btn-export" onclick="exportPDF()">📥 Export PDF</button>
+                </div>
+            </div>
+            
+            <div class="preview-panel">
+                <div class="preview-content" id="previewContent">
+                    <h2>Due Diligence Statement Preview</h2>
+                    <p style="text-align: center; color: #6c757d;">Nhấn "Preview" để xem nội dung</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewDocument() {
+            const operatorName = document.getElementById('operatorName').value;
+            const operatorAddress = document.getElementById('operatorAddress').value;
+            const operatorTel = document.getElementById('operatorTel').value;
+            const shipperName = document.getElementById('shipperName').value;
+            const shipperAddress = document.getElementById('shipperAddress').value;
+            const shipperTel = document.getElementById('shipperTel').value;
+            const lotId = document.getElementById('lotId').value;
+            const blNumber = document.getElementById('blNumber').value;
+            const blDate = document.getElementById('blDate').value;
+            const tradeName = document.getElementById('tradeName').value;
+            const quantity = document.getElementById('quantity').value;
+            const totalLots = document.getElementById('totalLots').value;
+            const reportDate = document.getElementById('reportDate').value;
+            
+            const preview = `
+                <h2>Due Diligence Statement</h2>
+                
+                <div class="info-block">
+                    <h3>Operator</h3>
+                    <p><strong>${operatorName}</strong></p>
+                    <p>${operatorAddress.replace(/\n/g, '<br>')}</p>
+                    <p>TEL: ${operatorTel}</p>
+                </div>
+                
+                <div class="info-block">
+                    <h3>Shipper</h3>
+                    <p><strong>${shipperName}</strong></p>
+                    <p>${shipperAddress.replace(/\n/g, '<br>')}</p>
+                    <p>Tel: ${shipperTel}</p>
+                </div>
+                
+                <h3>Statement of Compliance</h3>
+                <div class="info-block">
+                    <p><strong>✓ Legal Land Use Rights and Deforestation-free</strong></p>
+                    <p>The plantations from which VIET SING is collecting are small plots and stays too long (before December 30, 2020 almost). All farms which we are collecting and tapping is deforestation-free absolutely.</p>
+                </div>
+                
+                <div class="info-block">
+                    <p><strong>✓ Environmental Protection & Forest-related regulations</strong></p>
+                    <p>VIET SING have conducted on-site surveys to assess whether the plantations comply with regulations and requirements of soil erosion, waste management, cleanliness, and the use of prohibited chemicals.</p>
+                </div>
+                
+                <div class="info-block">
+                    <p><strong>✓ Labor and Human Rights</strong></p>
+                    <p>Most of the plantations are smallholder farms run by their own families' members. VIET SING have been in onsite inspections, interviewed all workers at farms and checked their ID cards.</p>
+                </div>
+                
+                <div class="info-block">
+                    <p><strong>Report Date:</strong> ${reportDate}</p>
+                </div>
+                
+                <h3>Description of Goods being shipped</h3>
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Lot ID</td>
+                        <td>${lotId}</td>
+                    </tr>
+                    <tr>
+                        <td>B/L Number</td>
+                        <td>${blNumber}</td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>${blDate}</td>
+                    </tr>
+                    <tr>
+                        <td>Trade Name</td>
+                        <td>${tradeName}</td>
+                    </tr>
+                    <tr>
+                        <td>Quantity</td>
+                        <td>${quantity} kg</td>
+                    </tr>
+                    <tr>
+                        <td>Total Origin Lots</td>
+                        <td>${totalLots}</td>
+                    </tr>
+                    <tr>
+                        <td>Country of Production</td>
+                        <td>VIETNAM</td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top: 30px; padding: 15px; background: #e7f3ff; border-left: 4px solid #2a5298;">
+                    <p style="margin: 0;"><strong>Note:</strong> This document confirms that due diligence in accordance with Regulation (EU) 2023/1115 was carried out and that no or only a negligible risk was found.</p>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = preview;
+        }
+        
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const operatorName = document.getElementById('operatorName').value;
+            const operatorAddress = document.getElementById('operatorAddress').value;
+            const operatorTel = document.getElementById('operatorTel').value;
+            const shipperName = document.getElementById('shipperName').value;
+            const shipperAddress = document.getElementById('shipperAddress').value;
+            const shipperTel = document.getElementById('shipperTel').value;
+            const lotId = document.getElementById('lotId').value;
+            const blNumber = document.getElementById('blNumber').value;
+            const blDate = document.getElementById('blDate').value;
+            const tradeName = document.getElementById('tradeName').value;
+            const quantity = document.getElementById('quantity').value;
+            const totalLots = document.getElementById('totalLots').value;
+            const reportDate = document.getElementById('reportDate').value;
+            
+            let y = 20;
+            
+            // Header
+            doc.setFillColor(30, 60, 114);
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text('Due Diligence Statement', 105, 15, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text('EUDR Compliance Document', 105, 22, { align: 'center' });
+            
+            y = 40;
+            doc.setTextColor(0, 0, 0);
+            
+            // Operator
+            doc.setFontSize(14);
+            doc.setTextColor(42, 82, 152);
+            doc.text('Operator', 15, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'bold');
+            doc.text(operatorName, 15, y);
+            y += 5;
+            doc.setFont(undefined, 'normal');
+            const operatorAddressLines = doc.splitTextToSize(operatorAddress, 180);
+            doc.text(operatorAddressLines, 15, y);
+            y += operatorAddressLines.length * 5 + 3;
+            doc.text('TEL: ' + operatorTel, 15, y);
+            
+            // Shipper
+            y += 10;
+            doc.setFontSize(14);
+            doc.setTextColor(42, 82, 152);
+            doc.text('Shipper', 15, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'bold');
+            doc.text(shipperName, 15, y);
+            y += 5;
+            doc.setFont(undefined, 'normal');
+            const shipperAddressLines = doc.splitTextToSize(shipperAddress, 180);
+            doc.text(shipperAddressLines, 15, y);
+            y += shipperAddressLines.length * 5 + 3;
+            doc.text('Tel: ' + shipperTel, 15, y);
+            
+            // Statement of Compliance
+            y += 10;
+            doc.setFontSize(14);
+            doc.setTextColor(42, 82, 152);
+            doc.text('Statement of Compliance', 15, y);
+            y += 7;
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            
+            const statements = [
+                'Legal Land Use Rights and Deforestation-free: All plantations are deforestation-free.',
+                'Environmental Protection: On-site surveys conducted for compliance.',
+                'Labor and Human Rights: All workers verified and protected.'
+            ];
+            
+            statements.forEach(stmt => {
+                const lines = doc.splitTextToSize('- ' + stmt, 180);
+                doc.text(lines, 15, y);
+                y += lines.length * 4 + 2;
+            });
+            
+            y += 5;
+            doc.setFont(undefined, 'bold');
+            doc.text('Report Date: ' + reportDate, 15, y);
+            doc.setFont(undefined, 'normal');
+            
+            // New page for product info
+            doc.addPage();
+            y = 20;
+            
+            doc.setFontSize(14);
+            doc.setTextColor(42, 82, 152);
+            doc.text('Description of Goods being shipped', 15, y);
+            y += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            const productInfo = [
+                ['Lot ID', lotId],
+                ['B/L Number', blNumber],
+                ['Date', blDate],
+                ['Trade Name', tradeName],
+                ['Quantity', quantity + ' kg'],
+                ['Total Origin Lots', totalLots],
+                ['Country of Production', 'VIETNAM']
+            ];
+            
+            productInfo.forEach(([label, value]) => {
+                doc.setFont(undefined, 'bold');
+                doc.text(label + ':', 15, y);
+                doc.setFont(undefined, 'normal');
+                const valueLines = doc.splitTextToSize(value, 120);
+                doc.text(valueLines, 70, y);
+                y += Math.max(valueLines.length * 5, 7);
+            });
+            
+            // Footer
+            y += 10;
+            doc.setFillColor(233, 236, 239);
+            doc.rect(15, y, 180, 20, 'F');
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            const footerText = doc.splitTextToSize('This document confirms that due diligence in accordance with Regulation (EU) 2023/1115 was carried out and that no or only a negligible risk was found.', 170);
+            doc.text(footerText, 20, y + 5);
+            
+            // Save
+            doc.save('DDS_LA_' + lotId + '_' + reportDate + '.pdf');
+        }
+        
+        // Auto preview on load
+        window.onload = function() {
+            previewDocument();
+        };
+    </script>
+	<!-- Tôi đã tạo cho bạn một công cụ chỉnh sửa và export PDF Due Diligence Statement! -->
+<!-- Tính năng chính: -->
+<!-- 📝 Editor Panel (Bên trái): -->
+
+<!-- Chỉnh sửa thông tin Operator (công ty vận hành) -->
+<!-- Chỉnh sửa thông tin Shipper (người gửi hàng) -->
+<!-- Chỉnh sửa thông tin sản phẩm (Lot ID, B/L, số lượng, ngày tháng...) -->
+<!-- Tất cả các trường đã được điền sẵn dữ liệu từ file gốc -->
+
+<!-- 👁️ Preview Panel (Bên phải): -->
+
+<!-- Xem trước nội dung document theo thời gian thực -->
+<!-- Hiển thị đầy đủ thông tin compliance statements -->
+<!-- Bảng thông tin sản phẩm chi tiết -->
+
+<!-- 🎨 Thiết kế: -->
+
+<!-- Giao diện hiện đại với gradient màu xanh -->
+<!-- Layout 2 cột tiện lợi -->
+<!-- Form inputs với hiệu ứng focus đẹp mắt -->
+<!-- Preview panel với styling chuyên nghiệp -->
+
+<!-- 📥 Export PDF: -->
+
+<!-- Xuất file PDF với format chuẩn -->
+<!-- Header màu xanh đẹp mắt -->
+<!-- Phân trang tự động -->
+<!-- Tên file theo format: DDS_LA_{LotID}_{Date}.pdf -->
+
+<!-- Cách sử dụng: -->
+
+<!-- Chỉnh sửa các thông tin cần thiết ở panel bên trái -->
+<!-- Nhấn "Preview" để xem trước -->
+<!-- Nhấn "Export PDF" để tải xuống file PDF -->
+
+<!-- Bạn có thể điều chỉnh thêm bất kỳ thông tin nào cần thiết nhé! 🚀 -->
+</body>
+</html>

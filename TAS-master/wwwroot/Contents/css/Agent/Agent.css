@@ -1,0 +1,4 @@
+﻿div[col-id="agentCode"] .ag-cell-wrapper {
+    display:flex;
+    align-items: center;
+}

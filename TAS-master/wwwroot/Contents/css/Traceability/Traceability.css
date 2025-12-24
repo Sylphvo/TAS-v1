@@ -1,0 +1,11 @@
+﻿.text-cell-eclip {
+	display: inline;
+	padding: 0 8px;
+}
+.btn.Col-orderName, .btn.Col-orderName:focus-visible, .btn.Col-orderName:hover {
+	text-decoration: none;
+	padding: 0 !important;
+}
+#myLargeModalLabel .modal-dialog {
+	min-width: 70%;
+}

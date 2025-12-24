@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Mvc.Infrastructure
+@inject IBreadcrumbService breadcrumb
+@inject IActionContextAccessor ActionAccessor
+@{
+    var crumbs = ActionAccessor.ActionContext != null
+        ? breadcrumb.GetBreadcrumb(ActionAccessor.ActionContext)
+        : new List<(string Key_language, string Title, string Url)>();
+}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <ul class="breadcrumb">
+                    @foreach (var c in crumbs)
+                    {
+                        @* <li class="breadcrumb-item"><a href="https://ableproadmin.com/dashboard/index.html">Home</a></li> *@
+                        <li class="breadcrumb-item" aria-current="page">
+                            @if (!string.IsNullOrEmpty(c.Url))
+                            {
+                                <a href="@c.Url" data-i18n="@c.Key_language">@c.Title</a>
+                            }
+                            else
+                            {
+                                <span>@c.Title</span>
+                            }
+
+                        </li>
+                    }
+                   
+                </ul>
+            </div>
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h2 class="mb-0" data-i18n="@(crumbs.LastOrDefault().Key_language)"></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
