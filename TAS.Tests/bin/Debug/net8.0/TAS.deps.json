@@ -26,11 +26,11 @@
           "TAS.dll": {}
         },
         "resources": {
-          "en-us/TAS.resources.dll": {
-            "locale": "en-us"
+          "en-US/TAS.resources.dll": {
+            "locale": "en-US"
           },
-          "vi-vn/TAS.resources.dll": {
-            "locale": "vi-vn"
+          "vi-VN/TAS.resources.dll": {
+            "locale": "vi-VN"
           },
           "en/TAS.resources.dll": {
             "locale": "en"

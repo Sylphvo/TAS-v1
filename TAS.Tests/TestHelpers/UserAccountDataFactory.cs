@@ -105,10 +105,10 @@ namespace TAS.Tests.TestHelpers
         {
             var user = _userFaker.Generate();
             user.Id = 0;
-            user.CreatedAtUtc = null;
-            user.UpdatedAtUtc = null;
-            user.CreatedBy = null;
-            user.UpdatedBy = null;
+            user.CreatedAtUtc = DateTime.UtcNow;
+            user.UpdatedAtUtc = DateTime.UtcNow;
+            user.CreatedBy = DateTime.UtcNow.ToString("system");
+            user.UpdatedBy = DateTime.UtcNow.ToString("system"); ;
             return user;
         }
 

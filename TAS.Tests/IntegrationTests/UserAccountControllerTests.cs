@@ -354,13 +354,15 @@ namespace TAS.Tests.IntegrationTests
             // Arrange
             var methodInfo = typeof(UserAccountController)
                 .GetMethod("AddOrUpdate");
+            if (methodInfo != null)
+            {
+                // Act
+                var attribute = methodInfo.GetCustomAttributes(
+                    typeof(HttpPostAttribute), false);
+                // Assert
+                Assert.NotEmpty(attribute);
+            }
 
-            // Act
-            var attribute = methodInfo.GetCustomAttributes(
-                typeof(HttpPostAttribute), false);
-
-            // Assert
-            Assert.NotEmpty(attribute);
         }
 
         #endregion

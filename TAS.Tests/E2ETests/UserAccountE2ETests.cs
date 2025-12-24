@@ -179,7 +179,7 @@ namespace TAS.Tests.E2ETests
 
             // Assert - Check validation
             var userNameInput = _driver.FindElement(By.Id("userName"));
-            var isInvalid = userNameInput.GetAttribute("validationMessage");
+            string? isInvalid = userNameInput.GetAttribute("validationMessage");
             Assert.NotEmpty(isInvalid);
         }
 
