@@ -1,10 +1,15 @@
 ﻿namespace TAS.Repository
 {
+	// ========================================
+	// INTERFACE
+	// ========================================
 	public interface ICurrentUser
 	{
-		string? Id { get; }
-		string? Name { get; }
-		string? FullName { get; }
-		bool IsInRole(string role);
+		Guid? UserId { get; }
+		string Name { get; }
+		string Email { get; }
+		string FullName { get; }
+		bool IsAuthenticated { get; }
+		IEnumerable<string> Roles { get; }
 	}
 }

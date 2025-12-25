@@ -194,7 +194,8 @@ namespace TAS.Data
 				entity.HasOne(e => e.Pond)
 					.WithMany(p => p.PondIntakes)
 					.HasForeignKey(e => e.PondId)
-					.OnDelete(DeleteBehavior.Cascade);
+					.OnDelete(DeleteBehavior.NoAction)
+					.IsRequired(false);
 
 				// Relationship: Intake -> PondIntake (1:N)
 				entity.HasOne(e => e.Intake)
@@ -254,7 +255,8 @@ namespace TAS.Data
 				entity.HasOne(e => e.Pond)
 					.WithMany(p => p.OrderPonds)
 					.HasForeignKey(e => e.PondId)
-					.OnDelete(DeleteBehavior.Cascade);
+					.OnDelete(DeleteBehavior.NoAction)
+					.IsRequired(false);
 			});
 
 			// ========================================
@@ -286,10 +288,12 @@ namespace TAS.Data
 					.OnDelete(DeleteBehavior.Cascade);
 
 				// Relationship: Pond -> Pallet (1:N, Optional)
+				// NoAction để tránh multiple cascade paths
 				entity.HasOne(e => e.Pond)
 					.WithMany(p => p.Pallets)
 					.HasForeignKey(e => e.PondId)
-					.OnDelete(DeleteBehavior.SetNull);
+					.OnDelete(DeleteBehavior.NoAction)
+					.IsRequired(false);
 			});
 		}
 	}

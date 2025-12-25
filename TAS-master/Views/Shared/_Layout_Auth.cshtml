@@ -25,6 +25,7 @@
     </div>
     @RenderBody()
     <partial name="./_Msg.cshtml" />
+    @await RenderSectionAsync("Scripts", required: false)
     <!-- [ Main Content ] end --><!-- Required Js -->
     <script src="../assets/js/plugins/simplebar.min.js"></script>
     <script src="../assets/js/plugins/bootstrap.min.js"></script>

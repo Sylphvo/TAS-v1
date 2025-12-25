@@ -742,5 +742,7 @@
   <ItemGroup>
     <None Include="TAS.sln" />
   </ItemGroup>
-
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
 </Project>

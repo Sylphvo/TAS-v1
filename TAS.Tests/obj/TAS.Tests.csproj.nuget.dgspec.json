@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\TAS.Tests.csproj": {}
+    "C:\\Users\\phuvm\\source\\TAS-master\\TAS.Tests\\TAS.Tests.csproj": {}
   },
   "projects": {
-    "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj": {
+    "C:\\Users\\phuvm\\source\\TAS-master\\TAS-master\\TAS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj",
+        "projectUniqueName": "C:\\Users\\phuvm\\source\\TAS-master\\TAS-master\\TAS.csproj",
         "projectName": "TAS",
-        "projectPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj",
+        "projectPath": "C:\\Users\\phuvm\\source\\TAS-master\\TAS-master\\TAS.csproj",
         "packagesPath": "C:\\Users\\phuvm\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\obj\\",
+        "outputPath": "C:\\Users\\phuvm\\source\\TAS-master\\TAS-master\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -132,14 +132,14 @@
         }
       }
     },
-    "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\TAS.Tests.csproj": {
+    "C:\\Users\\phuvm\\source\\TAS-master\\TAS.Tests\\TAS.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\TAS.Tests.csproj",
+        "projectUniqueName": "C:\\Users\\phuvm\\source\\TAS-master\\TAS.Tests\\TAS.Tests.csproj",
         "projectName": "TAS.Tests",
-        "projectPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\TAS.Tests.csproj",
+        "projectPath": "C:\\Users\\phuvm\\source\\TAS-master\\TAS.Tests\\TAS.Tests.csproj",
         "packagesPath": "C:\\Users\\phuvm\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\obj\\",
+        "outputPath": "C:\\Users\\phuvm\\source\\TAS-master\\TAS.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -162,8 +162,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj": {
-                "projectPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj"
+              "C:\\Users\\phuvm\\source\\TAS-master\\TAS-master\\TAS.csproj": {
+                "projectPath": "C:\\Users\\phuvm\\source\\TAS-master\\TAS-master\\TAS.csproj"
               }
             }
           }

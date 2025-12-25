@@ -20,7 +20,7 @@ namespace TAS.Controllers
 		[Breadcrumb("key_orderinfo")]
 		public IActionResult Order()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_orderinfo");
+			ViewData["Title"] = _common.GetValueByKey("key_orderinfo");			
 			return View();
 		}
 

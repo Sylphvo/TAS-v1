@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["Title"] = "Cập nhật số liệu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="RubberIntake-page">
+    <div class="page-header">
+        <div class="page-block">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                    <div class="page-header-title">
+                        <h5>@ViewData["Title"]</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card table-card">
+                <div class="card-body">
+                    <!-- ========================================
+                         TOOLBAR
+                    ======================================== -->
+                    <div class="datatable-top">
+                        <!-- Left side: Filters -->
+                        <div class="button_filter">
+                            <div class="divboxOrder">
+                                <label>Đại lý:</label>
+                                <select id="cboAgent" class="form-control form-control-sm">
+                                    <option value="">-- Tất cả --</option>
+                                    @if (ViewBag.ComboAgent != null)
+                                    {
+                                        @foreach (var item in ViewBag.ComboAgent)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="divboxOrder">
+                                <label>Nhà vườn:</label>
+                                <select id="cboFarm" class="form-control form-control-sm">
+                                    <option value="">-- Tất cả --</option>
+                                    @if (ViewBag.ComboFarmCode != null)
+                                    {
+                                        @foreach (var item in ViewBag.ComboFarmCode)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="divboxOrder">
+                                <label>Đơn hàng:</label>
+                                <select id="cboOrder" class="form-control form-control-sm">
+                                    <option value="">-- Tất cả --</option>
+                                    @if (ViewBag.ComboOrder != null)
+                                    {
+                                        @foreach (var item in ViewBag.ComboOrder)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="divboxOrder">
+                                <label>Trạng thái:</label>
+                                <select id="cboStatus" class="form-control form-control-sm">
+                                    <option value="">-- Tất cả --</option>
+                                    <option value="0">Chưa duyệt</option>
+                                    <option value="1">Chờ xử lý</option>
+                                    <option value="2">Đã vào hồ</option>
+                                    <option value="3">Hoàn thành</option>
+                                </select>
+                            </div>
+
+                            <div class="divboxOrder">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="loadData()">
+                                    <i class="fas fa-search"></i> Tìm kiếm
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearFilter()">
+                                    <i class="fas fa-eraser"></i> Xóa lọc
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right side: Actions -->
+                        <div class="datatable-actions">
+                            <button type="button" class="btn btn-success btn-sm" onclick="addNewRow()">
+                                <i class="fas fa-plus"></i> Thêm mới
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm" onclick="saveAll()">
+                                <i class="fas fa-save"></i> Lưu tất cả
+                            </button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="approveAll()">
+                                <i class="fas fa-check"></i> Duyệt tất cả
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelected()">
+                                <i class="fas fa-trash"></i> Xóa đã chọn
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="importExcel()">
+                                <i class="fas fa-file-import"></i> Import Excel
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="exportExcel()">
+                                <i class="fas fa-file-export"></i> Export Excel
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="reloadPage()">
+                                <i class="fas fa-sync-alt"></i> Reload
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ========================================
+                         AG-GRID TABLE
+                    ======================================== -->
+                    <div id="myGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
+
+                    <!-- ========================================
+                         HIDDEN FILE INPUT
+                    ======================================== -->
+                    <input type="file" id="fileImport" accept=".xlsx,.xls" style="display:none;" onchange="handleFileImport(event)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================
+     SCRIPTS
+======================================== -->
+@section Scripts {
+    <!-- AG Grid -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+
+    <!-- SheetJS for Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="~/Contents/js/RubberIntake.js"></script>
+}
+
+@section Styles {
+    <!-- AG Grid CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-grid.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-theme-alpine.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/Contents/css/RubberIntake.css" />
+}

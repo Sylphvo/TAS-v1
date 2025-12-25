@@ -1,9 +1,9 @@
-﻿@using TAS.DTOs;
+@using TAS.DTOs;
 @model UserAccountDto
 @{
     ViewData["Title"] = "Login";
     Layout = "~/Views/Shared/_Layout_Auth.cshtml";
-    var returnUrl = (string?)ViewData["ReturnUrl"];
+    var returnUrl = ViewBag.ReturnUrl;
 }
 @section Style {
     <link rel="stylesheet" href="../Contents/css/Account/Account.css">
@@ -18,30 +18,34 @@
                         <a href="#"><img src="../Logo/LogoBlack.png" alt="img" width="150"></a>
                     </div>
                     <h4 class="text-center f-w-500 mb-3" data-i18n="key_loginemail"></h4>
-                    <form asp-action="Login" method="post">
-                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <form id="loginForm" asp-action="Login" asp-controller="Account" method="post">
                         @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
                         <div class="mb-3">
                             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                            <input type="text" class="form-control" name="UserName" id="floatingInput"
-                                placeholder="UserName" required>
+                            <input type="text" class="form-control" name="UserName" id="username"
+                                   placeholder="UserName" required>
                         </div>
                         <div class="mb-3">
-                            <input type="password" class="form-control" name="Password" id="floatingInput1"
-                                placeholder="Mật khẩu" required>
+                            <input type="password" class="form-control" name="Password" id="password"
+                                   placeholder="Mật khẩu" required>
                         </div>
-                        <div class="d-flex mt-1 justify-content-end align-items-center">
+                        <div class="d-flex mt-1 justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input input-primary" type="checkbox" id="rememberMe" checked="">
+                                <label class="form-check-label text-muted" for="rememberMe">Remember me?</label>
+                            </div>
                             <h6 class="text-secondary f-w-400 mb-0">
-                                <a href="forgot-password-v1.html" data-i18n="key_quenmatkhau"></a>
+                                <a href="#">Forgot Password?</a>
                             </h6>
                         </div>
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary" data-i18n="key_login"></button>
+                            <button type="submit" class="btn btn-primary" data-i18n="key_login" id="btnLogin"></button>
                         </div>
                         <div class="d-flex justify-content-between align-items-end mt-4">
                             <h6 class="f-w-500 mb-0" data-i18n="key_chuacotaikhoan"></h6>
                             <a asp-controller="Account" asp-action="Register" class="link-primary"
-                                data-i18n="key_taotaikhoan"></a>
+                               data-i18n="key_taotaikhoan"></a>
                         </div>
                     </form>
                 </div>
@@ -49,3 +53,18 @@
         </div>
     </div>
 </div>
+<!-- ========================================
+     SCRIPTS
+======================================== -->
+@section Scripts {
+    <!-- Custom JS -->
+    <script src="~/Contents/js/Account.js"></script>
+}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Initialize Login Page
+    $(document).ready(function() {
+        initLoginPage();
+    });
+</script>

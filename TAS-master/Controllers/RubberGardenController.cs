@@ -17,7 +17,7 @@ namespace TAS.Controllers
 		[Breadcrumb("key_capnhatsolieu")]
 		public IActionResult RubberGarden()
 		{
-			//ViewBag.ComboAgent = await _common.ComboAgent();
+			ViewData["Title"] = _common.GetValueByKey("key_capnhatsolieu");
 			ViewBag.ComboFarmCode = _common.ComboFarmCode();
 			ViewBag.ComboOrder = _common.ComboOrderCode();
 			return View();

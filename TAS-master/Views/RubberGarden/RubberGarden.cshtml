@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Cập nhật Số liệu";    
+    // var ListFarmCode = ViewBag.ComboFarmCode;
 }
 @section Style {
     <link rel="stylesheet" href="../Contents/css/RubberGarden/RubberGarden.css">
@@ -89,8 +89,13 @@
         </div>
     </div>
 </div>
-<partial name="~/Views/Shared/Modal/_PopupAddNewRubber.cshtml" />
-<partial name="~/Views/Shared/Modal/_PopupAddNewOrder.cshtml" />
+<partial name="~/Views/Shared/Modal/_PopupAddNewRubber.cshtml" 
+        view-data='@(new ViewDataDictionary(ViewData) {
+             ["PopupTitle"] = "Thêm mới Rubber",
+             ["Mode"] = "create",
+             ["ListFarmCode"] = @Json.Serialize(ViewBag.ComboFarmCode) 
+         })' />
+@* <partial name="~/Views/Shared/Modal/_PopupAddNewOrder.cshtml" />  *@
 @section Scripts {
     <script type="text/javascript" src="~/Contents/js/RubberGarden/RubberGarden.js"></script>
     <script>

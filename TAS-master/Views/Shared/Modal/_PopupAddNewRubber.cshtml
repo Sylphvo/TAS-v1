@@ -1,9 +1,4 @@
-﻿@{
-    var ListAgent = ViewBag.ComboAgent;
-    var ListFarmCode = ViewBag.ComboFarmCode;
-
-}
-<div class="modal fade bd-example-modal-lg" id="AddNewRubber" tabindex="-1" aria-hidden="true">
+﻿<div class="modal fade bd-example-modal-lg" id="AddNewRubber" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -27,15 +22,15 @@
                                 <div class="mb-3 pe-2">
                                     <label class="form-label">Tên nhà vườn: *</label>
                                     <select id="ListCboFarmerName" class="form-select form-control cboSelect2NoSearch">
-                                        @{
-                                            if (ListFarmCode != null)
+                                        @* @{
+                                            if (ViewData.ListFarmCode != null)
                                             {
-                                                foreach (var item in ListFarmCode)
+                                                foreach (var item in ViewBag.ListFarmCode)
                                                 {
-                                                    <option value="@item.Value">@item.Name</option>
+                                                    <option value="@item.value">@item.text</option>
                                                 }
                                             }
-                                        }
+                                        } *@
                                     </select>
                                 </div>
                             </div>
@@ -65,3 +60,6 @@
         </div>
     </div>
 </div>
+<script>
+    var  ListFarmCodeadd = @ViewData["ListFarmCode"];
+</script>

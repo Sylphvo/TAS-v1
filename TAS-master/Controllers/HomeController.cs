@@ -11,7 +11,6 @@ namespace TAS.Controllers
 
 		}
 		// GET: Products
-		[Authorize]
 		public IActionResult Index()
 		{
 			return View();

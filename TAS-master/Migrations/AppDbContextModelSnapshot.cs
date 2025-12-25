@@ -3,7 +3,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TAS.Data;
 
@@ -12,11 +11,9 @@ using TAS.Data;
 namespace TAS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251223020817_InitData")]
-    partial class InitData
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,36 +162,38 @@ namespace TAS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AgentId"));
 
                     b.Property<string>("AgentAddress")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("AgentCode")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("AgentName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("IsActive")
+                    b.Property<string>("AgentPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("OwnerName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime>("RegisterDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("SYSDATETIME()");
 
                     b.Property<string>("RegisterPerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("TaxCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -207,12 +206,451 @@ namespace TAS.Migrations
 
                     b.HasKey("AgentId");
 
-                    b.HasIndex("AgentCode");
+                    b.HasIndex("AgentCode")
+                        .IsUnique();
 
                     b.ToTable("RubberAgent", (string)null);
                 });
 
-            modelBuilder.Entity("TAS.Helpers.UserAccountIdentity", b =>
+            modelBuilder.Entity("TAS.Models.RubberFarm", b =>
+                {
+                    b.Property<long>("FarmId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("FarmId"));
+
+                    b.Property<string>("AgentCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FarmAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FarmCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FarmPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("FarmerName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Polygon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RegisterDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSDATETIME()");
+
+                    b.Property<string>("RegisterPerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatePerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("FarmId");
+
+                    b.HasIndex("AgentCode");
+
+                    b.HasIndex("FarmCode")
+                        .IsUnique();
+
+                    b.ToTable("RubberFarm", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberIntake", b =>
+                {
+                    b.Property<long>("IntakeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("IntakeId"));
+
+                    b.Property<string>("FarmCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FarmerName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal>("FinishedProductKg")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("IntakeCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("RegisterDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSDATETIME()");
+
+                    b.Property<string>("RegisterPerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("RubberKg")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<byte>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
+
+                    b.Property<decimal?>("TSCPercent")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatePerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IntakeId");
+
+                    b.HasIndex("FarmCode");
+
+                    b.ToTable("RubberIntake", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberOrder", b =>
+                {
+                    b.Property<long>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderId"));
+
+                    b.Property<string>("AgentCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BuyerCompany")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("BuyerName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("ExpectedShipDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProductType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("RegisterDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSDATETIME()");
+
+                    b.Property<string>("RegisterPerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
+
+                    b.Property<decimal>("TotalNetKg")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(0.00m);
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatePerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("OrderId");
+
+                    b.HasIndex("AgentCode");
+
+                    b.HasIndex("OrderCode")
+                        .IsUnique();
+
+                    b.ToTable("RubberOrder", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberOrderPond", b =>
+                {
+                    b.Property<long>("OrderPondId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderPondId"));
+
+                    b.Property<decimal>("AllocatedKg")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("BatchNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("LoadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PondId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("OrderPondId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PondId");
+
+                    b.ToTable("RubberOrderPond", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPallet", b =>
+                {
+                    b.Property<long>("PalletId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PalletId"));
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PalletCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PalletName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("PalletNo")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("PondId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("RegisterDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSDATETIME()");
+
+                    b.Property<string>("RegisterPerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("StandardWeightKg")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(2325.00m);
+
+                    b.Property<byte>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatePerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("PalletId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PalletCode")
+                        .IsUnique();
+
+                    b.HasIndex("PondId");
+
+                    b.ToTable("RubberPallets", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPond", b =>
+                {
+                    b.Property<long>("PondId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PondId"));
+
+                    b.Property<string>("AgentCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("CapacityKg")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(50000.00m);
+
+                    b.Property<decimal>("CurrentNetKg")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(0.00m);
+
+                    b.Property<decimal>("DailyCapacityKg")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(5000.00m);
+
+                    b.Property<string>("PondCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PondName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("RegisterDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSDATETIME()");
+
+                    b.Property<string>("RegisterPerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<byte>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatePerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("PondId");
+
+                    b.HasIndex("AgentCode");
+
+                    b.HasIndex("PondCode")
+                        .IsUnique();
+
+                    b.ToTable("RubberPond", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPondIntake", b =>
+                {
+                    b.Property<long>("PondIntakeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PondIntakeId"));
+
+                    b.Property<long>("IntakeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PondId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("PouredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PouredKg")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("PondIntakeId");
+
+                    b.HasIndex("IntakeId");
+
+                    b.HasIndex("PondId");
+
+                    b.ToTable("RubberPondIntake", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberType", b =>
+                {
+                    b.Property<long>("TypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TypeId"));
+
+                    b.Property<string>("TypeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatePerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("TypeId");
+
+                    b.HasIndex("TypeCode")
+                        .IsUnique();
+
+                    b.ToTable("RubberType", (string)null);
+                });
+
+            modelBuilder.Entity("TAS.Models.UserAccountIdentity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -229,7 +667,8 @@ namespace TAS.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -288,7 +727,8 @@ namespace TAS.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -315,461 +755,6 @@ namespace TAS.Migrations
                     b.ToTable("USER_ACCOUNT", (string)null);
                 });
 
-            modelBuilder.Entity("TAS.Models.RubberFarmDb", b =>
-                {
-                    b.Property<long>("FarmId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("FarmId"));
-
-                    b.Property<string>("AgentCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Certificates")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("FarmAddress")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("FarmCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("FarmPhone")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("FarmerName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Polygon")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RegisterDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<string>("RegisterPerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal?>("RubberAreaHa")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<decimal?>("TotalAreaHa")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<decimal?>("TotalExploit")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatePerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("FarmId");
-
-                    b.HasIndex("AgentCode");
-
-                    b.HasIndex("FarmCode");
-
-                    b.ToTable("RubberFarm", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberIntakeDb", b =>
-                {
-                    b.Property<long>("IntakeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("IntakeId"));
-
-                    b.Property<decimal?>("CentrifugeProductKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<decimal?>("DRCPercent")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<string>("FarmCode")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("FarmerName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<decimal?>("FinishedProductKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<string>("OrderCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("RegisterDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<string>("RegisterPerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal?>("RubberKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<int?>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("TSCPercent")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatePerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("IntakeId");
-
-                    b.HasIndex("FarmCode");
-
-                    b.HasIndex("OrderCode");
-
-                    b.ToTable("RubberIntake", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberOrderDb", b =>
-                {
-                    b.Property<long>("OrderId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderId"));
-
-                    b.Property<string>("AgentCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("BuyerCompany")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("BuyerName")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("ContractNo")
-                        .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
-
-                    b.Property<string>("DeliveryAddress")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Destination")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("ExpectedShipDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("OrderCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ProductType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("RegisterDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<string>("RegisterPerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("ShippedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<decimal?>("TargetDRC")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal?>("TargetTSC")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal?>("TotalNetKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<decimal?>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatePerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("OrderId");
-
-                    b.HasIndex("AgentCode");
-
-                    b.HasIndex("OrderCode");
-
-                    b.HasIndex("OrderDate");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("RubberOrder", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberOrderPondDb", b =>
-                {
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("PondId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal?>("AllocatedKg")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(12,3)")
-                        .HasDefaultValue(0m);
-
-                    b.Property<string>("BatchNo")
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
-                    b.Property<DateTime?>("LoadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("OrderId", "PondId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PondId");
-
-                    b.ToTable("RubberOrderPond", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberPalletDb", b =>
-                {
-                    b.Property<long>("PalletId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PalletId"));
-
-                    b.Property<int>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PalletCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PalletName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PalletNo")
-                        .HasColumnType("int");
-
-                    b.Property<long?>("PondId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("RegisterDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<string>("RegisterPerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatePerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("WeightKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.HasKey("PalletId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PalletCode");
-
-                    b.HasIndex("PondId");
-
-                    b.ToTable("RubberPallets", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberPondDb", b =>
-                {
-                    b.Property<long>("PondId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PondId"));
-
-                    b.Property<string>("AgentCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal?>("CapacityKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<decimal?>("CurrentNetKg")
-                        .HasColumnType("decimal(12,3)");
-
-                    b.Property<DateTime?>("LastCleanedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("PondCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PondName")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<DateTime?>("RegisterDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<string>("RegisterPerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatePerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("PondId");
-
-                    b.HasIndex("AgentCode");
-
-                    b.HasIndex("PondCode");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("RubberPond", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberPondIntakeDb", b =>
-                {
-                    b.Property<long>("PondId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("IntakeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("PouredAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<decimal?>("PouredKg")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(12,3)")
-                        .HasDefaultValue(0m);
-
-                    b.HasKey("PondId", "IntakeId");
-
-                    b.HasIndex("IntakeId");
-
-                    b.HasIndex("PondId");
-
-                    b.ToTable("RubberPondIntake", (string)null);
-                });
-
-            modelBuilder.Entity("TAS.Models.RubberType", b =>
-                {
-                    b.Property<long>("TypeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TypeId"));
-
-                    b.Property<string>("TypeCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("TypeName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatePerson")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("TypeId");
-
-                    b.HasIndex("TypeCode");
-
-                    b.ToTable("RubberType", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -781,7 +766,7 @@ namespace TAS.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("TAS.Helpers.UserAccountIdentity", null)
+                    b.HasOne("TAS.Models.UserAccountIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -790,7 +775,7 @@ namespace TAS.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("TAS.Helpers.UserAccountIdentity", null)
+                    b.HasOne("TAS.Models.UserAccountIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -805,7 +790,7 @@ namespace TAS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TAS.Helpers.UserAccountIdentity", null)
+                    b.HasOne("TAS.Models.UserAccountIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -814,19 +799,148 @@ namespace TAS.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("TAS.Helpers.UserAccountIdentity", null)
+                    b.HasOne("TAS.Models.UserAccountIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TAS.Models.RubberPalletDb", b =>
+            modelBuilder.Entity("TAS.Models.RubberFarm", b =>
                 {
-                    b.HasOne("TAS.Models.RubberPondDb", null)
-                        .WithMany()
+                    b.HasOne("TAS.Helpers.RubberAgent", "Agent")
+                        .WithMany("Farms")
+                        .HasForeignKey("AgentCode")
+                        .HasPrincipalKey("AgentCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberIntake", b =>
+                {
+                    b.HasOne("TAS.Models.RubberFarm", "Farm")
+                        .WithMany("Intakes")
+                        .HasForeignKey("FarmCode")
+                        .HasPrincipalKey("FarmCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Farm");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberOrder", b =>
+                {
+                    b.HasOne("TAS.Helpers.RubberAgent", "Agent")
+                        .WithMany("Orders")
+                        .HasForeignKey("AgentCode")
+                        .HasPrincipalKey("AgentCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberOrderPond", b =>
+                {
+                    b.HasOne("TAS.Models.RubberOrder", "Order")
+                        .WithMany("OrderPonds")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TAS.Models.RubberPond", "Pond")
+                        .WithMany("OrderPonds")
                         .HasForeignKey("PondId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Pond");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPallet", b =>
+                {
+                    b.HasOne("TAS.Models.RubberOrder", "Order")
+                        .WithMany("Pallets")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TAS.Models.RubberPond", "Pond")
+                        .WithMany("Pallets")
+                        .HasForeignKey("PondId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Pond");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPond", b =>
+                {
+                    b.HasOne("TAS.Helpers.RubberAgent", "Agent")
+                        .WithMany("Ponds")
+                        .HasForeignKey("AgentCode")
+                        .HasPrincipalKey("AgentCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPondIntake", b =>
+                {
+                    b.HasOne("TAS.Models.RubberIntake", "Intake")
+                        .WithMany("PondIntakes")
+                        .HasForeignKey("IntakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TAS.Models.RubberPond", "Pond")
+                        .WithMany("PondIntakes")
+                        .HasForeignKey("PondId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Intake");
+
+                    b.Navigation("Pond");
+                });
+
+            modelBuilder.Entity("TAS.Helpers.RubberAgent", b =>
+                {
+                    b.Navigation("Farms");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("Ponds");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberFarm", b =>
+                {
+                    b.Navigation("Intakes");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberIntake", b =>
+                {
+                    b.Navigation("PondIntakes");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberOrder", b =>
+                {
+                    b.Navigation("OrderPonds");
+
+                    b.Navigation("Pallets");
+                });
+
+            modelBuilder.Entity("TAS.Models.RubberPond", b =>
+                {
+                    b.Navigation("OrderPonds");
+
+                    b.Navigation("Pallets");
+
+                    b.Navigation("PondIntakes");
                 });
 #pragma warning restore 612, 618
         }

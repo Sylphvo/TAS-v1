@@ -41,6 +41,12 @@ namespace TAS.TagHelpers
 			using var conn = new SqlConnection(_connectionString);
 			return conn.Execute(sql, param);
 		}
+		// Execute (INSERT, UPDATE, DELETE)
+		public async Task<int> ExecuteAsync(string sql, object? param = null)
+		{
+			using var conn = new SqlConnection(_connectionString);
+			return await conn.ExecuteAsync(sql, param);
+		}
 
 		// Query trả về chuỗi
 		public string QueryString(string sql, object? param = null, int? timeout = null)

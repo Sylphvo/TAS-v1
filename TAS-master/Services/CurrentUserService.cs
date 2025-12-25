@@ -1,18 +1,82 @@
 ﻿using System.Security.Claims;
-using TAS.Repository;
 
-namespace TAS.Services
+namespace TAS.Repository
 {
-	public sealed class CurrentUserService : ICurrentUser
+	// ========================================
+	// IMPLEMENTATION
+	// ========================================
+	public class CurrentUser : ICurrentUser
 	{
-		private readonly IHttpContextAccessor _acc;
-		public CurrentUserService(IHttpContextAccessor acc) => _acc = acc;
+		private readonly IHttpContextAccessor _httpContextAccessor;
 
-		ClaimsPrincipal? U => _acc.HttpContext?.User;
+		public CurrentUser(IHttpContextAccessor httpContextAccessor)
+		{
+			_httpContextAccessor = httpContextAccessor;
+		}
 
-		public string? Id => U?.FindFirstValue(ClaimTypes.NameIdentifier);
-		public string? Name => U?.Identity?.Name ?? U?.FindFirstValue(ClaimTypes.Name);
-		public string? FullName => U?.FindFirstValue("FullName");
-		public bool IsInRole(string role) => U?.IsInRole(role) ?? false;
+		// User ID
+		public Guid? UserId
+		{
+			get
+			{
+				var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+				if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
+				{
+					return userId;
+				}
+				return null;
+			}
+		}
+
+		// Username
+		public string Name
+		{
+			get
+			{
+				return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value
+					?? _httpContextAccessor.HttpContext?.User?.Identity?.Name
+					?? "SYSTEM";
+			}
+		}
+
+		// Email
+		public string Email
+		{
+			get
+			{
+				return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value
+					?? string.Empty;
+			}
+		}
+
+		// Full Name
+		public string FullName
+		{
+			get
+			{
+				return _httpContextAccessor.HttpContext?.User?.FindFirst("FullName")?.Value
+					?? Name;
+			}
+		}
+
+		// Is Authenticated
+		public bool IsAuthenticated
+		{
+			get
+			{
+				return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+			}
+		}
+
+		// Roles
+		public IEnumerable<string> Roles
+		{
+			get
+			{
+				return _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role)
+					.Select(c => c.Value)
+					?? Enumerable.Empty<string>();
+			}
+		}
 	}
 }
