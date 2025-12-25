@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TAS.Models;
+using TAS.DTOs;
 
 namespace TAS.Tests.PerformanceTests
 {
@@ -15,7 +16,7 @@ namespace TAS.Tests.PerformanceTests
     public class UserAccountPerformanceTests
     {
         private UserAccountModels? _userAccountModels;
-        private List<UserAccountRep>? _testUsers;
+        private List<UserAccountDto>? _testUsers;
 
         [GlobalSetup]
         public void Setup()
@@ -42,8 +43,8 @@ namespace TAS.Tests.PerformanceTests
         [Benchmark]
         public void AddOrUpdateUserAccount_Single()
         {
-            var user = new UserAccountRep
-            {
+            var user = new UserAccountDto
+			{
                 UserName = "perftest_user",
                 Email = "perftest@test.com",
                 FirstName = "Perf",
@@ -81,13 +82,13 @@ namespace TAS.Tests.PerformanceTests
             _userAccountModels!.ResetPassword(1, "NewPassword123!");
         }
 
-        private List<UserAccountRep> GenerateTestUsers(int count)
+        private List<UserAccountDto> GenerateTestUsers(int count)
         {
-            var users = new List<UserAccountRep>();
+            var users = new List<UserAccountDto>();
 
             for (int i = 0; i < count; i++)
             {
-                users.Add(new UserAccountRep
+                users.Add(new UserAccountDto
                 {
                     UserName = $"user_{i}",
                     Email = $"user{i}@test.com",

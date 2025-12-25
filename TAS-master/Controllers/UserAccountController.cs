@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using TAS.DTOs;
 using TAS.Helpers;
-using TAS.ViewModels;
-using TAS.Repository;
 using TAS.Models;
+using TAS.Repository;
+using TAS.ViewModels;
 
 namespace TAS.Controllers
 {
@@ -32,7 +33,7 @@ namespace TAS.Controllers
 		}
 		
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] UserAccount userAccount)
+		public JsonResult AddOrUpdate([FromBody] UserAccountDto userAccount)
 		{
 			int result = models.AddOrUpdateUserAccount(userAccount);
 			return Json(result);

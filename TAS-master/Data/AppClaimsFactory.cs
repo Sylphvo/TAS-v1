@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using TAS.DTOs;
 using TAS.Models;
 
 namespace TAS.Data
 {
-	public class AppClaimsFactory : UserClaimsPrincipalFactory<UserAccount, IdentityRole>
+	public class AppClaimsFactory : UserClaimsPrincipalFactory<UserAccountDto, IdentityRole>
 	{
-		public AppClaimsFactory(UserManager<UserAccount> um, RoleManager<IdentityRole> rm, IOptions<IdentityOptions> opt)
+		public AppClaimsFactory(UserManager<UserAccountDto> um, RoleManager<IdentityRole> rm, IOptions<IdentityOptions> opt)
 			: base(um, rm, opt) { }
 
-		protected override async Task<ClaimsIdentity> GenerateClaimsAsync(UserAccount user)
+		protected override async Task<ClaimsIdentity> GenerateClaimsAsync(UserAccountDto user)
 		{
 			var id = await base.GenerateClaimsAsync(user);
 			id.AddClaim(new Claim(ClaimTypes.GivenName, user.FirstName ?? ""));

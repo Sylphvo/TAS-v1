@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TAS.Data;
+using TAS.DTOs;
 using TAS.Models;
 
 namespace TAS.Controllers
@@ -36,7 +37,7 @@ namespace TAS.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(UserAccountRequest model)
+        public async Task<IActionResult> Login(UserAccountDto model)
         {
             try
             {

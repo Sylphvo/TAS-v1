@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TAS.Models;
+using TAS.Models.DTOs;
 using TAS.ViewModels;
 
 namespace TAS.Controllers
@@ -32,21 +33,21 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] RubberIntakeRequest rubberIntakeRequest)
+		public JsonResult AddOrUpdate([FromBody] RubberIntakeDto rubberIntakeRequest)
 		{
 			int result = _models.AddOrUpdateRubber(rubberIntakeRequest);
 			return Json(result);
 		}
 
 		[HttpPost]
-		public JsonResult AddOrUpdateFull([FromBody] List<RubberIntakeRequest> lstRubberIntake)
+		public JsonResult AddOrUpdateFull([FromBody] List<RubberIntakeDto> lstRubberIntake)
 		{
 			int result = _models.AddOrUpdateRubberFull(lstRubberIntake);
 			return Json(1);
 		}
 
 		[HttpPost]
-		public JsonResult ImportDataLstData([FromBody] List<RubberIntakeRequest> rowsData)
+		public JsonResult ImportDataLstData([FromBody] List<RubberIntakeDto> rowsData)
 		{
 			int result = _models.ImportListData(rowsData);
 			return Json(result);

@@ -1,0 +1,14 @@
+﻿git stash -u
+git rm -r --cached .
+git add .
+git commit -m "chore: stop tracking bin/obj"
+git stash pop
+
+---Nếu không ngại commit luôn (nhanh nhất)
+
+bash
+Sao chép mã
+git rm -r --cached .
+git add .
+git commit -m "chore: stop tracking bin/obj"
+git push

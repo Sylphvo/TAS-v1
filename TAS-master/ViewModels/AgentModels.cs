@@ -72,7 +72,7 @@ namespace TAS.ViewModels
 					AgentName = rubberAgent.AgentName,
 					OwnerName = rubberAgent.OwnerName,
 					AgentAddress = rubberAgent.AgentAddress,
-					TaxCode = rubberAgent.TaxCode,
+					//TaxCode = rubberAgent.TaxCode,
 					IsActive = rubberAgent.IsActive,
 					UpdatePerson = _userManage.Name,
 					AgentId = rubberAgent.AgentId

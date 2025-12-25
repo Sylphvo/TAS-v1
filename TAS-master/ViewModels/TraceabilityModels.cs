@@ -1,4 +1,5 @@
 ﻿using TAS.Models;
+using TAS.Models.DTOs;
 using TAS.TagHelpers;
 
 namespace TAS.ViewModels
@@ -11,7 +12,7 @@ namespace TAS.ViewModels
 
 		}
 		// Model
-		public async Task<List<RubberOrderReuqest>> GetTraceabilityAsync(CancellationToken ct = default)
+		public async Task<List<RubberOrderDto>> GetTraceabilityAsync(CancellationToken ct = default)
 		{
 			var sql = @"
 				-- Tạo bảng tạm với cấu trúc rõ ràng
@@ -113,10 +114,10 @@ namespace TAS.ViewModels
 				ORDER BY OrderCode DESC, AgentCode, CASE WHEN FarmCode IS NULL THEN 0 ELSE 1 END
 				DROP TABLE #TempOrder;
 			";
-			return await dbHelper.QueryAsync<RubberOrder>(sql);
+			return await dbHelper.QueryAsync<RubberOrderDto>(sql);
 		}
 		#region Pallet
-		public async Task<List<RubberPallet>> GetPallets(int orderId)
+		public async Task<List<RubberPalletDto>> GetPallets(int orderId)
 		{
 			var sql = @"
 				SELECT 
@@ -131,7 +132,7 @@ namespace TAS.ViewModels
 				LEFT JOIN RubberOrderSummary rubOrder ON Pallet.OrderId = rubOrder.OrderId
 				WHERE Pallet.OrderId = '" + orderId + @"'
 			";
-			return await dbHelper.QueryAsync<RubberPallet>(sql);
+			return await dbHelper.QueryAsync<RubberPalletDto>(sql);
 		}
 		#endregion
 	}

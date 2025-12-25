@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using TAS.Models;
+using TAS.Models.DTOs;
 using TAS.Repository;
 using TAS.TagHelpers;
 
@@ -17,7 +18,7 @@ namespace TAS.ViewModels
 			_logger = logger;
 		}
 		// Model
-		public async Task<List<RubberIntakeRequest>> GetRubberFarmAsync()
+		public async Task<List<RubberIntakeDto>> GetRubberFarmAsync()
 		{
 			var sql = @"
 				SELECT 
@@ -38,9 +39,9 @@ namespace TAS.ViewModels
 				LEFT JOIN RubberFarm B ON B.FarmCode = A.FarmCode
 				LEFT JOIN RubberAgent C ON C.AgentCode = B.AgentCode
 			";
-			return await dbHelper.QueryAsync<RubberIntakeRequest>(sql);
+			return await dbHelper.QueryAsync<RubberIntakeDto>(sql);
 		}
-		public int AddOrUpdateRubber(RubberIntakeRequest rubberIntakeRequest)
+		public int AddOrUpdateRubber(RubberIntakeDto rubberIntakeRequest)
 		{
 			try
 			{
@@ -80,17 +81,17 @@ namespace TAS.ViewModels
 				// With this line:
 				var lstResult = dbHelper.Execute(sql, new
 				{
-					FarmCode = rubberIntakeRequest.farmCode,
-					FarmerName = rubberIntakeRequest.farmerName,
-					RubberKg = rubberIntakeRequest.rubberKg,
-					TSCPercent = rubberIntakeRequest.tscPercent,
-					DRCPercent = rubberIntakeRequest.drcPercent,
-					FinishedProductKg = rubberIntakeRequest.finishedProductKg,   // 4.62m
-					CentrifugeProductKg = rubberIntakeRequest.centrifugeProductKg, // 6.93m
-					Status = rubberIntakeRequest.status ?? 0,
+					//FarmCode = rubberIntakeRequest.farmCode,
+					//FarmerName = rubberIntakeRequest.farmerName,
+					//RubberKg = rubberIntakeRequest.rubberKg,
+					//TSCPercent = rubberIntakeRequest.tscPercent,
+					//DRCPercent = rubberIntakeRequest.drcPercent,
+					//FinishedProductKg = rubberIntakeRequest.finishedProductKg,   // 4.62m
+					//CentrifugeProductKg = rubberIntakeRequest.centrifugeProductKg, // 6.93m
+					//Status = rubberIntakeRequest.status ?? 0,
 					UpdatePerson = _userManage.Name,
 					RegisterPerson = _userManage.Name,
-					IntakeId = rubberIntakeRequest.intakeId
+					//IntakeId = rubberIntakeRequest.intakeId
 				});
 				return lstResult;
 			}
@@ -100,7 +101,7 @@ namespace TAS.ViewModels
 				return 0;
 			}
 		}
-		public int ImportListData(List<RubberIntakeRequest> lstRubberIntakeRequest)
+		public int ImportListData(List<RubberIntakeDto> lstRubberIntakeRequest)
 		{
 			try
 			{
@@ -115,13 +116,13 @@ namespace TAS.ViewModels
 				dbHelper.Execute(sql,
 				lstRubberIntakeRequest.Select(x => new
 				{
-					FarmCode = x.farmCode,
-					FarmerName = x.farmerName,
-					RubberKg = x.rubberKg ?? 0m,
-					TSCPercent = x.tscPercent ?? 0m,
-					DRCPercent = x.drcPercent ?? 0m,
-					FinishedProductKg = x.finishedProductKg ?? 0m,
-					CentrifugeProductKg = x.centrifugeProductKg ?? 0m,
+					//FarmCode = x.farmCode,
+					//FarmerName = x.farmerName,
+					//RubberKg = x.rubberKg ?? 0m,
+					//TSCPercent = x.tscPercent ?? 0m,
+					//DRCPercent = x.drcPercent ?? 0m,
+					//FinishedProductKg = x.finishedProductKg ?? 0m,
+					//CentrifugeProductKg = x.centrifugeProductKg ?? 0m,
 					Status = 0,
 					RegisterPerson = _userManage.Name
 				}));
@@ -134,7 +135,7 @@ namespace TAS.ViewModels
 				return 0;
 			}
 		}
-		public int AddOrUpdateRubberFull(List<RubberIntakeRequest> lstRubberIntakeRequest)
+		public int AddOrUpdateRubberFull(List<RubberIntakeDto> lstRubberIntakeRequest)
 		{
 			try
 			{
@@ -157,15 +158,15 @@ namespace TAS.ViewModels
 				dbHelper.Execute(sql,
 				lstRubberIntakeRequest.Select(x => new
 				{
-					IntakeId = x.intakeId,                  // QUAN TRỌNG
-					FarmCode = x.farmCode,
-					FarmerName = x.farmerName,
-					RubberKg = x.rubberKg ?? 0m,
-					TSCPercent = x.tscPercent ?? 0m,
-					DRCPercent = x.drcPercent ?? 0m,
-					FinishedProductKg = x.finishedProductKg ?? 0m,
-					CentrifugeProductKg = x.centrifugeProductKg ?? 0m,
-					Status = x.status ?? 0,
+					//IntakeId = x.intakeId,                  // QUAN TRỌNG
+					//FarmCode = x.farmCode,
+					//FarmerName = x.farmerName,
+					//RubberKg = x.rubberKg ?? 0m,
+					//TSCPercent = x.tscPercent ?? 0m,
+					//DRCPercent = x.drcPercent ?? 0m,
+					//FinishedProductKg = x.finishedProductKg ?? 0m,
+					//CentrifugeProductKg = x.centrifugeProductKg ?? 0m,
+					//Status = x.status ?? 0,
 					UpdatePerson = _userManage.Name
 				}));
 				return 1;

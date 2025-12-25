@@ -10397,23 +10397,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Cilse\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\phuvm\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Cilse\\source\\TAS-v1\\TAS.Tests\\TAS.Tests.csproj",
+      "projectUniqueName": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\TAS.Tests.csproj",
       "projectName": "TAS.Tests",
-      "projectPath": "C:\\Users\\Cilse\\source\\TAS-v1\\TAS.Tests\\TAS.Tests.csproj",
-      "packagesPath": "C:\\Users\\Cilse\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Cilse\\source\\TAS-v1\\TAS.Tests\\obj\\",
+      "projectPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\TAS.Tests.csproj",
+      "packagesPath": "C:\\Users\\phuvm\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\Cilse\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\phuvm\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -10422,14 +10424,15 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://www.myget.org/F/glimpseprototype/api/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\Cilse\\source\\TAS-v1\\TAS-master\\TAS.csproj": {
-              "projectPath": "C:\\Users\\Cilse\\source\\TAS-v1\\TAS-master\\TAS.csproj"
+            "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj": {
+              "projectPath": "C:\\Users\\phuvm\\Downloads\\TAS-master\\TAS-master\\TAS.csproj"
             }
           }
         }
@@ -10444,7 +10447,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -10521,7 +10524,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

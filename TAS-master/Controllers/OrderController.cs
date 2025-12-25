@@ -79,7 +79,7 @@ namespace TAS.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult ImportDataLstData([FromBody] List<RubberOrder> rubberOrders)
+		public JsonResult ImportDataLstData([FromBody] List<RubberOrderDto> rubberOrders)
 		{
 			int result = models.ImportRubberOrders(rubberOrders);
 			return Json(result);

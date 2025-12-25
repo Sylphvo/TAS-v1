@@ -1,3 +1,4 @@
+using TAS.DTOs;
 using TAS.Helpers;
 using TAS.Models;
 using TAS.Repository;
@@ -18,7 +19,7 @@ namespace TAS.ViewModels
 		}
 
 		// Model
-		public async Task<List<UserAccount>> GetUserAccountAsync()
+		public async Task<List<UserAccountDto>> GetUserAccountAsync()
 		{
 			var sql = @"
 				SELECT 
@@ -42,10 +43,10 @@ namespace TAS.ViewModels
 					UpdatedAtUtc = CONVERT(VARCHAR, ISNULL(UpdatedAtUtc, CreatedAtUtc), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdatedAtUtc, CreatedAtUtc), 108)
 				FROM dbo.USER_ACCOUNT
 				";
-			return await dbHelper.QueryAsync<UserAccount>(sql);
+			return await dbHelper.QueryAsync<UserAccountDto>(sql);
 		}
 
-		public int AddOrUpdateUserAccount(UserAccount userAccount)
+		public int AddOrUpdateUserAccount(UserAccountDto userAccount)
 		{
 			try
 			{

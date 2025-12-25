@@ -1,13 +1,14 @@
-using Xunit;
-using Moq;
 using Microsoft.Extensions.Logging;
-using TAS.ViewModels;
-using TAS.Repository;
-using TAS.Helpers;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TAS.DTOs;
+using TAS.Helpers;
 using TAS.Models;
+using TAS.Repository;
+using TAS.ViewModels;
+using Xunit;
 
 namespace TAS.Tests.UnitTests
 {
@@ -38,7 +39,7 @@ namespace TAS.Tests.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.IsType<List<UserAccountRep>>(result);
+            Assert.IsType<List<UserAccountDto>>(result);
         }
 
         [Fact]
@@ -62,8 +63,8 @@ namespace TAS.Tests.UnitTests
         public void AddOrUpdateUserAccount_WithValidData_ShouldReturnSuccess()
         {
             // Arrange
-            var newUser = new UserAccountRep
-            {
+            var newUser = new UserAccountDto
+			{
                 Id = 0, // New user
                 FirstName = "Nguyen",
                 LastName = "Van A",
@@ -88,7 +89,7 @@ namespace TAS.Tests.UnitTests
         public void AddOrUpdateUserAccount_WithExistingUser_ShouldUpdate()
         {
             // Arrange
-            var existingUser = new UserAccountRep
+            var existingUser = new UserAccountDto
             {
                 Id = 1, // Existing user
                 FirstName = "Tran",
@@ -119,7 +120,7 @@ namespace TAS.Tests.UnitTests
         public void AddOrUpdateUserAccount_ShouldNormalizeUserName()
         {
             // Arrange
-            var user = new UserAccountRep
+            var user = new UserAccountDto
             {
                 UserName = "testuser",
                 Email = "test@example.com",
@@ -139,7 +140,7 @@ namespace TAS.Tests.UnitTests
         public void AddOrUpdateUserAccount_ShouldNormalizeEmail()
         {
             // Arrange
-            var user = new UserAccountRep
+            var user = new UserAccountDto
             {
                 UserName = "testuser",
                 Email = "Test@Example.Com",
@@ -271,7 +272,7 @@ namespace TAS.Tests.UnitTests
         public void AddOrUpdateUserAccount_OnException_ShouldLogError()
         {
             // Arrange
-            var invalidUser = new UserAccountRep(); // Missing required fields
+            var invalidUser = new UserAccountDto(); // Missing required fields
 
             // Act
             var result = _userAccountModels.AddOrUpdateUserAccount(invalidUser);
@@ -299,8 +300,8 @@ namespace TAS.Tests.UnitTests
         public void Validate_EmailFormat(string? email, bool expectedValid)
         {
             // Arrange
-            var user = new UserAccount
-            {
+            var user = new UserAccountDto
+			{
                 UserName = "testuser",
                 Email = email ?? "",
                 FirstName = "Test",

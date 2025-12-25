@@ -3,16 +3,17 @@ using TAS.Repository;
 using System;
 using System.Collections.Generic;
 using TAS.Models;
+using TAS.DTOs;
 
 namespace TAS.Tests.TestHelpers
 {
     public class UserAccountRepDataFactory
     {
-        private readonly Faker<UserAccountRep> _userFaker;
+        private readonly Faker<UserAccountDto> _userFaker;
 
         public UserAccountRepDataFactory()
         {
-            _userFaker = new Faker<UserAccountRep>()
+            _userFaker = new Faker<UserAccountDto>()
                 .RuleFor(u => u.Id, f => f.Random.Int(1, 10000))
                 .RuleFor(u => u.UserName, f => f.Internet.UserName())
                 .RuleFor(u => u.Email, f => f.Internet.Email())
@@ -39,7 +40,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a single random user
         /// </summary>
-        public UserAccountRep GenerateUser()
+        public UserAccountDto GenerateUser()
         {
             return _userFaker.Generate();
         }
@@ -47,7 +48,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate multiple random users
         /// </summary>
-        public List<UserAccountRep> GenerateUsers(int count)
+        public List<UserAccountDto> GenerateUsers(int count)
         {
             return _userFaker.Generate(count);
         }
@@ -55,7 +56,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a user with specific properties
         /// </summary>
-        public UserAccountRep GenerateActiveUser()
+        public UserAccountDto GenerateActiveUser()
         {
             var user = _userFaker.Generate();
             user.IsActive = true;
@@ -67,7 +68,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate an inactive user
         /// </summary>
-        public UserAccountRep GenerateInactiveUser()
+        public UserAccountDto GenerateInactiveUser()
         {
             var user = _userFaker.Generate();
             user.IsActive = false;
@@ -77,7 +78,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a user with 2FA enabled
         /// </summary>
-        public UserAccountRep GenerateUserWith2FA()
+        public UserAccountDto GenerateUserWith2FA()
         {
             var user = _userFaker.Generate();
             user.TwoFactorEnabled = true;
@@ -89,7 +90,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a locked out user
         /// </summary>
-        public UserAccountRep GenerateLockedOutUser()
+        public UserAccountDto GenerateLockedOutUser()
         {
             var user = _userFaker.Generate();
             user.LockoutEnabled = true;
@@ -101,7 +102,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a new user (Id = 0)
         /// </summary>
-        public UserAccountRep GenerateNewUser()
+        public UserAccountDto GenerateNewUser()
         {
             var user = _userFaker.Generate();
             user.Id = 0;
@@ -115,7 +116,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate an admin user
         /// </summary>
-        public UserAccountRep GenerateAdminUser()
+        public UserAccountDto GenerateAdminUser()
         {
             var user = _userFaker.Generate();
             user.UserName = "admin";
@@ -130,7 +131,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a test user with specific username
         /// </summary>
-        public UserAccountRep GenerateUserWithUsername(string username)
+        public UserAccountDto GenerateUserWithUsername(string username)
         {
             var user = _userFaker.Generate();
             user.UserName = username;
@@ -141,7 +142,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a test user with specific email
         /// </summary>
-        public UserAccountRep GenerateUserWithEmail(string email)
+        public UserAccountDto GenerateUserWithEmail(string email)
         {
             var user = _userFaker.Generate();
             user.Email = email;
@@ -152,7 +153,7 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate users for Vietnamese names
         /// </summary>
-        public UserAccountRep GenerateVietnameseUser()
+        public UserAccountDto GenerateVietnameseUser()
         {
             var user = _userFaker.Generate();
 
@@ -169,9 +170,9 @@ namespace TAS.Tests.TestHelpers
         /// <summary>
         /// Generate a user for testing validation
         /// </summary>
-        public UserAccountRep GenerateInvalidUser()
+        public UserAccountDto GenerateInvalidUser()
         {
-            return new UserAccountRep
+            return new UserAccountDto
             {
                 Id = 0,
                 UserName = "", // Invalid - empty
@@ -187,45 +188,45 @@ namespace TAS.Tests.TestHelpers
     /// </summary>
     public static class UserAccountRepExtensions
     {
-        public static UserAccountRep WithId(this UserAccountRep user, int id)
+        public static UserAccountDto WithId(this UserAccountDto user, int id)
         {
             user.Id = id;
             return user;
         }
 
-        public static UserAccountRep WithUserName(this UserAccountRep user, string username)
+        public static UserAccountDto WithUserName(this UserAccountDto user, string username)
         {
             user.UserName = username;
             user.NormalizedUserName = username.ToUpper();
             return user;
         }
 
-        public static UserAccountRep WithEmail(this UserAccountRep user, string email)
+        public static UserAccountDto WithEmail(this UserAccountDto user, string email)
         {
             user.Email = email;
             user.NormalizedEmail = email.ToUpper();
             return user;
         }
 
-        public static UserAccountRep AsActive(this UserAccountRep user)
+        public static UserAccountDto AsActive(this UserAccountDto user)
         {
             user.IsActive = true;
             return user;
         }
 
-        public static UserAccountRep AsInactive(this UserAccountRep user)
+        public static UserAccountDto AsInactive(this UserAccountDto user)
         {
             user.IsActive = false;
             return user;
         }
 
-        public static UserAccountRep WithEmailConfirmed(this UserAccountRep user, bool confirmed = true)
+        public static UserAccountDto WithEmailConfirmed(this UserAccountDto user, bool confirmed = true)
         {
             user.EmailConfirmed = confirmed;
             return user;
         }
 
-        public static UserAccountRep With2FA(this UserAccountRep user, bool enabled = true)
+        public static UserAccountDto With2FA(this UserAccountDto user, bool enabled = true)
         {
             user.TwoFactorEnabled = enabled;
             return user;

@@ -1,14 +1,15 @@
-using Xunit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
-using TAS.Controllers;
-using TAS.ViewModels;
-using TAS.Repository;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
+using TAS.Controllers;
+using TAS.DTOs;
 using TAS.Models;
+using TAS.Repository;
+using TAS.ViewModels;
+using Xunit;
 
 namespace TAS.Tests.IntegrationTests
 {
@@ -51,16 +52,16 @@ namespace TAS.Tests.IntegrationTests
         public async Task UserAccounts_ShouldReturnJsonResult()
         {
             // Arrange
-            var mockUsers = new List<UserAccountRep>
+            var mockUsers = new List<UserAccountDto>
             {
-                new UserAccountRep
+                new UserAccountDto
                 {
                     Id = 1,
                     UserName = "user1",
                     Email = "user1@test.com",
                     IsActive = true
                 },
-                new UserAccountRep
+                new UserAccountDto
                 {
                     Id = 2,
                     UserName = "user2",
@@ -77,7 +78,7 @@ namespace TAS.Tests.IntegrationTests
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var data = jsonResult.Value as List<UserAccount>;
+            var data = jsonResult.Value as List<UserAccountDto>;
             Assert.NotNull(data);
             Assert.Equal(2, data.Count);
         }
@@ -87,14 +88,14 @@ namespace TAS.Tests.IntegrationTests
         {
             // Arrange
             _mockModels.Setup(x => x.GetUserAccountAsync())
-                .ReturnsAsync(new List<UserAccountRep>());
+                .ReturnsAsync(new List<UserAccountDto>());
 
             // Act
             var result = await _controller.UserAccounts();
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var data = jsonResult.Value as List<UserAccountRep>;
+            var data = jsonResult.Value as List<UserAccountDto>;
             Assert.NotNull(data);
             Assert.Empty(data);
         }
@@ -107,8 +108,8 @@ namespace TAS.Tests.IntegrationTests
         public void AddOrUpdate_WithNewUser_ShouldReturnSuccess()
         {
             // Arrange
-            var newUser = new UserAccountRep
-            {
+            var newUser = new UserAccountDto
+			{
                 Id = 0,
                 UserName = "newuser",
                 Email = "newuser@test.com",
@@ -117,7 +118,7 @@ namespace TAS.Tests.IntegrationTests
                 IsActive = true
             };
 
-            _mockModels.Setup(x => x.AddOrUpdateUserAccount(It.IsAny<UserAccountRep>()))
+            _mockModels.Setup(x => x.AddOrUpdateUserAccount(It.IsAny<UserAccountDto>()))
                 .Returns(1); // Success
 
             // Act
@@ -132,7 +133,7 @@ namespace TAS.Tests.IntegrationTests
         public void AddOrUpdate_WithExistingUser_ShouldReturnSuccess()
         {
             // Arrange
-            var existingUser = new UserAccountRep
+            var existingUser = new UserAccountDto
             {
                 Id = 1,
                 UserName = "existinguser",
@@ -142,7 +143,7 @@ namespace TAS.Tests.IntegrationTests
                 IsActive = true
             };
 
-            _mockModels.Setup(x => x.AddOrUpdateUserAccount(It.IsAny<UserAccountRep>()))
+            _mockModels.Setup(x => x.AddOrUpdateUserAccount(It.IsAny<UserAccountDto>()))
                 .Returns(0); // Update returns 0
 
             // Act
@@ -157,9 +158,9 @@ namespace TAS.Tests.IntegrationTests
         public void AddOrUpdate_WithInvalidData_ShouldReturnFailure()
         {
             // Arrange
-            var invalidUser = new UserAccountRep(); // Missing required fields
+            var invalidUser = new UserAccountDto(); // Missing required fields
 
-            _mockModels.Setup(x => x.AddOrUpdateUserAccount(It.IsAny<UserAccountRep>()))
+            _mockModels.Setup(x => x.AddOrUpdateUserAccount(It.IsAny<UserAccountDto>()))
                 .Returns(0); // Failure
 
             // Act
