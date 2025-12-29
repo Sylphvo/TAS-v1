@@ -88,7 +88,7 @@
 }
 
 .ag-theme-alpine .ag-cell {
-    display: flex;
+    /*display: flex;*/
     align-items: center;
     padding: 5px 10px;
 }
@@ -170,6 +170,7 @@ div.ag-cell[col-id="finishedProductKg"] {
     border-top: 1px solid #e0e0e0;
     padding: 10px;
     background-color: #f8f9fa;
+    height: 40px;
 }
 
 /* Checkbox column */
@@ -275,3 +276,43 @@ div.ag-cell[col-id="finishedProductKg"] {
 .toast-info {
     background-color: #17a2b8 !important;
 }
+.ag-header-row input.ag-input-field-input {
+    margin-top: 10px !important;
+    padding: 5px !important;
+}
+
+.ag-select .ag-picker-field-wrapper {
+    width: 50px;
+}
+
+/*:where(input) {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    display: block;
+    height: var(--ag-icon-size);
+    margin: 0;
+    opacity: 0;
+    width: var(--ag-icon-size);
+}
+
+:where(.ag-theme-checkboxStyle-4) {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    display: block;
+    height: var(--ag-icon-size);
+    margin: 0;
+    opacity: 0;
+    width: var(--ag-icon-size);
+}
+
+:where(.ag-header-cell:not(.ag-floating-filter) *,.ag-header-group-cell *) {
+    position: relative;
+    z-index: 1;
+}
+:where(.ag-root-wrapper,.ag-external,.ag-popup,.ag-dnd-ghost,.ag-chart), :where(.ag-root-wrapper,.ag-external,.ag-popup,.ag-dnd-ghost,.ag-chart) :where([class^=ag-]) {
+    box-sizing: border-box;
+}*/

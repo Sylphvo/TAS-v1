@@ -20,6 +20,7 @@ namespace TAS.Controllers
 		[Breadcrumb("key_capnhatsolieu")]
 		public IActionResult Index()
 		{
+			ViewData["Title"] = _common.GetValueByKey("key_capnhatsolieu");
 			ViewBag.ComboAgent = _common.ComboAgent();
 			ViewBag.ComboFarmCode = _common.ComboFarmCode();
 			ViewBag.ComboOrder = _common.ComboOrderCode();

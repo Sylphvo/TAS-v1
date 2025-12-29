@@ -33,6 +33,17 @@ namespace TAS.ViewModels
 		{
 			try
 			{
+				string strQuery = string.Empty;
+				if (agentCode != null || agentCode != "*") {
+					strQuery += " AND (@AgentCode IS NULL OR a.AgentCode = @AgentCode) ";
+				}
+				if (farmCode != null || farmCode != "*") {
+					strQuery += " AND (@FarmCode IS NULL OR i.FarmCode = @FarmCode) ";
+				}
+				if (status != null) {
+					strQuery += " AND (@Status IS NULL OR i.Status = @Status) ";
+				}
+
 				var sql = @"
                     SELECT 
                         rowNo = ROW_NUMBER() OVER(ORDER BY i.RegisterDate DESC, i.IntakeId DESC),
@@ -60,9 +71,8 @@ namespace TAS.ViewModels
                     INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
                     INNER JOIN RubberAgent a ON a.AgentCode = f.AgentCode
                     WHERE 1=1
-                        AND (@AgentCode IS NULL OR a.AgentCode = @AgentCode)
-                        AND (@FarmCode IS NULL OR i.FarmCode = @FarmCode)
-                        AND (@Status IS NULL OR i.Status = @Status)
+                        " + strQuery + @"
+
                     ORDER BY i.RegisterDate DESC, i.IntakeId DESC
                 ";
 

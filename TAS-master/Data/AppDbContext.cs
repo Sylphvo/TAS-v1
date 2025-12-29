@@ -25,7 +25,6 @@ namespace TAS.Data
 		// ====== BRIDGE (Truy xuất nguồn gốc) ======
 		public DbSet<RubberPondIntake> RubberPondIntakes => Set<RubberPondIntake>();
 		public DbSet<RubberOrderPond> RubberOrderPonds => Set<RubberOrderPond>();
-
 		// ====== CONFIGURATION ======
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

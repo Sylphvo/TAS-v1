@@ -4,7 +4,23 @@
 let gridApiIntake;
 let gridColumnApi;
 let rowData = [];
+var arrValue = {
+    statusInProgress: 0, // Đang xử lý
+    //statusHandle: 1,// Đã Xử lý
+    statusConfirmOrder: 1, // Đã tạo đơn hàng
+    contentInProgress: 'Đang xử lý',
+    //contentHandle: 'Đã Xử lý',
+    contentConfirmOrder: 'Đã tạo đơn hàng',
 
+    typeExcel: 1, // Xuất Excel Data
+    typeSampleExcel: 2, // Xuất Excel Mẫu
+
+    comboAgent: [], // combo đại lý
+    comboFarmCode: [], // combo thông tin nhà vườn
+    comboOrderCode: [], // combo đơn hàng
+    selectFirst: true
+
+};
 // ========================================
 // AG GRID CONFIGURATION
 // ========================================
@@ -12,28 +28,26 @@ const gridOptions = {
     // Column Definitions
     columnDefs: [
         {
-            headerName: '',
-            checkboxSelection: true,
-            headerCheckboxSelection: true,
-            width: 50,
-            pinned: 'left',
-            suppressMenu: true,
-            suppressMovable: true
-        },
-        {
             headerName: 'STT',
             field: 'rowNo',
-            width: 70,
+            minWidth: 70,
             pinned: 'left',
             suppressMenu: true,
-            cellStyle: { textAlign: 'center' }
+            cellStyle: cellStyle_Col_Model_EventActual,
+            rowDrag: true,
+            filter: false,
+            checkboxSelection: true,          // checkbox từng dòng
+            headerCheckboxSelection: true,    // checkbox chọn tất cả
+            headerCheckboxSelectionFilteredOnly: true, // chỉ chọn những dòng đang filter
         },
         {
             headerName: 'Mã Intake',
             field: 'intakeCode',
-            width: 150,
+            width: 170,
+            minWidth: 170,
             editable: false,
-            filter: 'agTextColumnFilter'
+            filter: 'agTextColumnFilter',
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Đại lý',
@@ -41,14 +55,16 @@ const gridOptions = {
             width: 100,
             editable: false,
             cellEditor: 'agSelectCellEditor',
-            filter: 'agTextColumnFilter'
+            filter: 'agTextColumnFilter',
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Tên đại lý',
             field: 'agentName',
             width: 180,
             editable: false,
-            filter: 'agTextColumnFilter'
+            filter: 'agTextColumnFilter',
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Mã Nhà vườn',
@@ -60,7 +76,7 @@ const gridOptions = {
                 values: []  // Will be populated from ComboFarmCode
             },
             filter: 'agTextColumnFilter',
-            cellStyle: { backgroundColor: '#fff3cd' }
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Tên Nhà vườn',
@@ -68,7 +84,7 @@ const gridOptions = {
             width: 200,
             editable: true,
             filter: 'agTextColumnFilter',
-            cellStyle: { backgroundColor: '#fff3cd' }
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'KL Mủ (kg)',
@@ -77,7 +93,7 @@ const gridOptions = {
             editable: true,
             type: 'numericColumn',
             valueFormatter: params => formatNumber(params.value),
-            cellStyle: { textAlign: 'right', backgroundColor: '#fff3cd' }
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'TSC (%)',
@@ -86,7 +102,7 @@ const gridOptions = {
             editable: true,
             type: 'numericColumn',
             valueFormatter: params => formatNumber(params.value, 2),
-            cellStyle: { textAlign: 'right', backgroundColor: '#fff3cd' }
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Thành phẩm (kg)',
@@ -95,7 +111,7 @@ const gridOptions = {
             editable: true,
             type: 'numericColumn',
             valueFormatter: params => formatNumber(params.value),
-            cellStyle: { textAlign: 'right', backgroundColor: '#fff3cd' }
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Trạng thái',
@@ -114,19 +130,22 @@ const gridOptions = {
                 }
                 
                 return `<span class="badge ${badgeClass}">${params.value}</span>`;
-            }
+            },
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Người cập nhật',
             field: 'timeDate_Person',
             width: 130,
-            editable: false
+            editable: false,
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Thời gian',
             field: 'timeDate',
             width: 150,
-            editable: false
+            editable: false,
+            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Thao tác',
@@ -146,7 +165,9 @@ const gridOptions = {
                 `;
             },
             suppressMenu: true,
-            suppressMovable: true
+            suppressMovable: true,
+            cellStyle: cellStyle_Col_Model_EventActual,
+            filter: false
         }
     ],
 
@@ -156,7 +177,8 @@ const gridOptions = {
         filter: true,
         resizable: true,
         floatingFilter: true,
-        suppressMenu: false
+        suppressMenu: false,
+
     },
 
     // Grid Options
@@ -166,9 +188,11 @@ const gridOptions = {
     animateRows: true,
     enableRangeSelection: true,
     enableCellTextSelection: true,
-    pagination: true,
+    //pagination: true,
     paginationPageSize: 50,
     paginationPageSizeSelector: [20, 50, 100, 200],
+    rowHeight: 45,
+    headerHeight: 45,
     
     // Events
     onGridReady: onGridReady,
@@ -185,11 +209,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load initial data
     loadData();
-    
     // Setup filter change events
-    setupFilterEvents();
+    loadAllCombos();
+    ApplyCboSelect2();
+    RegisterCheckAll();
 });
 
+function RegisterCheckAll() {
+    $('.ag-header-select-all:not(.ag-hidden)').on('click', function (e) {
+        let IsChecked = $(this).find('.ag-input-field-input');
+        if (IsChecked.prop('checked')) {
+            gridApiIntake.deselectAll();
+        } else {
+            gridApiIntake.selectAll(); // chọn tất cả
+        }
+    });
+}
 function onGridReady(params) {
     gridApiIntake = params.api;
     gridColumnApi = params.columnApi;
@@ -202,7 +237,7 @@ function onGridReady(params) {
 // LOAD DATA
 // ========================================
 async function loadData() {
-    showLoading(true);
+    //showLoading(true);
     
     const agentCode = $('#cboAgent').val();
     const farmCode = $('#cboFarm').val();
@@ -223,15 +258,15 @@ async function loadData() {
             // Update row numbers
             updateRowNumbers();
             
-            NotificationToast('success', 'Tải dữ liệu thành công');
+            //NotificationToast('success', 'Tải dữ liệu thành công');
         } else {
-            NotificationToast('error', response.message || 'Lỗi khi tải dữ liệu');
+            //NotificationToast('error', response.message || 'Lỗi khi tải dữ liệu');
         }
     } catch (error) {
         console.error('Error loading data:', error);
-        NotificationToast('error', 'Lỗi kết nối server');
+        //NotificationToast('error', 'Lỗi kết nối server');
     } finally {
-        showLoading(false);
+        //showLoading(false);
     }
 }
 
@@ -688,39 +723,6 @@ function onRowDragEnd(event) {
     updateRowNumbers();
 }
 
-function setupFilterEvents() {
-    $('#cboAgent').on('change', function() {
-        const agentCode = $(this).val();
-        if (agentCode) {
-            loadFarmsByAgent(agentCode);
-        } else {
-            loadAllCombos();
-        }
-    });
-}
-
-async function loadFarmsByAgent(agentCode) {
-    try {
-        const response = await $.ajax({
-            url: '/RubberIntake/GetFarmsByAgent',
-            type: 'POST',
-            data: { agentCode }
-        });
-        
-        if (response.success) {
-            const $cboFarm = $('#cboFarm');
-            $cboFarm.empty();
-            $cboFarm.append('<option value="">-- Tất cả --</option>');
-            
-            response.data.forEach(item => {
-                $cboFarm.append(`<option value="${item.value}">${item.text}</option>`);
-            });
-        }
-    } catch (error) {
-        console.error('Error loading farms by agent:', error);
-    }
-}
-
 async function loadAllCombos() {
     try {
         const response = await $.ajax({
@@ -729,17 +731,16 @@ async function loadAllCombos() {
         });
         
         if (response.success) {
-            // Update combo farm
-            const $cboFarm = $('#cboFarm');
-            $cboFarm.empty();
-            $cboFarm.append('<option value="">-- Tất cả --</option>');
-            
-            response.comboFarmCode.forEach(item => {
-                $cboFarm.append(`<option value="${item.value}">${item.text}</option>`);
-            });
+            arrValue.comboAgent = response.comboAgent;
+            arrValue.comboFarmCode = response.comboFarmCode;
+            arrValue.comboOrderCode = response.comboOrderCode;
+			// Render combos
+            RenderComboBox(arrValue.comboAgent, 'cboAgent', arrValue.selectFirst);
+            RenderComboBox(arrValue.comboFarmCode, 'cboFarm', arrValue.selectFirst);
+            RenderComboBox(arrValue.comboOrderCode, 'cboOrder', arrValue.selectFirst);
         }
     } catch (error) {
-        console.error('Error loading combos:', error);
+
     }
 }
 
@@ -765,11 +766,8 @@ function showLoading(show) {
     }
 }
 
-function NotificationToast(type, message) {
-    // Using Toastr or custom notification
-    if (typeof toastr !== 'undefined') {
-        toastr[type](message);
-    } else {
-        alert(message);
-    }
+function cellStyle_Col_Model_EventActual(params) {
+    let cellAttr = {};
+    cellAttr['text-align'] = 'center';
+    return cellAttr;
 }

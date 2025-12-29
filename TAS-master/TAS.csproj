@@ -31,6 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\AccounttempController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Document\File_Import\demoGeoMap\geo.html" />
     <Content Include="Document\File_Import\demoGeoMap\geosample.html" />
     <Content Include="Document\File_Import\demoGeoMap\importexcel.html" />

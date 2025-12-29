@@ -31,5 +31,5 @@ namespace TAS.Models
 		// Computed Property
 		public string FullName => $"{FirstName} {LastName}".Trim();
 	}
-    
+
 }

@@ -3935,19 +3935,6 @@ function LoadComboAgent(Obj) {
     $('#' + Obj).select2();
 }
 
-//Phuvm 10/4/2025 đăng ký sự kiện combo
-//id attribute của thẻ select
-//funcChange: hàm xử lý sự kiện change
-//isChange: true đăng ký sự kiện change
-//function RegEventCombo(Obj, funcChange, isChange) {
-//    if (IsNullOrEmpty(Obj)) { return false; }
-
-//    if (isChange) {
-//        $('#' + Obj).change(function (e) {
-//            funcChange();
-//        });
-//    }
-//}
 
 //Phuvm 10/4/2025 set ngôn ngữ
 function SetLanguage(langCurrent) {
@@ -4096,6 +4083,7 @@ function ApplyCboSelect2() {
         let idElemnt = $(this).attr('id');
         RemoveValidateError(idElemnt);
     })
+    $('.cboSelect2Search').css("width", 200);
     $('.cboSelect2Search').select2();
 }
 function RenderComboBox(arrlstData, idElemnt, selectFirst) {
@@ -4104,7 +4092,7 @@ function RenderComboBox(arrlstData, idElemnt, selectFirst) {
         ComboBoxHtml += `<option value="*">${arrMsg.key_vuilongchon}</option>`;
     }
     arrlstData.forEach((item, index) => {
-        ComboBoxHtml += `<option value="${item.value}">${item.name}</option>`;
+        ComboBoxHtml += `<option value="${item.value}">${item.text}</option>`;
     });
     $('#' + idElemnt).html(ComboBoxHtml);
 }
@@ -4116,23 +4104,21 @@ function RemoveValidateError(idElemnt) {
     $('#' + idElemnt).addClass('error');
 }
 function LogoutAuth() {
-   
-        // Create form và submit
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/Account/Logout';
+    // Create form và submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/Account/Logout';
 
-        // Add anti-forgery token
-        const token = document.querySelector('input[name="__RequestVerificationToken"]');
-        if (token) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = '__RequestVerificationToken';
-            input.value = token.value;
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-       form.submit();
+    // Add anti-forgery token
+    const token = document.querySelector('input[name="__RequestVerificationToken"]');
+    if (token) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = '__RequestVerificationToken';
+        input.value = token.value;
+        form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
     
 }

@@ -27,6 +27,7 @@ builder.Services.AddHttpClient();
 // ========================================
 // SESSION CONFIGURATION
 // ========================================
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
 	options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -93,27 +94,24 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
         new AcceptLanguageHeaderRequestCultureProvider() // Header
     };
 });
+// Identity (cookie auth của Identity tự handle)
 builder.Services
 	.AddIdentity<UserAccountIdentity, IdentityRole<Guid>>(options =>
 	{
-		// Password
-		options.Password.RequireDigit = true;              // cần số
-		options.Password.RequireLowercase = true;          // cần chữ thường
-		options.Password.RequireUppercase = false;         // không bắt buộc chữ hoa
-		options.Password.RequireNonAlphanumeric = false;   // không bắt buộc ký tự đặc biệt
-		options.Password.RequiredLength = 8;               // tối thiểu 8 ký tự
-		options.Password.RequiredUniqueChars = 1;          // tối thiểu 1 ký tự khác nhau
+		options.Password.RequireDigit = true;
+		options.Password.RequireLowercase = true;
+		options.Password.RequireUppercase = false;
+		options.Password.RequireNonAlphanumeric = false;
+		options.Password.RequiredLength = 8;
+		options.Password.RequiredUniqueChars = 1;
 
-		// User / Sign-in
-		options.User.RequireUniqueEmail = true;            // email unique
-		options.SignIn.RequireConfirmedEmail = false;      // không bắt confirm email
+		options.User.RequireUniqueEmail = true;
+		options.SignIn.RequireConfirmedEmail = false;
 
-		// Lockout (chống brute-force)
 		options.Lockout.AllowedForNewUsers = true;
 		options.Lockout.MaxFailedAccessAttempts = 5;
 		options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
 
-		// Claim types (để consistent)
 		options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier;
 		options.ClaimsIdentity.UserNameClaimType = ClaimTypes.Name;
 		options.ClaimsIdentity.EmailClaimType = ClaimTypes.Email;
@@ -122,34 +120,25 @@ builder.Services
 	.AddEntityFrameworkStores<AppDbContext>()
 	.AddDefaultTokenProviders();
 
-// ========================================
-// CONFIGURE AUTHENTICATION & AUTHORIZATION
-// ========================================
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-	.AddCookie(options =>
-	{
-		options.LoginPath = "/Account/Login";
-		options.LogoutPath = "/Account/Logout";
-		options.AccessDeniedPath = "/Account/AccessDenied";
-		options.ExpireTimeSpan = TimeSpan.FromHours(8);
-		options.SlidingExpiration = true;
-
-		options.Cookie.HttpOnly = true;
-		options.Cookie.Name = "TAS.Auth";
-
-		options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Always in production
-		options.Cookie.SameSite = SameSiteMode.Lax;
-	});
-builder.Services.AddAuthorization();
-
-// Cấu hình cookie Identity bằng ConfigureApplicationCookie (không AddCookie)
+// Set cookie của Identity (thay vì AddAuthentication().AddCookie())
 builder.Services.ConfigureApplicationCookie(opt =>
 {
 	opt.LoginPath = "/Account/Login";
-	opt.AccessDeniedPath = "/Account/Denied";
+	opt.LogoutPath = "/Account/Logout";
+	opt.AccessDeniedPath = "/Account/AccessDenied";
+
+	opt.Cookie.Name = "tas_auth";
+	opt.Cookie.HttpOnly = true;
+	opt.Cookie.SameSite = SameSiteMode.Lax;
+	opt.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // prod: Always
+
 	opt.SlidingExpiration = true;
 	opt.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
+
+builder.Services.AddAuthorization();
+
+
 
 // ========================================
 // BUILD APP
@@ -168,13 +157,12 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession(); // if using session
 
 // ✅✅✅ QUAN TRỌNG: ĐÚNG THỨ TỰ ✅✅✅
-// UseAuthentication PHẢI đứng TRƯỚC UseAuthorization
 app.UseAuthentication();  // ✅ 1. Authentication TRƯỚC
 app.UseAuthorization();   // ✅ 2. Authorization SAU
 
-app.UseSession(); // if using session
 
 // ========================================
 // LOCALIZATION MIDDLEWARE

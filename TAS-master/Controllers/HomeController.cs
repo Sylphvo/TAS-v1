@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace TAS.Controllers
 {
+	[Authorize]
 	public class HomeController : Controller
 	{
 		CommonController commonController = new CommonController();
@@ -20,7 +21,7 @@ namespace TAS.Controllers
 			return PartialView("_Layout");
 		}
 		public IActionResult utils()
-		{
+		{	
 			return View();
 		}
 		public IActionResult request()

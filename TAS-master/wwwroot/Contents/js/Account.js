@@ -37,24 +37,31 @@ async function handleLogin() {
 
     try {
         const formData = $('#loginForm').serialize(); handleLogin
-
-        const response = await $.ajax({
+        $.ajax({
             url: '/Account/Login',
             type: 'POST',
-            data: formData
+            data: formData,
+            success: function (response) {
+				console.log('Login response:', response);
+            }
         });
+        //const response = await $.ajax({
+        //    url: '/Account/Login',
+        //    type: 'POST',
+        //    data: formData
+        //});
 
-        if (response.success) {
-            showSuccess('Đăng nhập thành công!');
+        //if (response.success) {
+        //    showSuccess('Đăng nhập thành công!');
             
-            // Redirect sau 500ms
-            setTimeout(function() {
-                window.location.href = response.redirectUrl || '/';
-            }, 500);
-        } else {
-            showError(response.message || 'Đăng nhập thất bại');
-            $btnLogin.prop('disabled', false).html(originalText);
-        }
+        //    // Redirect sau 500ms
+        //    setTimeout(function() {
+        //        window.location.href = response.redirectUrl || '/';
+        //    }, 500);
+        //} else {
+        //    showError(response.message || 'Đăng nhập thất bại');
+        //    $btnLogin.prop('disabled', false).html(originalText);
+        //}
     } catch (error) {
         console.error('Login error:', error);
         showError('Đã xảy ra lỗi. Vui lòng thử lại.');
