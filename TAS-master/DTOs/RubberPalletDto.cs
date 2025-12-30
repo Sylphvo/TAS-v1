@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TAS.Models.DTOs
+namespace TAS.DTOs
 {
 	// ========================================
 	// PALLET DTOs

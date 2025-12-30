@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using System.Data;
-using TAS.Models;
+using TAS.DTOs;
 using TAS.Repository;
 using TAS.TagHelpers;
 
@@ -445,37 +445,5 @@ namespace TAS.ViewModels
 		}
 	}
 
-	// ========================================
-	// REQUEST/RESPONSE MODELS
-	// ========================================
-	public class RubberIntakeRequest
-	{
-		public long intakeId { get; set; }
-		public string? intakeCode { get; set; }
-		public string? farmCode { get; set; }
-		public string? farmerName { get; set; }
-		public decimal? rubberKg { get; set; }
-		public decimal? tscPercent { get; set; }
-		public decimal? finishedProductKg { get; set; }
-		public int? status { get; set; }
-	}
-
-	public class RubberIntakeResponse
-	{
-		public long rowNo { get; set; }
-		public long intakeId { get; set; }
-		public string? intakeCode { get; set; }
-		public string? agentCode { get; set; }
-		public string? agentName { get; set; }
-		public string? farmCode { get; set; }
-		public string? farmerName { get; set; }
-		public decimal rubberKg { get; set; }
-		public decimal? tscPercent { get; set; }
-		public decimal finishedProductKg { get; set; }
-		public int status { get; set; }
-		public string? statusText { get; set; }
-		public string? timeDate_Person { get; set; }
-		public DateTime registerDate { get; set; }
-		public string? timeDate { get; set; }
-	}
+	
 }

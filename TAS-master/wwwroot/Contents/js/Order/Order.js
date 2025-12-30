@@ -1,767 +1,653 @@
-var sortData = { sortColumnEventActual: '', sortOrderEventActual: '' }
-var gridOptionsOrder, ListDataFull;
-var page, pageSize, gridApi, pagerApi;
-var arrValueFilter = {
-    statusDraft: 0, // Nháp
-    statusConfirmed: 1, // Đã xác nhận
-    statusLoading: 2, // Đang chất hàng
-    statusShipped: 3, // Đã giao hàng
-    statusCancelled: 9, // Đã hủy
+// ========================================
+// ORDER.JS - Order Management
+// ========================================
 
-    contentDraft: 'Nháp',
-    contentConfirmed: 'Đã xác nhận',
-    contentLoading: 'Đang chất hàng',
-    contentShipped: 'Đã giao hàng',
-    contentCancelled: 'Đã hủy',
+let gridApiOrder;
+let gridColumnApi;
 
-    typeExcel: 1, // Xuất Excel Data
-    typeSampleExcel: 2, // Xuất Excel Mẫu
+// ========================================
+// INITIALIZE PAGE
+// ========================================
+function initOrderPage() {
+    console.log('Initializing Order page...');
+    
+    // Setup AG Grid
+    setupGrid();
+    
+    // Setup event handlers
+    setupEventHandlers();
+    
+    // Load initial data
+    loadOrders();
+    
+    // Load agents for dropdown
+    loadAgents();
+    
+    // Set default date to today
+    $('#orderDate').val(new Date().toISOString().split('T')[0]);
+}
 
-    comboAgent: [], // combo đại lý
-    comboProductType: [], // combo loại sản phẩm
-    comboStatus: [], // combo trạng thái
-    selectFirst: true
-};
+// ========================================
+// SETUP AG GRID
+// ========================================
+function setupGrid() {
+    const gridDiv = document.querySelector('#orderGrid');
 
-function CreateGridOrder() {
-    gridOptionsOrder = {
-        paginationPageSize: 100,
-        columnDefs: CreateColModelOrder(),
-        defaultColDef: {
-            width: 170,
-            filter: true,
-            floatingFilter: true,
-        },
-        rowHeight: 45,
-        headerHeight: 45,
-        rowData: [],
-        rowSelection: 'multiple',
-        suppressRowClickSelection: true,
-        animateRows: true,
-        singleClickEdit: true,
-        suppressServerSideFullWidthLoadingRow: true,
-        cellSelection: true,
-        onGridReady: function (params) {
-            gridApi = params.api;
-        },
-        rowDragManaged: true,
-        onRowDragEnd() {
-            OnDragMoveSetRow();
-        },
-        onCellValueChanged: e => {
-            // Tự động tính toán TotalNetKg nếu cần
-            if (['targetTSC', 'targetDRC'].includes(e.colDef.field)) {
-                // Logic tính toán nếu cần
-            }
-            UpdateDataAfterEdit(0, e.data);
-        },
-        enableRangeSelection: true,
-        allowContextMenuWithControlKey: true,
-        suppressContextMenu: false,
-        getContextMenuItems: params => {
-            return [{
-                name: 'Áp dụng cho tất cả các cột',
-                shortcut: "(Alt + a)",
-                action: () => {
-                    ApplyCustomColulmn(params);
+    const gridOptions = {
+        // Column Definitions
+        columnDefs: [
+            {
+                headerName: '',
+                checkboxSelection: true,
+                headerCheckboxSelection: true,
+                minWidth: 50,
+                width: 50,
+                pinned: 'left',
+                lockPosition: true,
+                suppressMenu: true,
+                filter: false
+            },
+            {
+                headerName: 'Số thứ tự',
+                field: 'rowNo',
+                minWidth: 50,
+                width: 110,
+                cellRenderer: params => {
+                    return `<strong style="color: #2c3e50;">${params.value}</strong>`;
+                }
+            },
+            {
+                headerName: 'Mã đơn hàng',
+                field: 'orderCode',
+                minWidth: 210,
+                cellRenderer: params => {
+                    return `<strong style="color: #2c3e50;">${params.value}</strong>`;
+                }
+            },
+            {
+                headerName: 'Đại lý',
+                field: 'agentName',
+                width: 180
+            },
+            {
+                headerName: 'Người mua',
+                field: 'buyerName',
+                width: 150
+            },
+            {
+                headerName: 'Công ty',
+                field: 'buyerCompany',
+                width: 180
+            },
+            {
+                headerName: 'Ngày đặt',
+                field: 'orderDate',
+                width: 120,
+                valueFormatter: params => {
+                    if (!params.value) return '';
+                    const date = new Date(params.value);
+                    return date.toLocaleDateString('vi-VN');
+                }
+            },
+            //{
+            //    headerName: 'Ngày dự kiến xuất',
+            //    field: 'expectedShipDate',
+            //    width: 150,
+            //    valueFormatter: params => {
+            //        if (!params.value) return '';
+            //        const date = new Date(params.value);
+            //        return date.toLocaleDateString('vi-VN');
+            //    }
+            //},
+            //{
+            //    headerName: 'Ngày xuất thực tế',
+            //    field: 'shippedAt',
+            //    width: 160,
+            //    valueFormatter: params => {
+            //        if (!params.value) return '';
+            //        const date = new Date(params.value);
+            //        return date.toLocaleString('vi-VN');
+            //    },
+            //    cellStyle: params => {
+            //        if (params.value) {
+            //            return { backgroundColor: '#e8f5e9', fontWeight: 'bold' };
+            //        }
+            //        return null;
+            //    }
+            //},
+            {
+                headerName: 'Loại SP',
+                field: 'productType',
+                width: 120
+            },
+            {
+                headerName: 'Tổng Net (kg)',
+                field: 'totalNetKg',
+                width: 130,
+                type: 'numericColumn',
+                valueFormatter: params => {
+                    if (params.value == null) return '0.00';
+                    return Number(params.value).toLocaleString('vi-VN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
                 },
-                cssClasses: ["red", "bold"],
-                icon: '<i class="ti ti-copy f-20"></i>',
-            }];
-        },
-        onCellKeyDown: function (params) {
-            const keyboardEvent = params.event;
-            if (keyboardEvent.altKey && keyboardEvent.key === "a") {
-                ApplyCustomColulmn(params);
-                NotificationToast("success", "Áp dụng cho tất cả thành công");
+                cellStyle: { fontWeight: 'bold', color: '#27ae60' }
+            },
+            {
+                headerName: 'Trạng thái',
+                field: 'status',
+                width: 130,
+                cellRenderer: params => {
+                    return renderStatusBadge(params.value);
+                }
+            },
+            {
+                headerName: 'Ghi chú',
+                field: 'note',
+                width: 200,
+                tooltipField: 'note'
+            },
+            {
+                headerName: 'Người tạo',
+                field: 'registerPerson',
+                width: 120
+            },
+            {
+                headerName: 'Ngày tạo',
+                field: 'registerDate',
+                width: 150,
+                valueFormatter: params => {
+                    if (!params.value) return '';
+                    const date = new Date(params.value);
+                    return date.toLocaleString('vi-VN');
+                }
+            },
+            {
+                headerName: 'Thao tác',
+                field: 'orderId',
+                width: 200,
+                pinned: 'right',
+                cellRenderer: params => {
+                    const hasShipped = params.data.shippedAt != null;
+                    const shipBtn = !hasShipped ?
+                        `<button class="btn-action btn-ship" onclick="markShipped(${params.value})" title="Đánh dấu đã xuất hàng">
+                            <i class="fas fa-shipping-fast"></i>
+                        </button>` : '';
+
+                    return `
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editOrder(${params.value})" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-status" onclick="updateStatus(${params.value}, ${params.data.status})" title="Cập nhật trạng thái">
+                                <i class="fas fa-tasks"></i>
+                            </button>
+                            ${shipBtn}
+                            <button class="btn-action btn-delete" onclick="deleteOrder(${params.value})" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                },
+                filter: false,
+                sortable: false
             }
+        ],
+
+        // Grid Options
+        defaultColDef: {
+            sortable: true,
+            filter: true,
+            resizable: true,
+            floatingFilter: true
+        },
+
+        rowSelection: 'multiple',
+        animateRows: true,
+        pagination: true,
+        paginationPageSize: 20,
+        paginationPageSizeSelector: [10, 20, 50, 100],
+
+        // Events
+        onSelectionChanged: onSelectionChanged,
+        onGridReady: function (params) {
+            gridApiOrder = params.api;
+            gridColumnApi = params.columnApi;
+            params.api.sizeColumnsToFit();
         }
     };
-    const eGridDiv = document.querySelector(OrderGrid);
-    gridApi = agGrid.createGrid(eGridDiv, gridOptionsOrder);
 
-    CreateRowDataOrder();
-    resizeGridOrder();
+    new agGrid.Grid(gridDiv, gridOptions);
 }
 
-function CreateColModelOrder() {
-    return [{
-        headerName: 'STT',
-        field: 'STT',
-        minWidth: 60,
-        editable: false,
-        valueGetter: 'node.rowIndex + 1',
-        cellStyle: { 'text-align': 'center' }
-    },
-    {
-        headerName: 'Mã Đơn',
-        field: 'orderCode',
-        minWidth: 120,
-        editable: false,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Mã Đại Lý',
-        field: 'agentCode',
-        minWidth: 120,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Ngày Đặt Hàng',
-        field: 'orderDate',
-        minWidth: 130,
-        editable: true,
-        cellEditor: 'agDateCellEditor',
-        valueFormatter: params => params.value ? formatDate(params.value) : '',
-        cellStyle: { 'text-align': 'center' }
-    },
-    {
-        headerName: 'Ngày Dự Kiến Giao',
-        field: 'expectedShipDate',
-        minWidth: 150,
-        editable: true,
-        cellEditor: 'agDateCellEditor',
-        valueFormatter: params => params.value ? formatDate(params.value) : '',
-        cellStyle: { 'text-align': 'center' }
-    },
-    {
-        headerName: 'Ngày Đã Giao',
-        field: 'shippedAt',
-        minWidth: 130,
-        editable: true,
-        cellEditor: 'agDateCellEditor',
-        valueFormatter: params => params.value ? formatDate(params.value) : '',
-        cellStyle: { 'text-align': 'center' }
-    },
-    {
-        headerName: 'Tên Người Mua',
-        field: 'buyerName',
-        minWidth: 150,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Công Ty Người Mua',
-        field: 'buyerCompany',
-        minWidth: 180,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Số Hợp Đồng',
-        field: 'contractNo',
-        minWidth: 130,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Điểm Đến',
-        field: 'destination',
-        minWidth: 150,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Địa Chỉ Giao Hàng',
-        field: 'deliveryAddress',
-        minWidth: 200,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Loại Sản Phẩm',
-        field: 'productType',
-        minWidth: 130,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'TSC Mục Tiêu (%)',
-        field: 'targetTSC',
-        minWidth: 140,
-        editable: true,
-        cellEditor: 'agNumberCellEditor',
-        valueFormatter: params => params.value ? params.value.toFixed(2) : '',
-        cellStyle: { 'text-align': 'right' }
-    },
-    {
-        headerName: 'DRC Mục Tiêu (%)',
-        field: 'targetDRC',
-        minWidth: 140,
-        editable: true,
-        cellEditor: 'agNumberCellEditor',
-        valueFormatter: params => params.value ? params.value.toFixed(2) : '',
-        cellStyle: { 'text-align': 'right' }
-    },
-    {
-        headerName: 'Tổng Khối Lượng (Kg)',
-        field: 'totalNetKg',
-        minWidth: 160,
-        editable: true,
-        cellEditor: 'agNumberCellEditor',
-        valueFormatter: params => params.value ? params.value.toFixed(3) : '',
-        cellStyle: { 'text-align': 'right' }
-    },
-    {
-        headerName: 'Đơn Giá',
-        field: 'unitPrice',
-        minWidth: 130,
-        editable: true,
-        cellEditor: 'agNumberCellEditor',
-        valueFormatter: params => params.value ? formatCurrency(params.value) : '',
-        cellStyle: { 'text-align': 'right' }
-    },
-    {
-        headerName: 'Trạng Thái',
-        field: 'status',
-        minWidth: 130,
-        editable: true,
-        cellEditor: 'agSelectCellEditor',
-        cellEditorParams: {
-            values: [0, 1, 2, 3, 9]
-        },
-        valueFormatter: params => {
-            switch (params.value) {
-                case 0:
-                    return 'Nháp';
-                case 1:
-                    return 'Đã xác nhận';
-                case 2:
-                    return 'Đang chất hàng';
-                case 3:
-                    return 'Đã giao hàng';
-                case 9:
-                    return 'Đã hủy';
-                default:
-                    return '';
-            }
-        },
-        cellStyle: params => {
-            const colors = {
-                0: { 'background-color': '#f0f0f0', 'text-align': 'center' },
-                1: { 'background-color': '#d4edda', 'text-align': 'center' },
-                2: { 'background-color': '#fff3cd', 'text-align': 'center' },
-                3: { 'background-color': '#cce5ff', 'text-align': 'center' },
-                9: { 'background-color': '#f8d7da', 'text-align': 'center' }
-            };
-            return colors[params.value] || { 'text-align': 'center' };
-        }
-    },
-    {
-        headerName: 'Ghi Chú',
-        field: 'note',
-        minWidth: 200,
-        editable: true,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Ngày Đăng Ký',
-        field: 'registerDate',
-        minWidth: 130,
-        editable: false,
-        valueFormatter: params => params.value ? formatDateTime(params.value) : '',
-        cellStyle: { 'text-align': 'center' }
-    },
-    {
-        headerName: 'Người Đăng Ký',
-        field: 'registerPerson',
-        minWidth: 130,
-        editable: false,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Ngày Cập Nhật',
-        field: 'updateDate',
-        minWidth: 130,
-        editable: false,
-        valueFormatter: params => params.value ? formatDateTime(params.value) : '',
-        cellStyle: { 'text-align': 'center' }
-    },
-    {
-        headerName: 'Người Cập Nhật',
-        field: 'updatePerson',
-        minWidth: 130,
-        editable: false,
-        cellStyle: { 'text-align': 'left' }
-    },
-    {
-        headerName: 'Thao Tác',
-        field: 'action',
-        minWidth: 150,
-        editable: false,
-        cellRenderer: params => {
-            return `
-                    <button class="btn btn-sm btn-primary" onclick="EditOrderData(${params.data.orderId})">
-                        <i class="ti ti-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="DeleteOrderData(${params.data.orderId})">
-                        <i class="ti ti-trash"></i>
-                    </button>
-                `;
-        },
-        cellStyle: { 'text-align': 'center' }
-    }
-    ];
+
+// ========================================
+// RENDER STATUS BADGE
+// ========================================
+function renderStatusBadge(status) {
+    const statusMap = {
+        0: { text: 'Mới tạo', class: 'status-new' },
+        1: { text: 'Đang xử lý', class: 'status-processing' },
+        2: { text: 'Đã xuất kho', class: 'status-exported' },
+        3: { text: 'Đã giao hàng', class: 'status-delivered' },
+        4: { text: 'Hoàn thành', class: 'status-completed' },
+        5: { text: 'Đã hủy', class: 'status-cancelled' }
+    };
+    
+    const statusInfo = statusMap[status] || { text: 'Không xác định', class: 'status-unknown' };
+    return `<span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>`;
 }
 
-// Helper functions
-function formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+// ========================================
+// SETUP EVENT HANDLERS
+// ========================================
+function setupEventHandlers() {
+    // Button clicks
+    $('#btnRefresh').on('click', loadOrders);
+    $('#btnAdd').on('click', showAddModal);
+    $('#btnExport').on('click', exportAllToExcel);
+    $('#btnExportSelected').on('click', exportSelectedToExcel);
+    $('#btnSave').on('click', saveOrder);
+    
+    // Quick filter
+    $('#quickFilter').on('input', function() {
+        gridApiOrder.setGridOption('quickFilterText', $(this).val());
+    });
+    
+    // Form validation
+    $('#orderForm').on('submit', function(e) {
+        e.preventDefault();
+        saveOrder();
+    });
 }
 
-function formatDateTime(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
-
-function formatCurrency(value) {
-    if (!value) return '';
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-    }).format(value);
-}
-
-function ApplyCustomColulmn(params) {
-    gridApi.setGridOption("rowData", ListDataFull.filter(x => x[params.column.colId] = params.value));
-    var idList = ListDataFull.map(x => x.orderId);
-    var colId = params.column.colId;
-    var valueData = params.value;
-
+// ========================================
+// LOAD ORDERS
+// ========================================
+function loadOrders() {
+    showLoading();
+    
     $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/Order/AddOrUpdateFull",
-        contentType: 'application/json',
-        data: JSON.stringify(ListDataFull),
-        success: function (res) {
-            RefreshAllGridWhenChangeData();
-        },
-        error: function () { }
-    });
-}
-
-// Cập nhật dữ liệu sau khi chỉnh sửa
-// status: 0 - chỉnh sửa, 1 - thêm mới
-function UpdateDataAfterEdit(status, rowData) {
-    var rowDataObj = {};
-    if (status == 1) {
-        rowDataObj.agentCode = $('#ListCboAgentCode').val();
-        rowDataObj.productType = $('#ListCboProductType').val();
-        rowDataObj.buyerName = $('#BuyerName').val();
-        rowDataObj.buyerCompany = $('#BuyerCompany').val();
-        rowDataObj.totalNetKg = num($('#TotalNetKg').val());
-        rowDataObj.unitPrice = num($('#UnitPrice').val());
-        rowData = rowDataObj;
-    }
-    $.ajax({
-        async: true,
-        url: "/Order/AddOrUpdate",
-        type: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify(rowData),
-        success: function (res) {
-            Toast.fire({
-                icon: "success",
-                title: (status == 1 ? "Thêm mới" : "Cập nhật") + " dữ liệu thành công"
-            });
-            RefreshAllGridWhenChangeData();
-        },
-        error: function () {
-            Toast.fire({
-                icon: "danger",
-                title: (status == 1 ? "Thêm mới" : "Cập nhật") + " dữ liệu thất bại"
-            });
-        }
-    });
-}
-
-// Chuyển chuỗi sang số
-const num = v => {
-    const x = parseFloat(String(v).replace(',', '.'));
-    return Number.isFinite(x) ? x : 0;
-};
-
-// Lưu thứ tự hiện tại sau khi kéo thả
-function resizeGridOrder() {
-    setTimeout(function () {
-        setWidthHeightGrid();
-    }, 100);
-}
-
-function setWidthHeightGrid(heithlayout) {
-    gridApi.sizeColumnsToFit();
-}
-
-function RefreshAllGridWhenChangeData() {
-    ShowHideLoading(true, OrderGrid);
-    setTimeout(function () {
-        CreateRowDataOrder();
-    }, 1);
-}
-
-// Lấy tham số tìm kiếm
-function GetParamSearch() {
-    return {
-        agentCode: $('#ListCboAgent').val(),
-        productType: $('#ListCboProductType').val(),
-        status: $('#ListCboStatus').val(),
-        fromDate: $('#FromDate').val(),
-        toDate: $('#ToDate').val(),
-        orderCode: $('#OrderCode').val(),
-        buyerName: $('#BuyerName').val(),
-        sortColumn: sortData.sortColumn,
-        sortOrder: sortData.sortOrder,
-    }
-}
-
-function CreateRowDataOrder() {
-    var listSearchOrder = GetParamSearch();
-    ShowHideLoading(true, OrderGrid);
-    $('#OrderGrid .ag-overlay-no-rows-center').hide();
-    $.ajax({
-        async: !false,
-        type: 'POST',
-        url: "/Order/GetRubberOrders",
-        data: listSearchOrder,
-        dataType: "json",
-        success: function (data) {
-            ListDataFull = data;
-            gridApi.setGridOption("rowData", data);
-            ShowHideLoading(false, OrderGrid);
-        },
-        error: function () {
-            ShowHideLoading(false, OrderGrid);
-            NotificationToast("danger", "Lỗi khi tải dữ liệu");
-        }
-    });
-}
-
-// Custom Header
-function CustomHeaderOrder() { }
-
-CustomHeaderOrder.prototype.init = function (params) {
-    this.params = params;
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'customHeaderLabel d-flex flex-wrap align-items-center justify-content-between';
-    this.eGui.innerHTML = `
-        <div class="customSortDownLabel">
-            <i class="ti ti-sort-descending ag-sort-descending-icon ag-hidden"></i>
-        </div>
-        <div class="d-flex flex-column">
-            <span>${params.displayName}</span>
-        </div>
-        <div class="customSortUpLabel">
-            <i class="ti ti-sort-ascending ag-sort-ascending-icon ag-hidden"></i>
-        </div>
-    `;
-
-    this.eSortDownButton = this.eGui.querySelector('.customSortDownLabel');
-    this.eSortUpButton = this.eGui.querySelector('.customSortUpLabel');
-
-    if (sortData.sortColumnEventActual == params.column.colId) {
-        if (sortData.sortOrderEventActual == 'asc') {
-            $(this.eSortUpButton).find('.ag-sort-ascending-icon').removeClass('ag-hidden');
-        } else {
-            $(this.eSortDownButton).find('.ag-sort-descending-icon').removeClass('ag-hidden');
-        }
-    } else {
-        sortData.sortColumnEventActual = params.column.colId;
-        sortData.sortOrderEventActual = params.sortOrderDefault;
-    }
-
-    if (this.params.enableSorting) {
-        this.onSortChangedListener = this.onSortChanged.bind(this);
-        this.eGui.addEventListener('click', this.onSortChangedListener);
-    } else {
-        this.eGui.removeChild(this.eSortDownButton);
-        this.eGui.removeChild(this.eSortUpButton);
-    }
-};
-
-function cellStyle_Col_Model_EventActual(params) {
-    let cellAttr = {};
-    cellAttr['text-align'] = 'center';
-    return cellAttr;
-}
-
-CustomHeaderOrder.prototype.onSortChanged = function () {
-    $('.ag-sort-ascending-icon').not($(this.eSortUpButton)).addClass('ag-hidden');
-    $('.ag-sort-descending-icon').not($(this.eSortDownButton)).addClass('ag-hidden');
-
-    if (!$(this.eSortUpButton).hasClass('ag-hidden') || ($(this.eSortDownButton).hasClass('ag-hidden') && $(this.eSortUpButton).hasClass('ag-hidden'))) {
-        $(this.eSortDownButton).removeClass('ag-hidden');
-        $(this.eSortUpButton).addClass('ag-hidden');
-        sortData.sortOrderEventActual = 'desc';
-    } else if (!$(this.eSortDownButton).hasClass('ag-hidden')) {
-        $(this.eSortUpButton).removeClass('ag-hidden');
-        $(this.eSortDownButton).addClass('ag-hidden');
-        sortData.sortOrderEventActual = 'asc';
-    }
-    sortData.sortColumnEventActual = this.params.column.colId;
-    this.onSortRequested();
-};
-
-CustomHeaderOrder.prototype.getGui = function () {
-    return this.eGui;
-};
-
-CustomHeaderOrder.prototype.onSortRequested = function () {
-    RefreshAllGridWhenChangeData();
-};
-
-CustomHeaderOrder.prototype.destroy = function () {
-    this.eGui.removeEventListener('click', this.onSortChangedListener);
-};
-
-function updateRowIndex() {
-    gridApi.forEachNodeAfterFilterAndSort((node, index) => {
-        node.setDataValue('STT', index + 1);
-    });
-}
-
-function InputNameFile(typeExcel) {
-    Swal.fire({
-        title: "Nhập tên file Excel",
-        input: "text",
-        inputAttributes: {
-            autocapitalize: "off"
-        },
-        showCancelButton: true,
-        confirmButtonText: "Xuất Excel",
-        showLoaderOnConfirm: true,
-        allowOutsideClick: () => !Swal.isLoading()
-    }).then((result) => {
-        if (result.isConfirmed) {
-            if (typeExcel == arrValueFilter.typeExcel) {
-                onExportExcelData(result.value);
-            }
-        }
-    });
-}
-
-// Export Excel Data
-function onExportExcelData(fileName) {
-    const headers = gridApi.getColumnDefs().filter(x => x.field != 'action').map(item => item.headerName);
-    const keys = gridApi.getColumnDefs().filter(x => x.field != 'action').map(item => item.field);
-    const data = ListDataFull;
-
-    const newData = data.map(obj => {
-        const newObj = {};
-        keys.forEach((k, i) => {
-            if (k == 'status') {
-                const statusMap = {
-                    0: 'Nháp',
-                    1: 'Đã xác nhận',
-                    2: 'Đang chất hàng',
-                    3: 'Đã giao hàng',
-                    9: 'Đã hủy'
-                };
-                newObj[headers[i]] = statusMap[obj[k]] || '';
-            } else if (['orderDate', 'expectedShipDate', 'shippedAt'].includes(k)) {
-                newObj[headers[i]] = obj[k] ? formatDate(obj[k]) : '';
-            } else if (['registerDate', 'updateDate'].includes(k)) {
-                newObj[headers[i]] = obj[k] ? formatDateTime(obj[k]) : '';
+        url: '/Order/GetAllOrders',
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                gridApiOrder.setGridOption('rowData', response.data);
+                updateStatusBar(response.data.length);
+                updateLastUpdateTime();
             } else {
-                newObj[headers[i]] = obj[k];
+                NotificationToast("error", response.message || 'Không thể tải dữ liệu');
             }
-        });
-        return newObj;
+        },
+        error: function(xhr, status, error) {
+            console.error('Load error:', error);
+            NotificationToast("error", 'Lỗi khi tải dữ liệu: ' + error);
+        },
+        complete: function() {
+            hideLoading();
+        }
     });
-
-    const ws = XLSX.utils.json_to_sheet(newData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, fileName + '.xlsx');
-    NotificationToast("success", "Xuất Excel thành công");
 }
 
-// Export Excel Mẫu
-function onExportTemplateExcel() {
-    var lstDataTemplate = {};
-    lstDataTemplate['Mã Đơn'] = 'ORD_001';
-    lstDataTemplate['Mã Đại Lý'] = 'AG_001';
-    lstDataTemplate['Ngày Đặt Hàng'] = '01/01/2025';
-    lstDataTemplate['Ngày Dự Kiến Giao'] = '15/01/2025';
-    lstDataTemplate['Tên Người Mua'] = 'Nguyễn Văn A';
-    lstDataTemplate['Công Ty Người Mua'] = 'Công ty ABC';
-    lstDataTemplate['Số Hợp Đồng'] = 'HD_001';
-    lstDataTemplate['Điểm Đến'] = 'TP.HCM';
-    lstDataTemplate['Địa Chỉ Giao Hàng'] = '123 Đường ABC, Quận 1';
-    lstDataTemplate['Loại Sản Phẩm'] = 'SVR10';
-    lstDataTemplate['TSC Mục Tiêu (%)'] = '60.00';
-    lstDataTemplate['DRC Mục Tiêu (%)'] = '57.00';
-    lstDataTemplate['Tổng Khối Lượng (Kg)'] = '1000.000';
-    lstDataTemplate['Đơn Giá'] = '50000.00';
-    lstDataTemplate['Trạng Thái'] = '0';
-    lstDataTemplate['Ghi Chú'] = 'Ghi chú mẫu';
-    lstDataTemplate = [lstDataTemplate];
-
-    const ws = XLSX.utils.json_to_sheet(lstDataTemplate);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, 'Mẫu Đơn Hàng Cao Su.xlsx');
-    NotificationToast("success", "Xuất Excel mẫu thành công");
-}
-
-// Import Excel Data
-function ImportExcelData(rows) {
+// ========================================
+// LOAD AGENTS
+// ========================================
+function loadAgents() {
     $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/Order/ImportDataLstData",
+        url: '/Order/GetAgents',
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                const $select = $('#agentId');
+                $select.empty().append('<option value="">-- Chọn đại lý --</option>');
+                
+                response.data.forEach(agent => {
+                    $select.append(`<option value="${agent.agentId}">${agent.agentName} (${agent.agentCode})</option>`);
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Load agents error:', error);
+        }
+    });
+}
+
+// ========================================
+// SHOW ADD MODAL
+// ========================================
+function showAddModal() {
+    $('#modalTitle').text('Thêm đơn hàng mới');
+    $('#orderId').val('');
+    $('#orderForm')[0].reset();
+    $('#orderDate').val(new Date().toISOString().split('T')[0]);
+    $('#modalOrder').fadeIn(300);
+}
+
+// ========================================
+// EDIT ORDER
+// ========================================
+function editOrder(orderId) {
+    showLoading();
+    
+    $.ajax({
+        url: `/Order/GetOrderById/${orderId}`,
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                const order = response.data;
+                
+                $('#modalTitle').text('Sửa đơn hàng');
+                $('#orderId').val(order.orderId);
+                $('#agentId').val(order.agentId);
+                
+                // Format date
+                if (order.orderDate) {
+                    const date = new Date(order.orderDate);
+                    $('#orderDate').val(date.toISOString().split('T')[0]);
+                }
+                
+                $('#customerName').val(order.customerName || '');
+                $('#shipmentMethod').val(order.shipmentMethod || '');
+                $('#totalNetKg').val(order.totalNetKg || '');
+                $('#notes').val(order.notes || '');
+                
+                $('#modalOrder').fadeIn(300);
+            } else {
+                NotificationToast("error",response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Load order error:', error);
+            NotificationToast("error",'Lỗi khi tải thông tin đơn hàng');
+        },
+        complete: function() {
+            hideLoading();
+        }
+    });
+}
+
+// ========================================
+// SAVE ORDER
+// ========================================
+function saveOrder() {
+    // Validation
+    if (!$('#agentId').val()) {
+        NotificationToast("error",'Vui lòng chọn đại lý');
+        $('#agentId').focus();
+        return;
+    }
+    
+    if (!$('#orderDate').val()) {
+        NotificationToast("error",'Vui lòng chọn ngày đặt hàng');
+        $('#orderDate').focus();
+        return;
+    }
+    
+    const orderId = $('#orderId').val();
+    const isEdit = orderId !== '';
+    
+    const data = {
+        orderId: isEdit ? parseInt(orderId) : 0,
+        agentId: $('#agentId').val(),
+        orderDate: $('#orderDate').val(),
+        customerName: $('#customerName').val(),
+        shipmentMethod: $('#shipmentMethod').val(),
+        totalNetKg: $('#totalNetKg').val() ? parseFloat($('#totalNetKg').val()) : null,
+        notes: $('#notes').val()
+    };
+    
+    const url = isEdit ? '/Order/UpdateOrder' : '/Order/CreateOrder';
+    const method = isEdit ? 'PUT' : 'POST';
+    
+    showLoading();
+    
+    $.ajax({
+        url: url,
+        type: method,
         contentType: 'application/json',
-        data: JSON.stringify(rows),
-        success: function (res) {
-            NotificationToast("success", "Nhập Excel thành công");
-            RefreshAllGridWhenChangeData();
+        data: JSON.stringify(data),
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
         },
-        error: function () {
-            NotificationToast("danger", "Nhập Excel thất bại");
-        }
-    });
-}
-
-// Bắt đầu chỉnh sửa ô đang chọn
-function onBtStartEditing() {
-    const selectedNode = gridApi.getFocusedCell();
-    if (selectedNode) {
-        gridApi.startEditingCell({
-            rowIndex: selectedNode.rowIndex,
-            colKey: selectedNode.column.getId()
-        });
-    }
-}
-
-// Phê duyệt đơn hàng
-function ApproveOrder(orderId, status) {
-    $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/Order/ApproveOrder",
-        dataType: 'json',
-        data: { orderId: orderId, status: status },
-        success: function (res) {
-            Toast.fire({
-                icon: "success",
-                title: "Phê duyệt đơn hàng thành công"
-            });
-            RefreshAllGridWhenChangeData();
-        },
-        error: function () {
-            Toast.fire({
-                icon: "danger",
-                title: "Phê duyệt đơn hàng thất bại"
-            });
-        }
-    });
-}
-
-function ApproveAllOrders(status) {
-    $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/Order/ApproveAllOrders",
-        dataType: 'json',
-        data: { status: status },
-        success: function (res) {
-            if (res == 1) {
-                NotificationToast("success", "Phê duyệt tất cả đơn hàng thành công");
+        success: function(response) {
+            if (response.success) {
+                NotificationToast("success", response.message);
+                closeModal();
+                loadOrders();
+            } else {
+                NotificationToast("error", response.message);
             }
-            RefreshAllGridWhenChangeData();
         },
-        error: function () {
-            NotificationToast("danger", "Phê duyệt tất cả đơn hàng thất bại");
+        error: function(xhr, status, error) {
+            console.error('Save error:', error);
+            NotificationToast("error",'Lỗi khi lưu: ' + error);
+        },
+        complete: function() {
+            hideLoading();
         }
     });
 }
 
-function UpdateOrderStatus() {
-    var statusData = $('#ListCboStatusOrder').val();
-
-    if (statusData == '*') {
-        ValidateError('ListCboStatusOrder');
-        NotificationToast("danger", "Vui lòng chọn trạng thái");
-        return false;
+// ========================================
+// DELETE ORDER
+// ========================================
+function deleteOrder(orderId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+        return;
     }
-
+    
+    showLoading();
+    
     $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/Order/UpdateOrderStatus",
-        dataType: 'json',
-        data: { status: statusData },
-        success: function (res) {
-            if (res == 1) {
-                NotificationToast("success", "Đổi trạng thái thành công");
-            }
-            RefreshAllGridWhenChangeData();
+        url: `/Order/DeleteOrder/${orderId}`,
+        type: 'DELETE',
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
         },
-        error: function () {
-            NotificationToast("danger", "Đổi trạng thái thất bại");
+        success: function(response) {
+            if (response.success) {
+                NotificationToast("success",response.message);
+                loadOrders();
+            } else {
+                NotificationToast("error",response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Delete error:', error);
+            NotificationToast("error",'Lỗi khi xóa: ' + error);
+        },
+        complete: function() {
+            hideLoading();
         }
     });
 }
 
-function EditOrderData(orderId) {
-    // Logic mở form edit đơn hàng
-    var orderData = ListDataFull.find(x => x.orderId == orderId);
-    if (orderData) {
-        // Hiển thị modal hoặc form edit với dữ liệu
-        $('#OrderModal').modal('show');
-        // Fill data vào form...
-    }
-}
-
-function DeleteOrderData(orderId) {
-    Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: "Bạn có chắc chắn muốn xóa đơn hàng này?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
+// ========================================
+// UPDATE STATUS
+// ========================================
+function updateStatus(orderId, currentStatus) {
+    const statusOptions = [
+        { value: 0, text: 'Mới tạo' },
+        { value: 1, text: 'Đang xử lý' },
+        { value: 2, text: 'Đã xuất kho' },
+        { value: 3, text: 'Đã giao hàng' },
+        { value: 4, text: 'Hoàn thành' },
+        { value: 5, text: 'Đã hủy' }
+    ];
+    
+    let html = '<select id="statusSelect" class="form-control">';
+    statusOptions.forEach(opt => {
+        const selected = opt.value === currentStatus ? 'selected' : '';
+        html += `<option value="${opt.value}" ${selected}>${opt.text}</option>`;
+    });
+    html += '</select>';
+    
+    const newStatus = prompt(`Chọn trạng thái mới:\n\n${html}\n\nNhập số từ 0-5:`);
+    
+    if (newStatus !== null) {
+        const statusNum = parseInt(newStatus);
+        if (statusNum >= 0 && statusNum <= 5) {
+            showLoading();
+            
             $.ajax({
-                async: true,
-                method: 'POST',
-                url: "/Order/DeleteOrder",
-                data: { orderId: orderId },
-                success: function (res) {
-                    Toast.fire({
-                        icon: "success",
-                        title: "Xóa đơn hàng thành công"
-                    });
-                    RefreshAllGridWhenChangeData();
+                url: '/Order/UpdateStatus',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ orderId: orderId, status: statusNum }),
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                 },
-                error: function () {
-                    Toast.fire({
-                        icon: "danger",
-                        title: "Xóa đơn hàng thất bại"
-                    });
+                success: function(response) {
+                    if (response.success) {
+                        NotificationToast("success",response.message);
+                        loadOrders();
+                    } else {
+                        NotificationToast("error",response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Update status error:', error);
+                    NotificationToast("error",'Lỗi khi cập nhật trạng thái');
+                },
+                complete: function() {
+                    hideLoading();
                 }
             });
+        } else {
+            NotificationToast("error",'Trạng thái không hợp lệ. Vui lòng nhập số từ 0-5.');
+        }
+    }
+}
+
+// ========================================
+// EXPORT TO EXCEL
+// ========================================
+function exportAllToExcel() {
+    showLoading();
+    
+    $.ajax({
+        url: '/Order/ExportToExcel',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify([]),
+        xhrFields: {
+            responseType: 'blob'
+        },
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+        },
+        success: function(blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Orders_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            NotificationToast("success",'Xuất Excel thành công');
+        },
+        error: function(xhr, status, error) {
+            console.error('Export error:', error);
+            NotificationToast("error",'Lỗi khi xuất Excel');
+        },
+        complete: function() {
+            hideLoading();
         }
     });
 }
 
-function EditOrder(params) {
-    // Chỉ cho phép edit nếu đơn hàng chưa được xác nhận hoặc đã giao
-    return params.data.status != arrValueFilter.statusShipped &&
-        params.data.status != arrValueFilter.statusCancelled;
+function exportSelectedToExcel() {
+    const selectedRows = gridApiOrder.getSelectedRows();
+    if (selectedRows.length === 0) {
+        NotificationToast("error",'Vui lòng chọn ít nhất 1 đơn hàng');
+        return;
+    }
+    
+    const orderIds = selectedRows.map(row => row.orderId);
+    
+    showLoading();
+    
+    $.ajax({
+        url: '/Order/ExportToExcel',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(orderIds),
+        xhrFields: {
+            responseType: 'blob'
+        },
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+        },
+        success: function(blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Orders_Selected_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            NotificationToast("success",'Xuất Excel thành công');
+        },
+        error: function(xhr, status, error) {
+            console.error('Export error:', error);
+            NotificationToast("error",'Lỗi khi xuất Excel');
+        },
+        complete: function() {
+            hideLoading();
+        }
+    });
+}
+
+// ========================================
+// SELECTION CHANGED
+// ========================================
+function onSelectionChanged() {
+    const selectedRows = gridApiOrder.getSelectedRows();
+    const count = selectedRows.length;
+    
+    if (count > 0) {
+        $('#selectedRecords').text(`Đã chọn: ${count}`).show();
+        $('#btnExportSelected').prop('disabled', false);
+    } else {
+        $('#selectedRecords').hide();
+        $('#btnExportSelected').prop('disabled', true);
+    }
+}
+
+// ========================================
+// CLOSE MODAL
+// ========================================
+function closeModal() {
+    $('#modalOrder').fadeOut(300);
+    $('#orderForm')[0].reset();
+}
+
+// ========================================
+// UPDATE STATUS BAR
+// ========================================
+function updateStatusBar(total) {
+    $('#totalRecords').text(`Tổng: ${total} đơn hàng`);
+}
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN');
+    $('#lastUpdate').text(`Cập nhật lần cuối: ${timeStr}`);
+}
+
+// ========================================
+// NOTIFICATIONS
+// ========================================
+
+function showLoading() {
+    // TODO: Implement loading spinner
+    console.log('Loading...');
+}
+
+function hideLoading() {
+    // TODO: Hide loading spinner
+    console.log('Loading complete');
 }

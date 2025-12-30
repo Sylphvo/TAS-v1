@@ -103,7 +103,7 @@ async function handleForgotPassword() {
         });
 
         if (response.success) {
-            showSuccess(response.message);
+            NotificationToast("success", response.message);
             
             // Disable form
             $('#emailOrUsername').prop('disabled', true);

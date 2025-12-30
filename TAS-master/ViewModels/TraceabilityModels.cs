@@ -1,5 +1,5 @@
 ﻿using TAS.Models;
-using TAS.Models.DTOs;
+using TAS.DTOs;
 using TAS.TagHelpers;
 
 namespace TAS.ViewModels

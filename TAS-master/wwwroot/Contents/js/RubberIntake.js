@@ -707,9 +707,9 @@ function formatNumber(value, decimals = 0) {
 
 function updateRowNumbers() {
     let counter = 1;
-    gridApiIntake.forEachNodeAfterFilterAndSort(node => {
-        node.setDataValue('rowNo', counter++);
-    });
+    //gridApiIntake.forEachNodeAfterFilterAndSort(node => {
+    //    node.setDataValue('rowNo', counter++);
+    //});
 }
 
 function onCellValueChanged(event) {

@@ -203,16 +203,7 @@ namespace TAS.ViewModels
 			}
 		}
 		#region Resx Dual Language
-		public List<string> GetAllKeys()
-		{
-			var vi = LoadXml(_viPath);
-			var en = LoadXml(_enPath);
-
-			var viKeys = vi.Elements("data").Select(x => x.Attribute("name")!.Value);
-			var enKeys = en.Elements("data").Select(x => x.Attribute("name")!.Value);
-
-			return viKeys.Union(enKeys).Distinct().OrderBy(x => x).ToList();
-		}
+		
 		public string? GetValueByKey(string key)
 		{
 			string culture = _lang.GetUiCulture();

@@ -1,111 +1,272 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TAS.Helpers;
-using TAS.Models;
-using TAS.Models.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using TAS.DTOs;
 using TAS.ViewModels;
+using static Azure.Core.HttpHeader;
 
 namespace TAS.Controllers
 {
+	[Authorize]
 	public class OrderController : Controller
 	{
-		private readonly OrderModels models;
+		private readonly OrderModels _orderModels;
+		private readonly ILogger<OrderController> _logger;
 		private readonly CommonModels _common;
-		
-		public OrderController(OrderModels _models, CommonModels common, ILanguageService lang)
+
+		public OrderController(OrderModels orderModels, ILogger<OrderController> logger, CommonModels common)
 		{
-			models = _models;
+			_orderModels = orderModels;
+			_logger = logger;
 			_common = common;
 		}
 
-		[Breadcrumb("key_orderinfo")]
-		public IActionResult Order()
+		// ========================================
+		// GET: /Order/Index
+		// ========================================
+		[Breadcrumb("key_Order")]
+		public IActionResult Index()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_orderinfo");			
+			ViewData["Title"] = _common.GetValueByKey("key_Order");
 			return View();
 		}
 
-		#region Handle Data
-
-		[HttpPost]
-		public async Task<IActionResult> GetRubberOrders()
+		// ========================================
+		// GET: /Order/GetAllOrders
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetAllOrders()
 		{
-			var lstData = await models.GetRubberOrderAsync();
-			return new JsonResult(lstData);
+			try
+			{
+				var orders = await _orderModels.GetAllOrdersAsync();
+				return Json(new { success = true, data = orders });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAllOrders");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+			}
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> GetRubberOrderById(long orderId)
+		// ========================================
+		// GET: /Order/GetOrderById/{id}
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetOrderById(long id)
 		{
-			var data = await models.GetRubberOrderByIdAsync(orderId);
-			return new JsonResult(data);
+			try
+			{
+				var order = await _orderModels.GetOrderByIdAsync(id);
+				if (order == null)
+				{
+					return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+				}
+				return Json(new { success = true, data = order });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetOrderById");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+			}
 		}
 
+		// ========================================
+		// POST: /Order/CreateOrder
+		// ========================================
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] RubberOrderDto rubberOrder)
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> CreateOrder([FromBody] RubberOrderRequest request)
 		{
-			int result = models.AddOrUpdateRubberOrder(rubberOrder);
-			return Json(result);
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+				}
+
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _orderModels.CreateOrderAsync(request, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Order created: {result.OrderId} by {userName}");
+					return Json(new { success = true, message = "Tạo đơn hàng thành công", orderId = result.OrderId });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in CreateOrder");
+				return Json(new { success = false, message = "Lỗi khi tạo đơn hàng" });
+			}
 		}
 
-		[HttpPost]
-		public JsonResult AddOrUpdateFull([FromBody] List<RubberOrderDto> rubberOrders)
+		// ========================================
+		// PUT: /Order/UpdateOrder
+		// ========================================
+		[HttpPut]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateOrder([FromBody] RubberOrderRequest request)
 		{
-			int result = models.AddOrUpdateRubberOrderFull(rubberOrders);
-			return Json(result);
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+				}
+
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _orderModels.UpdateOrderAsync(request, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Order updated: {request.OrderId} by {userName}");
+					return Json(new { success = true, message = "Cập nhật đơn hàng thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in UpdateOrder");
+				return Json(new { success = false, message = "Lỗi khi cập nhật đơn hàng" });
+			}
 		}
 
-		[HttpPost]
-		public JsonResult DeleteOrder(long orderId)
+		// ========================================
+		// DELETE: /Order/DeleteOrder/{id}
+		// ========================================
+		[HttpDelete]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> DeleteOrder(long id)
 		{
-			return Json(models.DeleteRubberOrder(orderId));
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _orderModels.DeleteOrderAsync(id, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Order deleted: {id} by {userName}");
+					return Json(new { success = true, message = "Xóa đơn hàng thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in DeleteOrder");
+				return Json(new { success = false, message = "Lỗi khi xóa đơn hàng" });
+			}
 		}
 
+		// ========================================
+		// POST: /Order/UpdateStatus
+		// ========================================
 		[HttpPost]
-		public JsonResult ApproveOrder(long orderId, int status)
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusRequest request)
 		{
-			return Json(models.ApproveRubberOrder(orderId, status));
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _orderModels.UpdateOrderStatusAsync(request.OrderId, request.Status, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Order status updated: {request.OrderId} to {request.Status} by {userName}");
+					return Json(new { success = true, message = "Cập nhật trạng thái thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in UpdateStatus");
+				return Json(new { success = false, message = "Lỗi khi cập nhật trạng thái" });
+			}
 		}
 
+		// ========================================
+		// POST: /Order/MarkShipped
+		// ========================================
 		[HttpPost]
-		public JsonResult ApproveAllOrders(int status)
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> MarkShipped([FromBody] MarkShippedRequest request)
 		{
-			return Json(models.ApproveAllRubberOrders(status));
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _orderModels.MarkShippedAsync(request.OrderId, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Order marked as shipped: {request.OrderId} by {userName}");
+					return Json(new { success = true, message = "Đánh dấu đã xuất hàng thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in MarkShipped");
+				return Json(new { success = false, message = "Lỗi khi đánh dấu xuất hàng" });
+			}
 		}
 
-		[HttpPost]
-		public JsonResult UpdateOrderStatus(long orderId, int status)
+		// ========================================
+		// GET: /Order/GetAgents
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetAgents()
 		{
-			return Json(models.UpdateOrderStatus(orderId, status));
+			try
+			{
+				var agents = await _orderModels.GetAgentsAsync();
+				return Json(new { success = true, data = agents });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAgents");
+				return Json(new { success = false, message = "Lỗi khi tải danh sách đại lý" });
+			}
 		}
 
+		// ========================================
+		// POST: /Order/ExportToExcel
+		// ========================================
 		[HttpPost]
-		public JsonResult ImportDataLstData([FromBody] List<RubberOrderDto> rubberOrders)
+		public async Task<IActionResult> ExportToExcel([FromBody] List<long> orderIds)
 		{
-			int result = models.ImportRubberOrders(rubberOrders);
-			return Json(result);
-		}
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var fileBytes = await _orderModels.ExportToExcelAsync(orderIds, userName);
 
-		[HttpPost]
-		public async Task<IActionResult> GetOrdersByAgent(string agentCode)
-		{
-			var lstData = await models.GetRubberOrdersByAgentAsync(agentCode);
-			return new JsonResult(lstData);
+				var fileName = $"Orders_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+				return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in ExportToExcel");
+				return Json(new { success = false, message = "Lỗi khi xuất Excel" });
+			}
 		}
+	}
 
-		[HttpPost]
-		public async Task<IActionResult> GetOrdersByStatus(int status)
-		{
-			var lstData = await models.GetRubberOrdersByStatusAsync(status);
-			return new JsonResult(lstData);
-		}
+	// ========================================
+	// REQUEST MODELS
+	// ========================================
+	public class UpdateStatusRequest
+	{
+		public long OrderId { get; set; }
+		public byte Status { get; set; }
+	}
 
-		[HttpPost]
-		public async Task<IActionResult> GetOrdersByDateRange(DateTime fromDate, DateTime toDate)
-		{
-			var lstData = await models.GetRubberOrdersByDateRangeAsync(fromDate, toDate);
-			return new JsonResult(lstData);
-		}
-
-		#endregion
+	public class MarkShippedRequest
+	{
+		public long OrderId { get; set; }
 	}
 }

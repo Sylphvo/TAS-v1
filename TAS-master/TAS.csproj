@@ -714,6 +714,7 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="itext7" Version="9.4.0" />
@@ -740,7 +741,6 @@
     <Folder Include="Migrations\" />
     <Folder Include="Publish\" />
     <Folder Include="wwwroot\Contents\css\UserAccount\" />
-    <Folder Include="wwwroot\Contents\js\Order\" />
   </ItemGroup>
 
   <ItemGroup>
