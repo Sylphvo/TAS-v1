@@ -79,7 +79,7 @@
                          AG-GRID TABLE
                     ======================================== -->
                     <div id="myGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
-
+                    <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
                     <!-- ========================================
                          HIDDEN FILE INPUT
                     ======================================== -->
@@ -102,6 +102,32 @@
 
     <!-- Custom JS -->
     <script src="~/Contents/js/RubberIntake.js"></script>
+    <script>
+        var agPaging = 'ag-paging-footer';
+        var IsOptionAll = false;
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridDiv = document.querySelector('#myGrid');
+            gridApiIntake = agGrid.createGrid(gridDiv, gridOptions);
+
+            // Load initial data
+            loadData();
+            // Setup filter change events
+            loadAllCombos();
+            RegisterCheckAll();
+            //đăng ký select trang
+            $('#selectorPaging').change(function (e) {
+                let selectPage = $(this).val();
+                IsOptionAll = selectPage == '*';
+                loadData();
+            });
+            setTimeout(() => {
+                ApplyCboSelect2();
+            }, 1000);
+        });
+    </script>
 }
 
 @section Styles {

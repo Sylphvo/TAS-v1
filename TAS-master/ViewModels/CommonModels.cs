@@ -36,7 +36,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     SELECT 
                         AgentCode AS [Value],
-                        CONCAT(AgentCode, ' - ', AgentName) AS [Text]
+                        AgentName AS [Text]
                     FROM RubberAgent
                     WHERE IsActive = 1
                     ORDER BY AgentCode
@@ -62,7 +62,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     SELECT 
                         FarmCode AS [Value],
-                        CONCAT(FarmCode, ' - ', FarmerName) AS [Text]
+                        FarmerName AS [Text]
                     FROM RubberFarm
                     WHERE IsActive = 1
                     ORDER BY FarmCode
@@ -88,7 +88,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     SELECT 
                         FarmCode AS [Value],
-                        CONCAT(FarmCode, ' - ', FarmerName) AS [Text]
+                        FarmerName AS [Text]
                     FROM RubberFarm
                     WHERE IsActive = 1
                         AND AgentCode = @AgentCode
@@ -115,7 +115,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     SELECT 
                         OrderCode AS [Value],
-                        CONCAT(OrderCode, ' - ', ISNULL(BuyerCompany, N'Chưa có tên')) AS [Text]
+                        ISNULL(BuyerCompany, N'Chưa có tên') AS [Text]
                     FROM RubberOrder
                     WHERE Status IN (1, 2)  -- Mới hoặc Đang xử lý
                     ORDER BY OrderDate DESC, OrderCode DESC
@@ -141,7 +141,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     SELECT 
                         PondCode AS [Value],
-                        CONCAT(PondCode, ' - ', PondName) AS [Text]
+                        PondName AS [Text]
                     FROM RubberPond
                     WHERE Status = 1  -- Sẵn sàng
                     ORDER BY PondCode
@@ -224,38 +224,7 @@ namespace TAS.ViewModels
 		}
 		// Load file
 		public XElement LoadXml(string path) => XElement.Load(path);
-		public XElement LoadXmlvi() => XElement.Load(_viPath);
-		public XElement LoadXmlen() => XElement.Load(_enPath);
-		// Save file
-		public void SaveXml() {
-			LoadXmlvi().Save(_viPath);
-			LoadXmlen().Save(_enPath);
-		}
-		public void RegenerateMsgFile()
-		{
-			//BackupMsgFile();   // 🔥 luôn backup trước khi ghi
-
-			var keys = GetAllKeys();  // sorted
-
-			var sb = new System.Text.StringBuilder();
-
-			sb.AppendLine(@"@using Microsoft.Extensions.Localization
-@inject Microsoft.Extensions.Localization.IStringLocalizer<TAS.Resources.SharedResource> localizerShared
-@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
-			");
-			sb.AppendLine("<script>");
-			sb.AppendLine("var arrMsg = {");
-
-			foreach (var key in keys)
-			{
-				sb.AppendLine($"	{key}: '@localizer[\"{key}\"]',");
-			}
-
-			sb.AppendLine("};");
-			sb.AppendLine("document.querySelectorAll(\"[data-i18n]\").forEach(el => {\r\n\tconst key = el.getAttribute(\"data-i18n\");\r\n\tif (arrMsg[key]) {\r\n\t\tel.textContent = arrMsg[key];\r\n\t}\r\n});");
-			sb.AppendLine("</script>");
-			System.IO.File.WriteAllText(_msgViewPath, sb.ToString());
-		}
+		
 		#endregion
 	}
 }

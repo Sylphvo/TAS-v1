@@ -4013,11 +4013,11 @@ function ShowOrHideRowChildren(id_list, selector, funcSetValueArrParentIds, sort
         }
     }
 }
-function renderPagination(agPaging, IsOptionAll = false) {
+function renderPagination(agPaging, gridApiPaging,listDataPaging, IsOptionAll = false) {
     let idListPaging = 'ListPaging',idPaging = 'Paging',startCell = 'start-entries',lastCell = 'last-entries',totalCell = 'total-entries';
     let element =
     `<div class="grid-info">
-        <div>
+        <div class="ag-paging-grid">
             <span>${arrMsg.key_rowperpage}</span>:
             <select class="datatable-selector selector-paging cboSelect2NoSearch" name="per-page" id="selectorPaging">
                 <option value="5">5</option>
@@ -4045,14 +4045,14 @@ function renderPagination(agPaging, IsOptionAll = false) {
     }
 
     pagerApi = makePaginator({
-        data: ListDataFull,
+        data: listDataPaging,
         listEl: '#' + idPaging,
         pagerEl: '#' + idListPaging,
         page: 1,
         pageSize: $('.selector-paging').val(),
         renderItem: x => ``,
         onChange: s => {
-            gridApi.setGridOption("rowData", (IsOptionAll ? ListDataFull.slice(1, s.total) : ListDataFull.slice(s.start, s.last)));
+            gridApiPaging.setGridOption("rowData", (IsOptionAll ? listDataPaging.slice(1, s.total) : listDataPaging.slice(s.start, s.last)));
             OnChangePaging(s);
         }
     });

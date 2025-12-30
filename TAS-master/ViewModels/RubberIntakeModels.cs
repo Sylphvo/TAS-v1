@@ -34,14 +34,14 @@ namespace TAS.ViewModels
 			try
 			{
 				string strQuery = string.Empty;
-				if (agentCode != null || agentCode != "*") {
-					strQuery += " AND (@AgentCode IS NULL OR a.AgentCode = @AgentCode) ";
+				if (agentCode != null && agentCode != "*") {
+					strQuery += @" AND (@AgentCode IS NULL OR a.AgentCode = @AgentCode) ";
 				}
-				if (farmCode != null || farmCode != "*") {
-					strQuery += " AND (@FarmCode IS NULL OR i.FarmCode = @FarmCode) ";
+				if (farmCode != null && farmCode != "*") {
+					strQuery += @" AND (@FarmCode IS NULL OR i.FarmCode = @FarmCode) ";
 				}
 				if (status != null) {
-					strQuery += " AND (@Status IS NULL OR i.Status = @Status) ";
+					strQuery += @" AND (@Status IS NULL OR i.Status = @Status) ";
 				}
 
 				var sql = @"
@@ -73,7 +73,7 @@ namespace TAS.ViewModels
                     WHERE 1=1
                         " + strQuery + @"
 
-                    ORDER BY i.RegisterDate DESC, i.IntakeId DESC
+                    ORDER BY i.RegisterDate , i.IntakeId DESC
                 ";
 
 				return await _dbHelper.QueryAsync<RubberIntakeResponse>(sql, new

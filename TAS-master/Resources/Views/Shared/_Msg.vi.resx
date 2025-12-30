@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="key_rowperpage" xml:space="preserve">
-    <value>Số hàng trên mỗi trang</value>
+    <value>Kích thước trang</value>
   </data>
   <data name="key_showall" xml:space="preserve">
     <value>Hiện tất cả</value>
@@ -275,9 +275,6 @@
   </data>
   <data name="key_capnhatdulieuthanhcong">
     <value>Cập nhật dữ liệu thành công</value>
-  </data>
-  <data name="key_ho">
-    <value>Hồ</value>
   </data>
   <data name="key_lammoi">
     <value>Làm mới</value>

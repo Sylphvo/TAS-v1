@@ -150,7 +150,7 @@
  /* css paging ag-grid */
 .ag-paging-button-wrapper {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 5px 15px !important;
 }
@@ -292,4 +292,11 @@ select.cboSelect2NoSearch{
 }
 li.page-item button.page-link {
     padding: 5px 10px !important;
+}
+.ag-paging-grid {
+    display: flex;
+    align-items: center;
+}
+.grid-paging, .grid-info .ag-paging-grid select{
+    margin: 0 10px;
 }

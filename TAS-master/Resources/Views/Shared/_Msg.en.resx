@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="key_rowperpage" xml:space="preserve">
-    <value>Rows per page</value>
+    <value>Page Size</value>
   </data>
   <data name="key_showall" xml:space="preserve">
     <value>Show All</value>
@@ -250,7 +250,7 @@
     <value>Login</value>
   </data>
   <data name="key_chuacotaikhoan">
-    <value>Don't have an Account?</value>
+    <value>Dont have an Account?</value>
   </data>
   <data name="key_taotaikhoan">
     <value>Create Account</value>
@@ -275,9 +275,6 @@
   </data>
   <data name="key_capnhatdulieuthanhcong">
     <value>Update data successfully</value>
-  </data>
-  <data name="key_ho">
-    <value>Hồ</value>
   </data>
   <data name="key_lammoi">
     <value>Reload</value>

@@ -1,8 +1,8 @@
 // ========================================
 // GLOBAL VARIABLES
 // ========================================
-let gridApiIntake;
-let gridColumnApi;
+let gridApiIntake, gridColumnApi;
+var ListDataFull;
 let rowData = [];
 var arrValue = {
     statusInProgress: 0, // Đang xử lý
@@ -21,6 +21,9 @@ var arrValue = {
     selectFirst: true
 
 };
+var agentByCode = {};
+var farmByCode = {};
+
 // ========================================
 // AG GRID CONFIGURATION
 // ========================================
@@ -45,7 +48,7 @@ const gridOptions = {
             field: 'intakeCode',
             width: 170,
             minWidth: 170,
-            editable: false,
+            editable: true,
             filter: 'agTextColumnFilter',
             cellStyle: cellStyle_Col_Model_EventActual
         },
@@ -53,10 +56,19 @@ const gridOptions = {
             headerName: 'Đại lý',
             field: 'agentCode',
             width: 100,
-            editable: false,
+            editable: true,
             cellEditor: 'agSelectCellEditor',
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellStyle: cellStyle_Col_Model_EventActual,
+            cellEditorParams: () => ({
+                values: arrValue.comboAgent.map(f => f.value),
+                allowTyping: true,
+                searchType: 'matchAny',
+                cellRenderer: (p) => {
+                    const f = agentByCode[p.value];
+                    return f ? `${f.value} - ${f.text}` : p.value;
+                }
+            }),
         },
         {
             headerName: 'Tên đại lý',
@@ -76,7 +88,16 @@ const gridOptions = {
                 values: []  // Will be populated from ComboFarmCode
             },
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellStyle: cellStyle_Col_Model_EventActual,
+            cellEditorParams: () => ({
+                values: arrValue.comboFarmCode.map(f => f.value),
+                allowTyping: true,
+                searchType: 'matchAny',
+                cellRenderer: (p) => {
+                    const f = farmByCode[p.value];
+                    return f ? `${f.value} - ${f.text}` : p.value;
+                }
+            }),
         },
         {
             headerName: 'Tên Nhà vườn',
@@ -200,20 +221,6 @@ const gridOptions = {
     onRowDragEnd: onRowDragEnd
 };
 
-// ========================================
-// INITIALIZATION
-// ========================================
-document.addEventListener('DOMContentLoaded', function() {
-    const gridDiv = document.querySelector('#myGrid');
-    gridApiIntake = agGrid.createGrid(gridDiv, gridOptions);
-    
-    // Load initial data
-    loadData();
-    // Setup filter change events
-    loadAllCombos();
-    ApplyCboSelect2();
-    RegisterCheckAll();
-});
 
 function RegisterCheckAll() {
     $('.ag-header-select-all:not(.ag-hidden)').on('click', function (e) {
@@ -262,6 +269,8 @@ async function loadData() {
         } else {
             //NotificationToast('error', response.message || 'Lỗi khi tải dữ liệu');
         }
+		// Render pagination
+        renderPagination(agPaging, gridApiIntake, rowData, IsOptionAll);
     } catch (error) {
         console.error('Error loading data:', error);
         //NotificationToast('error', 'Lỗi kết nối server');
@@ -292,7 +301,7 @@ function addNewRow() {
         timeDate: ''
     };
     
-    gridApiIntake.applyTransaction({ add: [newRow], addIndex: 0 });
+    gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
     updateRowNumbers();
     
     NotificationToast('info', 'Đã thêm dòng mới. Hãy nhập thông tin và lưu.');
@@ -330,17 +339,17 @@ async function saveRow(rowIndex) {
         
         if (response.success) {
             NotificationToast('success', 'Lưu thành công');
-            
             // Update intakeId if new
             if (!data.intakeId) {
                 data.intakeId = response.intakeId;
             }
-            
             // Reload row
             gridApiIntake.applyTransaction({ update: [data] });
+            reloadPage();
         } else {
             NotificationToast('error', response.message || 'Lưu thất bại');
         }
+
     } catch (error) {
         console.error('Error saving row:', error);
         NotificationToast('error', 'Lỗi kết nối server');
@@ -704,7 +713,17 @@ function updateRowNumbers() {
 }
 
 function onCellValueChanged(event) {
-    console.log('Cell value changed:', event.colDef.field, event.newValue);
+    if (event.colDef.field == "agentCode" || event.colDef.field == "farmCode") {
+        if (event.colDef.field == "agentCode") {
+            let objData = arrValue.comboAgent.filter(x => x.value == event.newValue)
+            event.data.agentName = objData[objData.length - 1].text;
+        }
+        else if (event.colDef.field == "farmCode") {
+            let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue)
+            event.data.farmerName = objData[objData.length - 1].text;
+        }
+        gridApiIntake.applyTransaction({ update: [event.data] });
+    }
     
     // Auto calculate finishedProductKg if rubberKg or tscPercent changed
     if (event.colDef.field === 'rubberKg' || event.colDef.field === 'tscPercent') {
@@ -719,7 +738,6 @@ function onCellValueChanged(event) {
 }
 
 function onRowDragEnd(event) {
-    console.log('Row drag ended');
     updateRowNumbers();
 }
 
