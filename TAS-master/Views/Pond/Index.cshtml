@@ -1,0 +1,139 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Style {
+
+}
+<div class="RubberIntake-page">
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card table-card">
+                <div class="card-body">
+                    <!-- ========================================
+                         TOOLBAR
+                    ======================================== -->
+                    <div class="datatable-top " style="justify-content:flex-end">
+                        <!-- Left side: Filters -->
+                        <div class="button_filter">
+                        </div>
+
+                        <!-- Right side: Actions -->
+                        <div class="datatable-actions">
+                            <button type="button" id="btnAdd" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Thêm mới
+                            </button>
+                            <button type="button" id="btnRefresh" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ========================================
+                         AG-GRID TABLE
+                    ======================================== -->
+                    <div id="pondGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
+                    <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
+                    <!-- ========================================
+                         HIDDEN FILE INPUT
+                    ======================================== -->
+                    <input type="file" id="fileImport" accept=".xlsx,.xls" style="display:none;" onchange="handleFileImport(event)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal: Add/Edit Pond -->
+<div id="modalPond" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm hồ mới</h2>
+            <button class="btn-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="pondForm">
+                <input type="hidden" id="pondId" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="agentCode">
+                            <i class="fas fa-user-tie"></i>
+                            Đại lý <span class="required">*</span>
+                        </label>
+                        <select id="agentCode" class="form-control" required>
+                            <option value="">-- Chọn đại lý --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pondName">
+                            <i class="fas fa-water"></i>
+                            Tên hồ <span class="required">*</span>
+                        </label>
+                        <input type="text" id="pondName" class="form-control" required maxlength="255" placeholder="VD: Hồ số 1" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="capacityKg">
+                            <i class="fas fa-weight"></i>
+                            Dung tích (kg)
+                        </label>
+                        <input type="number" id="capacityKg" class="form-control" step="0.01" min="0" placeholder="50000.00" />
+                        <small class="form-text">Mặc định: 50,000 kg</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="dailyCapacityKg">
+                            <i class="fas fa-calendar-day"></i>
+                            Công suất/ngày (kg)
+                        </label>
+                        <input type="number" id="dailyCapacityKg" class="form-control" step="0.01" min="0" placeholder="5000.00" />
+                        <small class="form-text">Mặc định: 5,000 kg/ngày</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="currentNetKg">
+                            <i class="fas fa-balance-scale"></i>
+                            Khối lượng hiện tại (kg)
+                        </label>
+                        <input type="number" id="currentNetKg" class="form-control" step="0.01" min="0" placeholder="0.00" />
+                        <small class="form-text">Mặc định: 0 kg</small>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button class="btn btn-primary" id="btnSave">
+                <i class="fas fa-save"></i> Lưu
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================
+     SCRIPTS
+======================================== -->
+@section Scripts {
+    <!-- AG Grid -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+
+    <!-- SheetJS for Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="~/Contents/js/Pond/Pond.js"></script>
+    <script>
+        var agPaging = 'ag-paging-footer';
+        var IsOptionAll = false;
+        initPondPage();
+    </script>
+}
+
+@section Styles {
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/Contents/css/Pond/Pond.css" />
+}

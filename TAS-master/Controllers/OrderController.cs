@@ -167,7 +167,7 @@ namespace TAS.Controllers
 		// ========================================
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusRequest request)
+		public async Task<IActionResult> UpdateStatus([FromBody] UpdateOrderRequest request)
 		{
 			try
 			{
@@ -194,7 +194,7 @@ namespace TAS.Controllers
 		// ========================================
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> MarkShipped([FromBody] MarkShippedRequest request)
+		public async Task<IActionResult> MarkShipped([FromBody] MarkShippedOrderRequest request)
 		{
 			try
 			{
@@ -254,19 +254,5 @@ namespace TAS.Controllers
 				return Json(new { success = false, message = "Lỗi khi xuất Excel" });
 			}
 		}
-	}
-
-	// ========================================
-	// REQUEST MODELS
-	// ========================================
-	public class UpdateStatusRequest
-	{
-		public long OrderId { get; set; }
-		public byte Status { get; set; }
-	}
-
-	public class MarkShippedRequest
-	{
-		public long OrderId { get; set; }
 	}
 }

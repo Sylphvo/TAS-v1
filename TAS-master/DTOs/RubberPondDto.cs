@@ -4,40 +4,64 @@ using System.Collections.Generic;
 namespace TAS.DTOs
 {
 	// ========================================
-	// POND DTOs
+	// DTOs
 	// ========================================
 	public class RubberPondDto
 	{
 		public long PondId { get; set; }
 		public string PondCode { get; set; } = string.Empty;
 		public string AgentCode { get; set; } = string.Empty;
+		public string AgentName { get; set; } = string.Empty;
 		public string PondName { get; set; } = string.Empty;
 		public decimal CapacityKg { get; set; }
 		public decimal DailyCapacityKg { get; set; }
 		public decimal CurrentNetKg { get; set; }
-		public decimal RemainingCapacityKg => CapacityKg - CurrentNetKg;
-		public decimal UsagePercent => CapacityKg > 0
-			? Math.Round((CurrentNetKg / CapacityKg) * 100, 2)
-			: 0;
-		public byte Status { get; set; }
-		public string StatusText => Status switch
-		{
-			1 => "Sẵn sàng",
-			2 => "Đang sản xuất",
-			3 => "Bảo trì",
-			_ => "Không xác định"
-		};
-
-		// Navigation
-		public RubberAgentDto? Agent { get; set; }
+		public int Status { get; set; }
+		public DateTime RegisterDate { get; set; }
+		public string RegisterPerson { get; set; } = string.Empty;
+		public DateTime? UpdateDate { get; set; }
+		public string? UpdatePerson { get; set; }
+		public decimal UtilizationPercent { get; set; }
 	}
 
-	public class CreateRubberPondDto
+	public class RubberPondRequest
 	{
-		public string PondCode { get; set; } = string.Empty;
+		public long PondId { get; set; }
 		public string AgentCode { get; set; } = string.Empty;
 		public string PondName { get; set; } = string.Empty;
-		public decimal CapacityKg { get; set; } = 50000.00m;
-		public decimal DailyCapacityKg { get; set; } = 5000.00m;
+		public decimal? CapacityKg { get; set; }
+		public decimal? DailyCapacityKg { get; set; }
+		public decimal? CurrentNetKg { get; set; }
+	}
+
+	public class RubberPondResult
+	{
+		public bool Success { get; set; }
+		public string Message { get; set; } = string.Empty;
+		public long PondId { get; set; }
+	}
+	public class UpdateRubberPondResult
+	{
+		public long PondId { get; set; }
+		public int Status { get; set; }
+	}
+	public class RubberPondResponse
+	{
+
+		public int rowNo { get; set; }
+		public long PondId { get; set; }
+		public string PondCode { get; set; } = string.Empty;
+		public string AgentCode { get; set; } = string.Empty;
+		public string AgentName { get; set; } = string.Empty;
+		public string PondName { get; set; } = string.Empty;
+		public decimal CapacityKg { get; set; }
+		public decimal DailyCapacityKg { get; set; }
+		public decimal CurrentNetKg { get; set; }
+		public int Status { get; set; }
+		public DateTime RegisterDate { get; set; }
+		public string RegisterPerson { get; set; } = string.Empty;
+		public DateTime? UpdateDate { get; set; }
+		public string? UpdatePerson { get; set; }
+		public decimal UtilizationPercent { get; set; }
 	}
 }

@@ -1,122 +1,231 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TAS.DTOs;
-using TAS.Models;
-using TAS.Models.DTOs;
 using TAS.ViewModels;
+using static Azure.Core.HttpHeader;
 
 namespace TAS.Controllers
 {
+	[Authorize]
 	public class PondController : Controller
 	{
-		private readonly PondModels models;
+		private readonly PondModels _pondModels;
+		private readonly ILogger<PondController> _logger;
 		private readonly CommonModels _common;
 
-		public PondController(PondModels _models, CommonModels common)
+		public PondController(PondModels pondModels, ILogger<PondController> logger, CommonModels common)
 		{
-			models = _models;
+			_pondModels = pondModels;
+			_logger = logger;
 			_common = common;
 		}
 
-		[Breadcrumb("key_pondinfo")]
-		public IActionResult Pond()
+		// ========================================
+		// GET: /Pond/Index
+		// ========================================
+		[Breadcrumb("key_Lake")]
+		public IActionResult Index()
 		{
+			ViewData["Title"] = _common.GetValueByKey("key_Lake");
 			return View();
 		}
 
-		#region Handle Data
-
-		[HttpPost]
-		public async Task<IActionResult> GetRubberPonds()
+		// ========================================
+		// GET: /Pond/GetAllPonds
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetAllPonds()
 		{
-			var lstData = await models.GetRubberPondAsync();
-			return new JsonResult(lstData);
+			try
+			{
+				var ponds = await _pondModels.GetAllPondsAsync();
+				return Json(new { success = true, data = ponds });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAllPonds");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+			}
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> GetRubberPondById(long pondId)
+		// ========================================
+		// GET: /Pond/GetPondById/{id}
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetPondById(long id)
 		{
-			var data = await models.GetRubberPondByIdAsync(pondId);
-			return new JsonResult(data);
+			try
+			{
+				var pond = await _pondModels.GetPondByIdAsync(id);
+				if (pond == null)
+				{
+					return Json(new { success = false, message = "Không tìm thấy hồ" });
+				}
+				return Json(new { success = true, data = pond });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetPondById");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+			}
 		}
 
+		// ========================================
+		// POST: /Pond/CreatePond
+		// ========================================
 		[HttpPost]
-		public JsonResult AddOrUpdate([FromBody] RubberPondDto rubberPond)
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> CreatePond([FromBody] RubberPondRequest request)
 		{
-			int result = models.AddOrUpdateRubberPond(rubberPond);
-			return Json(result);
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+				}
+
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _pondModels.CreatePondAsync(request, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Pond created: {result.PondId} by {userName}");
+					return Json(new { success = true, message = "Tạo hồ thành công", pondId = result.PondId });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in CreatePond");
+				return Json(new { success = false, message = "Lỗi khi tạo hồ" });
+			}
 		}
 
-		[HttpPost]
-		public JsonResult AddOrUpdateFull([FromBody] List<RubberPondDto> rubberPonds)
+		// ========================================
+		// PUT: /Pond/UpdatePond
+		// ========================================
+		[HttpPut]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdatePond([FromBody] RubberPondRequest request)
 		{
-			int result = models.AddOrUpdateRubberPondFull(rubberPonds);
-			return Json(result);
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+				}
+
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _pondModels.UpdatePondAsync(request, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Pond updated: {request.PondId} by {userName}");
+					return Json(new { success = true, message = "Cập nhật hồ thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in UpdatePond");
+				return Json(new { success = false, message = "Lỗi khi cập nhật hồ" });
+			}
 		}
 
-		[HttpPost]
-		public JsonResult DeletePond(long pondId)
+		// ========================================
+		// DELETE: /Pond/DeletePond/{id}
+		// ========================================
+		[HttpDelete]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> DeletePond(long id)
 		{
-			return Json(models.DeleteRubberPond(pondId));
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _pondModels.DeletePondAsync(id, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Pond deleted: {id} by {userName}");
+					return Json(new { success = true, message = "Xóa hồ thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in DeletePond");
+				return Json(new { success = false, message = "Lỗi khi xóa hồ" });
+			}
 		}
 
+		// ========================================
+		// POST: /Pond/UpdateStatus
+		// ========================================
 		[HttpPost]
-		public JsonResult ApprovePond(long pondId, int status)
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateStatus([FromBody] UpdateRubberPondResult request)
 		{
-			return Json(models.ApproveRubberPond(pondId, status));
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var result = await _pondModels.UpdatePondStatusAsync(request.PondId, request.Status, userName);
+
+				if (result.Success)
+				{
+					_logger.LogInformation($"Pond status updated: {request.PondId} to {request.Status} by {userName}");
+					return Json(new { success = true, message = "Cập nhật trạng thái thành công" });
+				}
+
+				return Json(new { success = false, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in UpdateStatus");
+				return Json(new { success = false, message = "Lỗi khi cập nhật trạng thái" });
+			}
 		}
 
-		[HttpPost]
-		public JsonResult ApproveAllPonds(int status)
+		// ========================================
+		// GET: /Pond/GetAgents
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetAgents()
 		{
-			return Json(models.ApproveAllRubberPonds(status));
+			try
+			{
+				var agents = await _pondModels.GetAgentsAsync();
+				return Json(new { success = true, data = agents });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAgents");
+				return Json(new { success = false, message = "Lỗi khi tải danh sách đại lý" });
+			}
 		}
 
+		// ========================================
+		// POST: /Pond/ExportToExcel
+		// ========================================
 		[HttpPost]
-		public JsonResult UpdatePondStatus(long pondId, int status)
+		public async Task<IActionResult> ExportToExcel([FromBody] List<long> pondIds)
 		{
-			return Json(models.UpdatePondStatus(pondId, status));
-		}
+			try
+			{
+				var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
+				var fileBytes = await _pondModels.ExportToExcelAsync(pondIds, userName);
 
-		[HttpPost]
-		public JsonResult ImportDataLstData([FromBody] List<RubberPondDto> rubberPonds)
-		{
-			int result = models.ImportRubberPonds(rubberPonds);
-			return Json(result);
+				var fileName = $"Ponds_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+				return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in ExportToExcel");
+				return Json(new { success = false, message = "Lỗi khi xuất Excel" });
+			}
 		}
-
-		[HttpPost]
-		public async Task<IActionResult> GetPondsByAgent(string agentCode)
-		{
-			var lstData = await models.GetRubberPondsByAgentAsync(agentCode);
-			return new JsonResult(lstData);
-		}
-
-		[HttpPost]
-		public async Task<IActionResult> GetPondsByStatus(int status)
-		{
-			var lstData = await models.GetRubberPondsByStatusAsync(status);
-			return new JsonResult(lstData);
-		}
-
-		[HttpPost]
-		public async Task<IActionResult> GetActivePonds()
-		{
-			var lstData = await models.GetActivePondsAsync();
-			return new JsonResult(lstData);
-		}
-
-		[HttpPost]
-		public JsonResult UpdatePondInventory(long pondId, decimal currentNetKg)
-		{
-			return Json(models.UpdatePondInventory(pondId, currentNetKg));
-		}
-
-		[HttpPost]
-		public JsonResult CleanPond(long pondId)
-		{
-			return Json(models.CleanPond(pondId));
-		}
-
-		#endregion
 	}
 }

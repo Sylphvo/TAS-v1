@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TAS.Models.DTOs
+namespace TAS.DTOs
 {
 	// ========================================
 	// TRACEABILITY DTOs (Truy xuất nguồn gốc)
@@ -64,5 +64,22 @@ namespace TAS.Models.DTOs
 		public decimal TotalKg { get; set; }
 		public DateTime EarliestIntakeDate { get; set; }
 		public DateTime LatestIntakeDate { get; set; }
+	}
+	public class TraceabilityRowDto
+	{
+		public int OrderId { get; set; }
+		public int? ParentId { get; set; }
+		public int SortOrder { get; set; }
+		public string? OrderCode { get; set; }
+		public string? OrderName { get; set; }
+		public string? AgentCode { get; set; }
+		public string? AgentName { get; set; }
+		public string? FarmCode { get; set; }
+		public string? FarmerName { get; set; }
+		public DateTime? DatePurchase { get; set; }
+		public decimal? TotalFinishedProductKg { get; set; }
+		public decimal? TotalCentrifugeProductKg { get; set; }
+		public string SortList { get; set; } = string.Empty;
+		public bool IsOpenChild { get; set; }
 	}
 }

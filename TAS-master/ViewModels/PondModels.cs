@@ -1,521 +1,491 @@
+using ClosedXML.Excel;
+using Dapper;
+using System.Data;
 using TAS.DTOs;
-using TAS.Models;
-using TAS.Models.DTOs;
 using TAS.Repository;
 using TAS.TagHelpers;
 
 namespace TAS.ViewModels
 {
-    public class PondModels
-    {
-        private readonly ICurrentUser _userManage;
-        private readonly ILogger<PondModels> _logger;
-        ConnectDbHelper dbHelper = new ConnectDbHelper();
+	public class PondModels
+	{
+		private readonly ConnectDbHelper _dbHelper;
+		private readonly ILogger<PondModels> _logger;
 
-        public PondModels(ICurrentUser userManage, ILogger<PondModels> logger)
-        {
-            _userManage = userManage;
-            _logger = logger;
-        }
+		public PondModels(ConnectDbHelper dbHelper, ILogger<PondModels> logger)
+		{
+			_dbHelper = dbHelper;
+			_logger = logger;
+		}
 
-        #region Get Data
+		// ========================================
+		// GET ALL PONDS
+		// ========================================
+		public async Task<List<RubberPondResponse>> GetAllPondsAsync()
+		{
+			try
+			{
+				var sql = @"
+                    SELECT 
+						rowNo = ROW_NUMBER() OVER(ORDER BY p.RegisterDate DESC, p.PondId DESC),
+                        p.PondId,
+                        p.PondCode,
+                        p.AgentCode,
+                        a.AgentName,
+                        p.PondName,
+                        p.CapacityKg,
+                        p.DailyCapacityKg,
+                        p.CurrentNetKg,
+                        p.Status,
+                        p.RegisterDate,
+                        p.RegisterPerson,
+                        p.UpdateDate,
+                        p.UpdatePerson,
+                        -- Calculate utilization percentage
+                        CASE 
+                            WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
+                            ELSE 0
+                        END AS UtilizationPercent
+                    FROM RubberPond p
+                    INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+                    ORDER BY p.PondCode DESC
+                ";
 
-        // Lấy tất cả hồ/bồn
-        public async Task<List<RubberPondDto>> GetRubberPondAsync()
-        {
-            var sql = @"
-			SELECT 
-				rowNo = ROW_NUMBER() OVER(ORDER BY PondId DESC),
-				PondId,
-				PondCode,
-				AgentCode,
-				PondName,
-				Location,
-				CapacityKg,
-				CurrentNetKg,
-				Status,
-				LastCleanedAt = CONVERT(VARCHAR, LastCleanedAt, 111),
-				Note,
-				RegisterPerson,
-				RegisterDate = CONVERT(VARCHAR, RegisterDate, 111) + ' ' + CONVERT(VARCHAR(5), RegisterDate, 108),
-				UpdatePerson = ISNULL(UpdatePerson, RegisterPerson),
-				UpdateDate = CONVERT(VARCHAR, ISNULL(UpdateDate, RegisterDate), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdateDate, RegisterDate), 108)
-			FROM RubberPond
-			ORDER BY PondId DESC
-			";
-            return await dbHelper.QueryAsync<RubberPondDto>(sql);
-        }
+				var ponds = await _dbHelper.QueryAsync<RubberPondResponse>(sql);
+				return ponds.ToList();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAllPondsAsync");
+				throw;
+			}
+		}
 
-        // Lấy hồ/bồn theo ID
-        public async Task<RubberPondDto> GetRubberPondByIdAsync(long pondId)
-        {
-            var sql = @"
-			SELECT 
-				PondId,
-				PondCode,
-				AgentCode,
-				PondName,
-				Location,
-				CapacityKg,
-				CurrentNetKg,
-				Status,
-				LastCleanedAt,
-				Note,
-				RegisterPerson,
-				RegisterDate,
-				UpdatePerson,
-				UpdateDate
-			FROM RubberPond
-			WHERE PondId = @PondId
-			";
-            var result = await dbHelper.QueryAsync<RubberPondDto>(sql, new { PondId = pondId });
-            return result.FirstOrDefault()!;
-        }
+		// ========================================
+		// GET POND BY ID
+		// ========================================
+		public async Task<RubberPondDto?> GetPondByIdAsync(long pondId)
+		{
+			try
+			{
+				var sql = @"
+                    SELECT 
+                        p.PondId,
+                        p.PondCode,
+                        p.AgentCode,
+                        a.AgentName,
+                        p.PondName,
+                        p.CapacityKg,
+                        p.DailyCapacityKg,
+                        p.CurrentNetKg,
+                        p.Status,
+                        p.RegisterDate,
+                        p.RegisterPerson,
+                        p.UpdateDate,
+                        p.UpdatePerson,
+                        CASE 
+                            WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
+                            ELSE 0
+                        END AS UtilizationPercent
+                    FROM RubberPond p
+                    INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+                    WHERE p.PondId = @PondId
+                ";
 
-        // Lấy hồ/bồn theo mã đại lý
-        public async Task<List<RubberPondDto>> GetRubberPondsByAgentAsync(string agentCode)
-        {
-            var sql = @"
-			SELECT 
-				rowNo = ROW_NUMBER() OVER(ORDER BY PondId DESC),
-				PondId,
-				PondCode,
-				AgentCode,
-				PondName,
-				Location,
-				CapacityKg,
-				CurrentNetKg,
-				Status,
-				LastCleanedAt = CONVERT(VARCHAR, LastCleanedAt, 111),
-				Note,
-				UpdatePerson = ISNULL(UpdatePerson, RegisterPerson),
-				UpdateDate = CONVERT(VARCHAR, ISNULL(UpdateDate, RegisterDate), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdateDate, RegisterDate), 108)
-			FROM RubberPond
-			WHERE AgentCode = @AgentCode
-			ORDER BY PondId DESC
-			";
-            return await dbHelper.QueryAsync<RubberPondDto>(sql, new { AgentCode = agentCode });
-        }
+				return await _dbHelper.QueryFirstOrDefaultAsync<RubberPondDto>(sql, new { PondId = pondId });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetPondByIdAsync");
+				throw;
+			}
+		}
 
-        // Lấy hồ/bồn theo trạng thái
-        public async Task<List<RubberPondDto>> GetRubberPondsByStatusAsync(int status)
-        {
-            var sql = @"
-			SELECT 
-				rowNo = ROW_NUMBER() OVER(ORDER BY PondId DESC),
-				PondId,
-				PondCode,
-				AgentCode,
-				PondName,
-				Location,
-				CapacityKg,
-				CurrentNetKg,
-				Status,
-				LastCleanedAt = CONVERT(VARCHAR, LastCleanedAt, 111),
-				Note,
-				UpdatePerson = ISNULL(UpdatePerson, RegisterPerson),
-				UpdateDate = CONVERT(VARCHAR, ISNULL(UpdateDate, RegisterDate), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdateDate, RegisterDate), 108)
-			FROM RubberPond
-			WHERE Status = @Status
-			ORDER BY PondId DESC
-			";
-            return await dbHelper.QueryAsync<RubberPondDto>(sql, new { Status = status });
-        }
+		// ========================================
+		// CREATE POND
+		// ========================================
+		public async Task<RubberPondResult> CreatePondAsync(RubberPondRequest request, string createdBy)
+		{
+			try
+			{
+				// Generate PondCode
+				var pondCode = await GeneratePondCodeAsync();
 
-        // Lấy các hồ/bồn đang hoạt động
-        public async Task<List<RubberPondDto>> GetActivePondsAsync()
-        {
-            var sql = @"
-			SELECT 
-				rowNo = ROW_NUMBER() OVER(ORDER BY PondId DESC),
-				PondId,
-				PondCode,
-				AgentCode,
-				PondName,
-				Location,
-				CapacityKg,
-				CurrentNetKg,
-				Status,
-				LastCleanedAt = CONVERT(VARCHAR, LastCleanedAt, 111),
-				Note,
-				UpdatePerson = ISNULL(UpdatePerson, RegisterPerson),
-				UpdateDate = CONVERT(VARCHAR, ISNULL(UpdateDate, RegisterDate), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdateDate, RegisterDate), 108)
-			FROM RubberPond
-			WHERE Status = 1
-			ORDER BY PondId DESC
-			";
-            return await dbHelper.QueryAsync<RubberPondDto>(sql);
-        }
+				var sql = @"
+                    INSERT INTO RubberPond 
+                    (
+                        PondCode, AgentCode, PondName, 
+                        CapacityKg, DailyCapacityKg, CurrentNetKg,
+                        Status, RegisterDate, RegisterPerson
+                    )
+                    VALUES 
+                    (
+                        @PondCode, @AgentCode, @PondName,
+                        @CapacityKg, @DailyCapacityKg, @CurrentNetKg,
+                        @Status, GETDATE(), @RegisterPerson
+                    );
+                    SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
+                ";
 
-        #endregion
+				var pondId = await _dbHelper.QueryFirstOrDefaultAsync<long>(sql, new
+				{
+					PondCode = pondCode,
+					request.AgentCode,
+					request.PondName,
+					CapacityKg = request.CapacityKg ?? 50000.00m,
+					DailyCapacityKg = request.DailyCapacityKg ?? 5000.00m,
+					CurrentNetKg = request.CurrentNetKg ?? 0.00m,
+					Status = (byte)1, // 1 = Sẵn sàng
+					RegisterPerson = createdBy
+				});
 
-        #region Add/Update Data
+				return new RubberPondResult
+				{
+					Success = true,
+					Message = "Tạo hồ thành công",
+					PondId = pondId
+				};
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in CreatePondAsync");
+				return new RubberPondResult
+				{
+					Success = false,
+					Message = "Lỗi khi tạo hồ: " + ex.Message
+				};
+			}
+		}
 
-        // Thêm hoặc cập nhật hồ/bồn
-        public int AddOrUpdateRubberPond(RubberPondDto rubberPond)
-        {
-            try
-            {
-                if (rubberPond == null)
-                {
-                    throw new ArgumentNullException(nameof(rubberPond), "Input data cannot be null.");
-                }
+		// ========================================
+		// UPDATE POND
+		// ========================================
+		public async Task<RubberPondResult> UpdatePondAsync(RubberPondRequest request, string updatedBy)
+		{
+			try
+			{
+				var sql = @"
+                    UPDATE RubberPond
+                    SET 
+                        AgentCode = @AgentCode,
+                        PondName = @PondName,
+                        CapacityKg = @CapacityKg,
+                        DailyCapacityKg = @DailyCapacityKg,
+                        CurrentNetKg = @CurrentNetKg,
+                        UpdateDate = GETDATE(),
+                        UpdatePerson = @UpdatePerson
+                    WHERE PondId = @PondId
+                ";
 
-                var sql = @"
-				IF EXISTS (SELECT TOP 1 PondId FROM RubberPond WHERE PondId = @PondId)
-				BEGIN
-					UPDATE RubberPond SET
-						PondCode = @PondCode,
-						AgentCode = @AgentCode,
-						PondName = @PondName,
-						Location = @Location,
-						CapacityKg = @CapacityKg,
-						CurrentNetKg = @CurrentNetKg,
-						Status = @Status,
-						LastCleanedAt = @LastCleanedAt,
-						Note = @Note,
-						UpdateDate = GETDATE(),
-						UpdatePerson = @UpdatePerson
-					WHERE PondId = @PondId
-					SELECT 0;
-				END
-				ELSE
-				BEGIN
-					INSERT INTO RubberPond
-					(PondCode, AgentCode, PondName, Location, CapacityKg, CurrentNetKg,
-						Status, LastCleanedAt, Note, RegisterDate, RegisterPerson)
-					VALUES
-					(@PondCode, @AgentCode, @PondName, @Location, @CapacityKg, @CurrentNetKg,
-						@Status, @LastCleanedAt, @Note, GETDATE(), @UpdatePerson)
-					SELECT SCOPE_IDENTITY() AS NewPondId;
-				END";
+				var affected = await _dbHelper.ExecuteAsync(sql, new
+				{
+					request.PondId,
+					request.AgentCode,
+					request.PondName,
+					CapacityKg = request.CapacityKg ?? 50000.00m,
+					DailyCapacityKg = request.DailyCapacityKg ?? 5000.00m,
+					CurrentNetKg = request.CurrentNetKg ?? 0.00m,
+					UpdatePerson = updatedBy
+				});
 
-                var lstResult = dbHelper.Execute(sql, new
-                {
-                    PondId = rubberPond.PondId,
-                    PondCode = rubberPond.PondCode,
-                    AgentCode = rubberPond.AgentCode,
-                    PondName = rubberPond.PondName,
-                    //Location = rubberPond.Location,
-                    CapacityKg = rubberPond.CapacityKg,
-                    CurrentNetKg = rubberPond.CurrentNetKg,
-                    Status = rubberPond.Status,
-                    //LastCleanedAt = rubberPond.LastCleanedAt,
-                    //Note = rubberPond.Note,
-                    UpdatePerson = _userManage.Name
-                });
-                return lstResult;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in AddOrUpdateRubberPond method.");
-                return 0;
-            }
-        }
+				if (affected > 0)
+				{
+					return new RubberPondResult { Success = true, Message = "Cập nhật thành công" };
+				}
 
-        // Thêm hoặc cập nhật nhiều hồ/bồn
-        public int AddOrUpdateRubberPondFull(List<RubberPondDto> rubberPonds)
-        {
-            try
-            {
-                if (rubberPonds == null || !rubberPonds.Any())
-                {
-                    throw new ArgumentNullException(nameof(rubberPonds), "Input data cannot be null or empty.");
-                }
+				return new RubberPondResult { Success = false, Message = "Không tìm thấy hồ" };
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in UpdatePondAsync");
+				return new RubberPondResult
+				{
+					Success = false,
+					Message = "Lỗi khi cập nhật: " + ex.Message
+				};
+			}
+		}
 
-                int successCount = 0;
-                foreach (var pond in rubberPonds)
-                {
-                    var result = AddOrUpdateRubberPond(pond);
-                    if (result > 0)
-                        successCount++;
-                }
-                return successCount;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in AddOrUpdateRubberPondFull method.");
-                return 0;
-            }
-        }
+		// ========================================
+		// DELETE POND (Physical Delete)
+		// ========================================
+		public async Task<RubberPondResult> DeletePondAsync(long pondId, string deletedBy)
+		{
+			try
+			{
+				// Check if pond has PondIntakes
+				var checkIntakeSql = "SELECT COUNT(*) FROM RubberPondIntake WHERE PondId = @PondId";
+				var intakeCount = await _dbHelper.QueryFirstOrDefaultAsync<int>(checkIntakeSql, new { PondId = pondId });
 
-        // Import danh sách hồ/bồn
-        public int ImportRubberPonds(List<RubberPondDto> rubberPonds)
-        {
-            try
-            {
-                if (rubberPonds == null || !rubberPonds.Any())
-                {
-                    throw new ArgumentNullException(nameof(rubberPonds), "Import data cannot be null or empty.");
-                }
+				if (intakeCount > 0)
+				{
+					return new RubberPondResult
+					{
+						Success = false,
+						Message = $"Không thể xóa. Hồ có {intakeCount} intake liên quan."
+					};
+				}
 
-                int successCount = 0;
-                foreach (var pond in rubberPonds)
-                {
-                    var result = AddOrUpdateRubberPond(pond);
-                    if (result > 0)
-                        successCount++;
-                }
-                return successCount;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in ImportRubberPonds method.");
-                return 0;
-            }
-        }
+				// Check if pond has OrderPonds
+				var checkOrderSql = "SELECT COUNT(*) FROM RubberOrderPond WHERE PondId = @PondId";
+				var orderCount = await _dbHelper.QueryFirstOrDefaultAsync<int>(checkOrderSql, new { PondId = pondId });
 
-        #endregion
+				if (orderCount > 0)
+				{
+					return new RubberPondResult
+					{
+						Success = false,
+						Message = $"Không thể xóa. Hồ có {orderCount} order phân bổ liên quan."
+					};
+				}
 
-        #region Delete Data
+				// Check if pond has Pallets
+				var checkPalletSql = "SELECT COUNT(*) FROM RubberPallet WHERE PondId = @PondId";
+				var palletCount = await _dbHelper.QueryFirstOrDefaultAsync<int>(checkPalletSql, new { PondId = pondId });
 
-        // Xóa hồ/bồn
-        public int DeleteRubberPond(long pondId)
-        {
-            try
-            {
-                string sql = @"
-					DELETE FROM RubberPond WHERE PondId = @PondId
-				";
-                dbHelper.Execute(sql, new { PondId = pondId });
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in DeleteRubberPond method.");
-                return 0;
-            }
-        }
+				if (palletCount > 0)
+				{
+					return new RubberPondResult
+					{
+						Success = false,
+						Message = $"Không thể xóa. Hồ có {palletCount} pallet liên quan."
+					};
+				}
 
-        #endregion
+				// Physical delete
+				var sql = "DELETE FROM RubberPond WHERE PondId = @PondId";
+				var affected = await _dbHelper.ExecuteAsync(sql, new { PondId = pondId });
 
-        #region Approve/Update Status
+				if (affected > 0)
+				{
+					return new RubberPondResult { Success = true, Message = "Xóa thành công" };
+				}
 
-        // Phê duyệt hồ/bồn
-        public int ApproveRubberPond(long pondId, int status)
-        {
-            try
-            {
-                string sql = @"
-					UPDATE RubberPond 
-					SET 
-						Status = @Status,
-						UpdateDate = GETDATE(),
-						UpdatePerson = @UpdatePerson
-					WHERE PondId = @PondId
-				";
-                dbHelper.Execute(sql, new
-                {
-                    PondId = pondId,
-                    Status = status,
-                    UpdatePerson = _userManage.Name
-                });
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in ApproveRubberPond method.");
-                return 0;
-            }
-        }
+				return new RubberPondResult { Success = false, Message = "Không tìm thấy hồ" };
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in DeletePondAsync");
+				return new RubberPondResult
+				{
+					Success = false,
+					Message = "Lỗi khi xóa: " + ex.Message
+				};
+			}
+		}
 
-        // Phê duyệt tất cả hồ/bồn
-        public int ApproveAllRubberPonds(int status)
-        {
-            try
-            {
-                string sql = @"
-					UPDATE RubberPond 
-					SET 
-						Status = @Status,
-						UpdateDate = GETDATE(),
-						UpdatePerson = @UpdatePerson
-					WHERE Status = 0
-				";
-                dbHelper.Execute(sql, new
-                {
-                    Status = status,
-                    UpdatePerson = _userManage.Name
-                });
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in ApproveAllRubberPonds method.");
-                return 0;
-            }
-        }
+		// ========================================
+		// UPDATE POND STATUS
+		// ========================================
+		public async Task<RubberPondResult> UpdatePondStatusAsync(long pondId, int status, string updatedBy)
+		{
+			try
+			{
+				var sql = @"
+                    UPDATE RubberPond
+                    SET 
+                        Status = @Status,
+                        UpdateDate = GETDATE(),
+                        UpdatePerson = @UpdatePerson
+                    WHERE PondId = @PondId
+                ";
 
-        // Cập nhật trạng thái hồ/bồn
-        public int UpdatePondStatus(long pondId, int status)
-        {
-            try
-            {
-                string sql = @"
-					UPDATE RubberPond 
-					SET 
-						Status = @Status,
-						UpdateDate = GETDATE(),
-						UpdatePerson = @UpdatePerson
-					WHERE PondId = @PondId
-				";
+				var affected = await _dbHelper.ExecuteAsync(sql, new
+				{
+					PondId = pondId,
+					Status = status,
+					UpdatePerson = updatedBy
+				});
 
-                dbHelper.Execute(sql, new
-                {
-                    PondId = pondId,
-                    Status = status,
-                    UpdatePerson = _userManage.Name
-                });
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in UpdatePondStatus method.");
-                return 0;
-            }
-        }
+				if (affected > 0)
+				{
+					return new RubberPondResult { Success = true, Message = "Cập nhật trạng thái thành công" };
+				}
 
-        #endregion
+				return new RubberPondResult { Success = false, Message = "Không tìm thấy hồ" };
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in UpdatePondStatusAsync");
+				return new RubberPondResult
+				{
+					Success = false,
+					Message = "Lỗi khi cập nhật trạng thái: " + ex.Message
+				};
+			}
+		}
 
-        #region Inventory Management
+		// ========================================
+		// GET AGENTS
+		// ========================================
+		public async Task<List<CreateRubberAgentDto>> GetAgentsAsync()
+		{
+			try
+			{
+				var sql = @"
+                    SELECT 
+                        AgentId,
+                        AgentCode,
+                        AgentName
+                    FROM RubberAgent
+                    WHERE IsActive = 1
+                    ORDER BY AgentName
+                ";
 
-        // Cập nhật tồn kho hồ/bồn
-        public int UpdatePondInventory(long pondId, decimal currentNetKg)
-        {
-            try
-            {
-                string sql = @"
-					UPDATE RubberPond 
-					SET 
-						CurrentNetKg = @CurrentNetKg,
-						UpdateDate = GETDATE(),
-						UpdatePerson = @UpdatePerson
-					WHERE PondId = @PondId
-				";
+				var agents = await _dbHelper.QueryAsync<CreateRubberAgentDto>(sql);
+				return agents.ToList();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAgentsAsync");
+				throw;
+			}
+		}
 
-                dbHelper.Execute(sql, new
-                {
-                    PondId = pondId,
-                    CurrentNetKg = currentNetKg,
-                    UpdatePerson = _userManage.Name
-                });
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in UpdatePondInventory method.");
-                return 0;
-            }
-        }
+		// ========================================
+		// GENERATE POND CODE
+		// ========================================
+		private async Task<string> GeneratePondCodeAsync()
+		{
+			try
+			{
+				var sql = @"
+                    SELECT TOP 1 PondCode 
+                    FROM RubberPond 
+                    WHERE PondCode LIKE 'POND' + FORMAT(GETDATE(), 'yyyyMM') + '%'
+                    ORDER BY PondCode DESC
+                ";
 
-        // Vệ sinh hồ/bồn
-        public int CleanPond(long pondId)
-        {
-            try
-            {
-                string sql = @"
-					UPDATE RubberPond 
-					SET 
-						Status = 3,
-						LastCleanedAt = GETDATE(),
-						UpdateDate = GETDATE(),
-						UpdatePerson = @UpdatePerson
-					WHERE PondId = @PondId
-				";
+				var lastCode = await _dbHelper.QueryFirstOrDefaultAsync<string>(sql);
 
-                dbHelper.Execute(sql, new
-                {
-                    PondId = pondId,
-                    UpdatePerson = _userManage.Name
-                });
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in CleanPond method.");
-                return 0;
-            }
-        }
+				if (string.IsNullOrEmpty(lastCode))
+				{
+					return $"POND{DateTime.Now:yyyyMM}0001";
+				}
 
-        #endregion
+				// Extract number from last code
+				var numberPart = lastCode.Substring(10); // PONDyyyyMM0001 -> 0001
+				if (int.TryParse(numberPart, out var number))
+				{
+					return $"POND{DateTime.Now:yyyyMM}{(number + 1):D4}";
+				}
 
-        #region Utility Methods
+				return $"POND{DateTime.Now:yyyyMM}0001";
+			}
+			catch
+			{
+				return $"POND{DateTime.Now:yyyyMM}0001";
+			}
+		}
 
-        // Tự động tạo mã hồ/bồn
-        public async Task<string> GeneratePondCodeAsync()
-        {
-            try
-            {
-                var sql = @"
-					SELECT TOP 1 PondCode 
-					FROM RubberPond 
-					WHERE PondCode LIKE 'POND%' 
-					ORDER BY PondId DESC
-				";
-                var lastPondCode = await dbHelper.QueryFirstOrDefaultAsync<string>(sql);
+		// ========================================
+		// EXPORT TO EXCEL
+		// ========================================
+		public async Task<byte[]> ExportToExcelAsync(List<long> pondIds, string exportedBy)
+		{
+			try
+			{
+				List<RubberPondResponse> ponds;
 
-                if (string.IsNullOrEmpty(lastPondCode))
-                {
-                    return "POND00001";
-                }
+				if (pondIds != null && pondIds.Any())
+				{
+					// Export selected ponds
+					var sql = @"
+                        SELECT 
+                            p.PondCode,
+                            a.AgentName,
+                            p.PondName,
+                            p.CapacityKg,
+                            p.DailyCapacityKg,
+                            p.CurrentNetKg,
+                            p.Status,
+                            CASE 
+                                WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
+                                ELSE 0
+                            END AS UtilizationPercent
+                        FROM RubberPond p
+                        INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+                        WHERE p.PondId IN @PondIds
+                        ORDER BY p.PondCode
+                    ";
 
-                // Lấy số thứ tự từ mã cuối cùng
-                var numberPart = lastPondCode.Substring(4);
-                if (int.TryParse(numberPart, out int lastNumber))
-                {
-                    int newNumber = lastNumber + 1;
-                    return $"POND{newNumber:D5}";
-                }
+					ponds = (await _dbHelper.QueryAsync<RubberPondResponse>(sql, new { PondIds = pondIds })).ToList();
+				}
+				else
+				{
+					// Export all ponds
+					ponds = await GetAllPondsAsync();
+				}
 
-                return "POND00001";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in GeneratePondCodeAsync method.");
-                return "POND00001";
-            }
-        }
+				using var workbook = new XLWorkbook();
+				var worksheet = workbook.Worksheets.Add("Ponds");
 
-        // Kiểm tra mã hồ/bồn đã tồn tại
-        public async Task<bool> IsPondCodeExistsAsync(string pondCode)
-        {
-            try
-            {
-                var sql = @"
-					SELECT COUNT(*) 
-					FROM RubberPond 
-					WHERE PondCode = @PondCode
-				";
-                var count = await dbHelper.QueryFirstOrDefaultAsync<int>(sql, new { PondCode = pondCode });
-                return count > 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in IsPondCodeExistsAsync method.");
-                return false;
-            }
-        }
+				// Header
+				worksheet.Cell(1, 1).Value = "Mã hồ";
+				worksheet.Cell(1, 2).Value = "Đại lý";
+				worksheet.Cell(1, 3).Value = "Tên hồ";
+				worksheet.Cell(1, 4).Value = "Dung tích (kg)";
+				worksheet.Cell(1, 5).Value = "Công suất/ngày (kg)";
+				worksheet.Cell(1, 6).Value = "Khối lượng hiện tại (kg)";
+				worksheet.Cell(1, 7).Value = "Trạng thái";
+				worksheet.Cell(1, 8).Value = "Tỷ lệ sử dụng (%)";
 
-        // Kiểm tra sức chứa còn lại
-        public async Task<decimal> GetRemainingCapacityAsync(long pondId)
-        {
-            try
-            {
-                var sql = @"
-					SELECT (CapacityKg - ISNULL(CurrentNetKg, 0)) AS RemainingCapacity
-					FROM RubberPond 
-					WHERE PondId = @PondId
-				";
-                var remaining = await dbHelper.QueryFirstOrDefaultAsync<decimal>(sql, new { PondId = pondId });
-                return remaining;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in GetRemainingCapacityAsync method.");
-                return 0;
-            }
-        }
+				// Style header
+				var headerRange = worksheet.Range(1, 1, 1, 8);
+				headerRange.Style.Font.Bold = true;
+				headerRange.Style.Fill.BackgroundColor = XLColor.LightBlue;
+				headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
-        #endregion
-    }
+				// Data
+				int row = 2;
+				foreach (var pond in ponds)
+				{
+					worksheet.Cell(row, 1).Value = pond.PondCode;
+					worksheet.Cell(row, 2).Value = pond.AgentName;
+					worksheet.Cell(row, 3).Value = pond.PondName;
+					worksheet.Cell(row, 4).Value = pond.CapacityKg;
+					worksheet.Cell(row, 5).Value = pond.DailyCapacityKg;
+					worksheet.Cell(row, 6).Value = pond.CurrentNetKg;
+					worksheet.Cell(row, 7).Value = GetStatusText(pond.Status);
+					worksheet.Cell(row, 8).Value = pond.UtilizationPercent;
+
+					// Format numbers
+					worksheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
+					worksheet.Cell(row, 5).Style.NumberFormat.Format = "#,##0.00";
+					worksheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0.00";
+					worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00";
+
+					row++;
+				}
+
+				// Auto-fit columns
+				worksheet.Columns().AdjustToContents();
+
+				using var stream = new MemoryStream();
+				workbook.SaveAs(stream);
+				return stream.ToArray();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in ExportToExcelAsync");
+				throw;
+			}
+		}
+
+		// ========================================
+		// HELPER: Get Status Text
+		// ========================================
+		private string GetStatusText(int status)
+		{
+			return status switch
+			{
+				1 => "Sẵn sàng",
+				2 => "Đang sản xuất",
+				3 => "Bảo trì",
+				_ => "Không xác định"
+			};
+		}
+	}
+
+	
 }

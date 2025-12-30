@@ -1,61 +1,69 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TAS.ViewModels;
 
 namespace TAS.Controllers
 {
-	public class TraceabilityController : Controller
+	[Authorize]
+	public class TraceabilityTableController : Controller
 	{
-		TraceabilityModels models;
-		public TraceabilityController()
-		{
-			models = new TraceabilityModels();
-		}
-		#region Traceability		
-		[Breadcrumb("key_truyxuatnguongoc")]
-		public IActionResult Traceability()
-		{
-			return View();
-		}
-		#region handle Data Traceabilitys
-		[HttpPost]
-		public async Task<JsonResult> Traceabilitys()
-		{
-			var lstData = await models.GetTraceabilityAsync();
+		private readonly TraceabilityTableModels _traceabilityTableModels;
+		private readonly ILogger<TraceabilityTableController> _logger;
 
-			return new JsonResult(lstData);
-		}
-		[HttpPost("AddOrUpdateTraceability")]
-		public IActionResult AddOrUpdateTraceability()
+		public TraceabilityTableController(TraceabilityTableModels traceabilityTableModels, ILogger<TraceabilityTableController> logger)
 		{
-			return View();
-		}
-		[HttpPost("DeleteTraceability/{id}")]
-		public IActionResult Delete(int id)
-		{
-			return View();
-		}
-		#endregion
-		#endregion
-
-		#region handle Data Pallets
-		[HttpPost]
-		public async Task<JsonResult> GetPallets(int orderId)
-		{
-			var lstData = await models.GetPallets(orderId);
-			return new JsonResult(lstData);
+			_traceabilityTableModels = traceabilityTableModels;
+			_logger = logger;
 		}
 
+		// ========================================
+		// GET: /TraceabilityTable/Index
+		// ========================================
+		public IActionResult Index()
+		{
+			ViewData["Title"] = "Traceability";
+			return View();
+		}
 
-		[HttpPost("AddOrUpdatePallet")]
-		public IActionResult AddOrUpdatePallets()
+		// ========================================
+		// GET: /TraceabilityTable/GetTableData
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetTableData(bool showAll = false)
 		{
-			return View();
+			try
+			{
+				var data = await _traceabilityTableModels.GetTraceabilityTableAsync(showAll);
+				return Json(new { success = true, data = data });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetTableData");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+			}
 		}
-		[HttpPost("DeletePallet/{id}")]
-		public IActionResult DeletePallets(int id)
+
+		// ========================================
+		// GET: /TraceabilityTable/GetByOrder
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetByOrder(string orderCode)
 		{
-			return View();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(orderCode))
+				{
+					return Json(new { success = false, message = "Mã đơn hàng không hợp lệ" });
+				}
+
+				var data = await _traceabilityTableModels.GetTraceabilityByOrderAsync(orderCode);
+				return Json(new { success = true, data = data });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetByOrder");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+			}
 		}
-		#endregion
 	}
 }

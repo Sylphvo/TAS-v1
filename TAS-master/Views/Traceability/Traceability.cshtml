@@ -22,12 +22,27 @@
                         </div>
                     </div>
                     <div class="d-flex">
-                        <!-- Nút chọn file -->
-                        @* <label for="importExcel" class="btn btn-primary">Chọn file</label>
-                                <input type="file" id="importExcel" hidden>
-                                <span id="file-name" class="ms-2 d-none"></span>
-                                <button onclick="onExportExcelData()" class="btn btn-primary buttonSearch">Xuất Excel</button>
-                                <button onclick="onExportExcel()" class="btn btn-primary buttonSearch">Mẫu Excel</button> *@
+                        <!-- Toggle & Toolbar -->
+                        <div class="toolbar">
+                            <div class="toolbar-left">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="showAllToggle" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="toggle-label">Show All</span>
+                            </div>
+                            <div class="toolbar-right">
+                                <button id="btnExpandAll" class="btn btn-secondary">
+                                    <i class="fas fa-expand-alt"></i> Expand All
+                                </button>
+                                <button id="btnCollapseAll" class="btn btn-secondary">
+                                    <i class="fas fa-compress-alt"></i> Collapse All
+                                </button>
+                                <button id="btnExport" class="btn btn-success">
+                                    <i class="fas fa-file-excel"></i> Export Excel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -42,7 +57,7 @@
                         </div>
                     </div>
                     <!-- [ Main Content ] end -->
-                    <div id="TraceabilityGrid" style="height: 500px;width:100%" class="ag-theme-alpine"></div>
+                    <div id="traceabilityGrid" style="height: 500px;width:100%" class="ag-theme-alpine"></div>
                     <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
                 </div>
             </div>
@@ -55,13 +70,6 @@
     <script type="text/javascript" src="~/Contents/js/Traceability/Traceability.js"></script>
     <script>
         var agPaging = 'ag-paging-footer';
-        var Traceability = '#TraceabilityGrid';
-        var IsOptionAll = false;
-        CreateGridTraceability(true);
-        RegEventTraceability();
-        SetLabel();
-        function SetLabel(){
-            $('#labelChkAll').text(arrMsg.key_showall);
-        }
+        initTraceabilityTableAG();
     </script>
 }

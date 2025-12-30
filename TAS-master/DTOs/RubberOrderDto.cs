@@ -47,14 +47,6 @@ namespace TAS.DTOs
 		public long OrderId { get; set; }
 	}
 
-
-	public class PondDto
-	{
-		public Guid PondId { get; set; }
-		public string PondCode { get; set; } = string.Empty;
-		public string PondName { get; set; } = string.Empty;
-		public decimal CurrentNetKg { get; set; }
-	}
 	public class RubberOrderResponse
 	{
 		public long rowNo { get; set; }
@@ -75,5 +67,15 @@ namespace TAS.DTOs
 		public string RegisterPerson { get; set; } = string.Empty;
 		public DateTime? UpdateDate { get; set; }
 		public string? UpdatePerson { get; set; }
+	}
+	public class UpdateOrderRequest
+	{
+		public long OrderId { get; set; }
+		public byte Status { get; set; }
+	}
+
+	public class MarkShippedOrderRequest
+	{
+		public long OrderId { get; set; }
 	}
 }
