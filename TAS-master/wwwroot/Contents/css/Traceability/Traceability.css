@@ -9,3 +9,8 @@
 #myLargeModalLabel .modal-dialog {
 	min-width: 70%;
 }
+.ag-group-contracted,
+.ag-group-expanded {
+	display: inline-block !important;
+	visibility: visible !important;
+}

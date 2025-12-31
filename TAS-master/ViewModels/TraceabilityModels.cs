@@ -18,97 +18,160 @@ namespace TAS.ViewModels
 		}
 
 		// ========================================
-		// GET TRACEABILITY TABLE DATA
+		// GET TRACEABILITY TABLE DATA - V2 FIXED
 		// ========================================
-		public async Task<List<TraceabilityRowDto>> GetTraceabilityTableAsync(bool showAll = false)
+		public async Task<List<TraceabilityRowDto>> GetTableDataAsync(bool showAll = false)
 		{
 			try
 			{
 				var sql = @"
+                    WITH OrdersWithRowNum AS (
+                        SELECT 
+                            ROW_NUMBER() OVER (ORDER BY o.OrderId) AS RowNum,
+                            o.OrderId,
+                            o.OrderCode,
+                            o.BuyerCompany,
+                            o.OrderDate,
+                            SUM(p.CurrentNetKg) AS TotalNetKg
+                        FROM RubberOrder o
+                        LEFT JOIN RubberOrderPond op ON op.OrderId = o.OrderId
+                        LEFT JOIN RubberPond p ON p.PondId = op.PondId
+                        WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE())
+                        GROUP BY o.OrderId, o.OrderCode, o.BuyerCompany, o.OrderDate
+                    ),
+                    PondsWithRowNum AS (
+                        SELECT 
+                            ROW_NUMBER() OVER (ORDER BY o.OrderCode, p.PondCode) AS RowNum,
+                            o.OrderCode,
+                            p.PondId,
+                            p.PondCode,
+                            p.PondName,
+                            SUM(p.CurrentNetKg) AS TotalNetKg
+                        FROM RubberOrder o
+                        INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
+                        INNER JOIN RubberPond p ON p.PondId = op.PondId
+                        WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE())
+                        GROUP BY o.OrderCode, p.PondId, p.PondCode, p.PondName
+                    ),
+                    AgentsWithRowNum AS (
+                        SELECT 
+                            ROW_NUMBER() OVER (ORDER BY o.OrderCode, p.PondCode, a.AgentCode) AS RowNum,
+                            o.OrderCode,
+                            p.PondCode,
+                            a.AgentCode,
+                            a.AgentName,
+                            -- Calculate total from RubberPondIntake
+                            SUM(pi.PouredKg) AS TotalKg
+                        FROM RubberOrder o
+                        INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
+                        INNER JOIN RubberPond p ON p.PondId = op.PondId
+                        INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+                        LEFT JOIN RubberPondIntake pi ON pi.PondId = p.PondId
+                        WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE())
+                        GROUP BY o.OrderCode, p.PondCode, a.AgentCode, a.AgentName
+                    )
+
                     -- Level 1: Orders
                     SELECT 
-                        ROW_NUMBER() OVER (ORDER BY o.OrderId) AS OrderId,
+                        ow.RowNum AS OrderId,
                         CAST(NULL AS INT) AS ParentId,
                         1 AS SortOrder,
-                        o.OrderCode,
-                        o.BuyerCompany AS OrderName,
+                        ow.OrderCode,
+                        ow.BuyerCompany AS OrderName,
+                        CAST(NULL AS NVARCHAR(50)) AS PondCode,
+                        CAST(NULL AS NVARCHAR(200)) AS PondName,
                         CAST(NULL AS NVARCHAR(50)) AS AgentCode,
-                        CAST(NULL AS NVARCHAR(255)) AS AgentName,
+                        CAST(NULL AS NVARCHAR(200)) AS AgentName,
                         CAST(NULL AS NVARCHAR(50)) AS FarmCode,
-                        CAST(NULL AS NVARCHAR(255)) AS FarmerName,
-                        CAST(NULL AS DATETIME) AS DatePurchase,
-                        o.TotalNetKg AS TotalFinishedProductKg,
-                        CAST(NULL AS DECIMAL(18,2)) AS TotalCentrifugeProductKg,
-                        o.OrderCode AS SortList,
-                        CAST(1 AS BIT) AS IsOpenChild
-                    FROM RubberOrder o
-                    WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE()) -- Last 3 months
+                        CAST(NULL AS NVARCHAR(200)) AS FarmerName,
+                        ow.TotalNetKg AS TotalFinishedProductKg,
+                        0.00 AS TotalCentrifugeProductKg,
+                        ow.OrderDate AS DatePurchase,
+                        ow.OrderCode AS SortList,
+                        0 AS IsOpenChild
+                    FROM OrdersWithRowNum ow
 
                     UNION ALL
 
-                    -- Level 2: Agents per Order
+                    -- Level 2: Ponds
                     SELECT 
-                        ROW_NUMBER() OVER (ORDER BY o.OrderId, a.AgentCode) + 1000 AS OrderId,
-                        ROW_NUMBER() OVER (ORDER BY o2.OrderId) AS ParentId,
-                        1 AS SortOrder,
-                        CAST(NULL AS NVARCHAR(50)) AS OrderCode,
-                        CAST(NULL AS NVARCHAR(255)) AS OrderName,
-                        a.AgentCode,
-                        a.AgentName,
-                        CAST(NULL AS NVARCHAR(50)) AS FarmCode,
-                        CAST(NULL AS NVARCHAR(255)) AS FarmerName,
-                        MAX(i.RegisterDate) AS DatePurchase,
-                        SUM(DISTINCT p.CurrentNetKg) AS TotalFinishedProductKg,
-                        CAST(NULL AS DECIMAL(18,2)) AS TotalCentrifugeProductKg,
-                        o.OrderCode + '__' + a.AgentCode AS SortList,
-                        CAST(1 AS BIT) AS IsOpenChild
-                    FROM RubberOrder o
-                    INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
-                    INNER JOIN RubberPond p ON p.PondId = op.PondId
-                    INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
-                    LEFT JOIN RubberPondIntake pi ON pi.PondId = p.PondId
-                    LEFT JOIN RubberIntake i ON i.IntakeId = pi.IntakeId
-                    INNER JOIN RubberOrder o2 ON o2.OrderCode = o.OrderCode
-                    WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE())
-                    GROUP BY o.OrderId, o.OrderCode, a.AgentCode, a.AgentName
-
-                    UNION ALL
-
-                    -- Level 3: Farms per Agent per Order
-                    SELECT 
-                        ROW_NUMBER() OVER (ORDER BY o.OrderId, a.AgentCode, f.FarmCode) + 2000 AS OrderId,
-                        ROW_NUMBER() OVER (ORDER BY o2.OrderId, a2.AgentCode) + 1000 AS ParentId,
+                        pw.RowNum + 1000 AS OrderId,
+                        ow.RowNum AS ParentId,
                         2 AS SortOrder,
                         CAST(NULL AS NVARCHAR(50)) AS OrderCode,
-                        CAST(NULL AS NVARCHAR(255)) AS OrderName,
-                        a.AgentCode,
-                        CAST(NULL AS NVARCHAR(255)) AS AgentName,
-                        f.FarmCode,
-                        f.FarmerName,
-                        i.RegisterDate AS DatePurchase,
-                        SUM(pi.PouredKg) AS TotalFinishedProductKg,
-                        CAST(NULL AS DECIMAL(18,2)) AS TotalCentrifugeProductKg,
-                        o.OrderCode + '__' + a.AgentCode + '__' + f.FarmCode AS SortList,
-                        CAST(0 AS BIT) AS IsOpenChild
+                        CAST(NULL AS NVARCHAR(200)) AS OrderName,
+                        pw.PondCode,
+                        pw.PondName,
+                        CAST(NULL AS NVARCHAR(50)) AS AgentCode,
+                        CAST(NULL AS NVARCHAR(200)) AS AgentName,
+                        CAST(NULL AS NVARCHAR(50)) AS FarmCode,
+                        CAST(NULL AS NVARCHAR(200)) AS FarmerName,
+                        pw.TotalNetKg AS TotalFinishedProductKg,
+                        0.00 AS TotalCentrifugeProductKg,
+                        CAST(NULL AS DATETIME) AS DatePurchase,
+                        ow.OrderCode + '__' + pw.PondCode AS SortList,
+                        0 AS IsOpenChild
+                    FROM PondsWithRowNum pw
+                    INNER JOIN OrdersWithRowNum ow ON ow.OrderCode = pw.OrderCode
+
+                    UNION ALL
+
+                    -- Level 3: Agents
+                    SELECT 
+                        aw.RowNum + 2000 AS OrderId,
+                        pw.RowNum + 1000 AS ParentId,
+                        3 AS SortOrder,
+                        CAST(NULL AS NVARCHAR(50)) AS OrderCode,
+                        CAST(NULL AS NVARCHAR(200)) AS OrderName,
+                        CAST(NULL AS NVARCHAR(50)) AS PondCode,
+                        CAST(NULL AS NVARCHAR(200)) AS PondName,
+                        aw.AgentCode,
+                        aw.AgentName,
+                        CAST(NULL AS NVARCHAR(50)) AS FarmCode,
+                        CAST(NULL AS NVARCHAR(200)) AS FarmerName,
+                        aw.TotalKg AS TotalFinishedProductKg,
+                        0.00 AS TotalCentrifugeProductKg,
+                        CAST(NULL AS DATETIME) AS DatePurchase,
+                        ow.OrderCode + '__' + aw.PondCode + '__' + aw.AgentCode AS SortList,
+                        0 AS IsOpenChild
+                    FROM AgentsWithRowNum aw
+                    INNER JOIN OrdersWithRowNum ow ON ow.OrderCode = aw.OrderCode
+                    INNER JOIN PondsWithRowNum pw ON pw.OrderCode = aw.OrderCode AND pw.PondCode = aw.PondCode
+
+                    UNION ALL
+
+                    -- Level 4: Farms (Intakes) - FIXED JOIN
+                    SELECT 
+                        ROW_NUMBER() OVER (ORDER BY o.OrderCode, p.PondCode, a.AgentCode, intake.FarmCode, pi.PondIntakeId) + 3000 AS OrderId,
+                        aw.RowNum + 2000 AS ParentId,
+                        4 AS SortOrder,
+                        CAST(NULL AS NVARCHAR(50)) AS OrderCode,
+                        CAST(NULL AS NVARCHAR(200)) AS OrderName,
+                        CAST(NULL AS NVARCHAR(50)) AS PondCode,
+                        CAST(NULL AS NVARCHAR(200)) AS PondName,
+                        CAST(NULL AS NVARCHAR(50)) AS AgentCode,
+                        CAST(NULL AS NVARCHAR(200)) AS AgentName,
+                        intake.FarmCode,
+                        f.FarmerName AS FarmerName,
+                        pi.PouredKg AS TotalFinishedProductKg,
+                        intake.FinishedProductKg AS TotalCentrifugeProductKg,
+                        CAST(intake.RegisterDate AS DATETIME) AS DatePurchase,
+                        o.OrderCode + '__' + p.PondCode + '__' + a.AgentCode + '__' + intake.FarmCode + '__' + CAST(pi.PondIntakeId AS NVARCHAR(10)) AS SortList,
+                        0 AS IsOpenChild
                     FROM RubberOrder o
                     INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
                     INNER JOIN RubberPond p ON p.PondId = op.PondId
                     INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+                    -- FIX: Join RubberPondIntake → RubberIntake → RubberFarm
                     INNER JOIN RubberPondIntake pi ON pi.PondId = p.PondId
-                    INNER JOIN RubberIntake i ON i.IntakeId = pi.IntakeId
-                    INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
-                    CROSS APPLY (
-                        SELECT TOP 1 o2.OrderId, a2.AgentCode 
-                        FROM RubberOrder o2 
-                        INNER JOIN RubberOrderPond op2 ON op2.OrderId = o2.OrderId
-                        INNER JOIN RubberPond p2 ON p2.PondId = op2.PondId
-                        INNER JOIN RubberAgent a2 ON a2.AgentCode = p2.AgentCode
-                        WHERE o2.OrderCode = o.OrderCode AND a2.AgentCode = a.AgentCode
-                    ) AS parent
+                    INNER JOIN RubberIntake intake ON intake.IntakeId = pi.IntakeId
+                    INNER JOIN RubberFarm f ON f.FarmCode = intake.FarmCode
+                    INNER JOIN AgentsWithRowNum aw ON aw.OrderCode = o.OrderCode 
+                        AND aw.PondCode = p.PondCode 
+                        AND aw.AgentCode = a.AgentCode
                     WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE())
-                    GROUP BY o.OrderId, o.OrderCode, a.AgentCode, f.FarmCode, f.FarmerName, i.RegisterDate
 
-                    ORDER BY SortList, SortOrder
+                    ORDER BY SortList;
                 ";
 
 				var results = await _dbHelper.QueryAsync<TraceabilityRowDto>(sql);
@@ -116,19 +179,35 @@ namespace TAS.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in GetTraceabilityTableAsync");
+				_logger.LogError(ex, "Error in GetTableDataAsync");
 				throw;
 			}
 		}
 
 		// ========================================
-		// GET FILTERED DATA (BY ORDER CODE)
+		// GET BY ORDER CODE - SIMPLIFIED
 		// ========================================
 		public async Task<List<TraceabilityRowDto>> GetTraceabilityByOrderAsync(string orderCode)
 		{
 			try
 			{
 				var sql = @"
+                    WITH AgentsWithRowNum AS (
+                        SELECT 
+                            ROW_NUMBER() OVER (ORDER BY a.AgentCode) AS RowNum,
+                            a.AgentCode,
+                            a.AgentName,
+                            MAX(i.RegisterDate) AS DatePurchase,
+                            SUM(pi.PouredKg) AS TotalKg
+                        FROM RubberOrder o
+                        INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
+                        INNER JOIN RubberPond p ON p.PondId = op.PondId
+                        INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+                        LEFT JOIN RubberPondIntake pi ON pi.PondId = p.PondId
+                        LEFT JOIN RubberIntake i ON i.IntakeId = pi.IntakeId
+                        WHERE o.OrderCode = @OrderCode
+                        GROUP BY a.AgentCode, a.AgentName
+                    )
                     -- Level 1: Order
                     SELECT 
                         1 AS OrderId,
@@ -152,35 +231,28 @@ namespace TAS.ViewModels
 
                     -- Level 2: Agents
                     SELECT 
-                        ROW_NUMBER() OVER (ORDER BY a.AgentCode) + 100 AS OrderId,
+                        aw.RowNum + 100 AS OrderId,
                         1 AS ParentId,
                         1 AS SortOrder,
                         CAST(NULL AS NVARCHAR(50)) AS OrderCode,
                         CAST(NULL AS NVARCHAR(255)) AS OrderName,
-                        a.AgentCode,
-                        a.AgentName,
+                        aw.AgentCode,
+                        aw.AgentName,
                         CAST(NULL AS NVARCHAR(50)) AS FarmCode,
                         CAST(NULL AS NVARCHAR(255)) AS FarmerName,
-                        MAX(i.RegisterDate) AS DatePurchase,
-                        SUM(pi.PouredKg) AS TotalFinishedProductKg,
+                        aw.DatePurchase,
+                        aw.TotalKg AS TotalFinishedProductKg,
                         CAST(NULL AS DECIMAL(18,2)) AS TotalCentrifugeProductKg,
-                        @OrderCode + '__' + a.AgentCode AS SortList,
+                        @OrderCode + '__' + aw.AgentCode AS SortList,
                         CAST(1 AS BIT) AS IsOpenChild
-                    FROM RubberOrder o
-                    INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
-                    INNER JOIN RubberPond p ON p.PondId = op.PondId
-                    INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
-                    LEFT JOIN RubberPondIntake pi ON pi.PondId = p.PondId
-                    LEFT JOIN RubberIntake i ON i.IntakeId = pi.IntakeId
-                    WHERE o.OrderCode = @OrderCode
-                    GROUP BY a.AgentCode, a.AgentName
+                    FROM AgentsWithRowNum aw
 
                     UNION ALL
 
                     -- Level 3: Farms
                     SELECT 
-                        ROW_NUMBER() OVER (ORDER BY a.AgentCode, f.FarmCode, i.RegisterDate) + 200 AS OrderId,
-                        ROW_NUMBER() OVER (PARTITION BY a.AgentCode ORDER BY a.AgentCode) + 100 AS ParentId,
+                        ROW_NUMBER() OVER (ORDER BY a.AgentCode, f.FarmCode, i.IntakeId) + 200 AS OrderId,
+                        aw.RowNum + 100 AS ParentId,
                         2 AS SortOrder,
                         CAST(NULL AS NVARCHAR(50)) AS OrderCode,
                         CAST(NULL AS NVARCHAR(255)) AS OrderName,
@@ -191,7 +263,7 @@ namespace TAS.ViewModels
                         i.RegisterDate AS DatePurchase,
                         pi.PouredKg AS TotalFinishedProductKg,
                         CAST(NULL AS DECIMAL(18,2)) AS TotalCentrifugeProductKg,
-                        @OrderCode + '__' + a.AgentCode + '__' + f.FarmCode + '__' + CONVERT(VARCHAR, i.IntakeId) AS SortList,
+                        @OrderCode + '__' + a.AgentCode + '__' + f.FarmCode + '__' + CAST(i.IntakeId AS NVARCHAR) AS SortList,
                         CAST(0 AS BIT) AS IsOpenChild
                     FROM RubberOrder o
                     INNER JOIN RubberOrderPond op ON op.OrderId = o.OrderId
@@ -200,6 +272,7 @@ namespace TAS.ViewModels
                     INNER JOIN RubberPondIntake pi ON pi.PondId = p.PondId
                     INNER JOIN RubberIntake i ON i.IntakeId = pi.IntakeId
                     INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
+                    INNER JOIN AgentsWithRowNum aw ON aw.AgentCode = a.AgentCode
                     WHERE o.OrderCode = @OrderCode
 
                     ORDER BY SortList, SortOrder
@@ -214,5 +287,5 @@ namespace TAS.ViewModels
 				throw;
 			}
 		}
-	}	
+	}
 }

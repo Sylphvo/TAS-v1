@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Truy Xuất Thông tin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @section Style {
     <link rel="stylesheet" href="../Contents/css/Traceability/Traceability.css">
@@ -56,7 +57,7 @@
                         </div>
                     </div>
                     <!-- [ Main Content ] end -->
-                    <div id="TraceabilityGrid" style="height: 500px;width:100%" class="ag-theme-alpine"></div>
+                    <div id="traceabilityGrid" style="height: 500px;width:100%" class="ag-theme-alpine"></div>
                     <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
                 </div>
             </div>
@@ -64,19 +65,26 @@
     </div>
 </div>
 
-<partial name="~/Views/Shared/Modal/_Pallet.cshtml" />
+<!-- ========================================
+     SCRIPTS
+======================================== -->
 @section Scripts {
-    <script type="text/javascript" src="~/Contents/js/Traceability/Traceability.js"></script>
+    <!-- AG Grid -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+
+    <!-- SheetJS for Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Custom JS -->
+    <script type="text/javascript" src="~/Contents/js/TraceabilityRubber/TraceabilityRubber.js"></script>
     <script>
         var agPaging = 'ag-paging-footer';
-        var Traceability = '#TraceabilityGrid';
         var IsOptionAll = false;
-        CreateGridTraceability(true);
-        RegEventTraceability();
-        RefreshAllGridWhenChangeData();
-        SetLabel();
-        function SetLabel(){
-            $('#labelChkAll').text(arrMsg.key_showall);
-        }
+        initTraceabilityTableAG();
     </script>
+
+}
+@section Styles {
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/Contents/css/Traceability/Traceability.css" />
 }

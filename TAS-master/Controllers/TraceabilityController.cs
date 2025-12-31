@@ -5,46 +5,54 @@ using TAS.ViewModels;
 namespace TAS.Controllers
 {
 	[Authorize]
-	public class TraceabilityTableController : Controller
+	public class TraceabilityController : Controller
 	{
-		private readonly TraceabilityTableModels _traceabilityTableModels;
-		private readonly ILogger<TraceabilityTableController> _logger;
+		private readonly TraceabilityModels _traceabilityModels;
+		private readonly ILogger<TraceabilityController> _logger;
 
-		public TraceabilityTableController(TraceabilityTableModels traceabilityTableModels, ILogger<TraceabilityTableController> logger)
+		public TraceabilityController(TraceabilityModels traceabilityTableModels, ILogger<TraceabilityController> logger)
 		{
-			_traceabilityTableModels = traceabilityTableModels;
+			_traceabilityModels = traceabilityTableModels;
 			_logger = logger;
 		}
 
 		// ========================================
-		// GET: /TraceabilityTable/Index
+		// GET: /Traceability/Index
 		// ========================================
 		public IActionResult Index()
 		{
 			ViewData["Title"] = "Traceability";
 			return View();
 		}
+		// ========================================
+		// GET: /Traceability/Index
+		// ========================================
+		public IActionResult Traceability()
+		{
+			ViewData["Title"] = "Traceability";
+			return View();
+		}
 
 		// ========================================
-		// GET: /TraceabilityTable/GetTableData
+		// GET: /Traceability/GetTableData
 		// ========================================
 		[HttpGet]
 		public async Task<IActionResult> GetTableData(bool showAll = false)
 		{
 			try
 			{
-				var data = await _traceabilityTableModels.GetTraceabilityTableAsync(showAll);
+				var data = await _traceabilityModels.GetTableDataAsync(showAll);
 				return Json(new { success = true, data = data });
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error in GetTableData");
-				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu: " + ex.Message });
 			}
 		}
 
 		// ========================================
-		// GET: /TraceabilityTable/GetByOrder
+		// GET: /Traceability/GetByOrder
 		// ========================================
 		[HttpGet]
 		public async Task<IActionResult> GetByOrder(string orderCode)
@@ -56,13 +64,13 @@ namespace TAS.Controllers
 					return Json(new { success = false, message = "Mã đơn hàng không hợp lệ" });
 				}
 
-				var data = await _traceabilityTableModels.GetTraceabilityByOrderAsync(orderCode);
+				var data = await _traceabilityModels.GetTraceabilityByOrderAsync(orderCode);
 				return Json(new { success = true, data = data });
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error in GetByOrder");
-				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu: " + ex.Message });
 			}
 		}
 	}
