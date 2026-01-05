@@ -447,7 +447,7 @@ function cellStyle_Col_Model_EventActual(params) {
 // ========================================
 function ShowOrHideRowChildren(id_list, selector, sortOrder) {
     // Find parent row
-    var itemParent = ListRowChild.find(x => x.sortList === id_list);
+    var itemParent = ListDataFull.find(x => x.sortList === id_list);
     if (!itemParent) {
         return;
     }
@@ -462,35 +462,58 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
         // CLOSE ROW
         // ========================================
         // Remove all descendants recursively
-        let idlistData = ListRowChild.filter(x => x.sortOrder == sortOrderChildren && x.sortList.startsWith(itemParent.sortList));
+        let idlistData;        
         if (sortOrder === 1) {
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder != 1);
 
+            gridApi.applyTransaction({ remove: idlistData });
+            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList)).forEach(x => x.isOpenChild = false);
         }
         else if (sortOrder === 2) {
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder > 2);
 
+            gridApi.applyTransaction({ remove: idlistData });
+            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder >= 2).forEach(x => x.isOpenChild = false);
         }
-        gridApi.applyTransaction({ remove: idlistData });
-        //SetValueArrParentIds([...ListDataToShow.map(x => x.sortList)], false);
+        else if (sortOrder === 3) {
+            idlistData = ListRowChild.filter(x => x.sortOrder == sortOrderChildren && x.sortList.startsWith(itemParent.sortList));
+            gridApi.applyTransaction({ remove: idlistData });
+            ListDataFull.filter(x => x.sortList == itemParent.sortList)[ListDataFull.filter(x => x.sortList == itemParent.sortList).length - 1].isOpenChild = false;
+        }
+        
     } else {
         // ========================================
         // OPEN ROW
         // ========================================
-        //console.log('➕ Opening row', sortOrder);
-        //if (sortOrder === 1) {
+        let idlistData;
+        if (sortOrder === 1) {
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder != 1);
 
-        //}
-        //else if (sortOrder === 2) {
+            gridApi.applyTransaction({
+                add: idlistData,
+                addIndex: row_index
+            });
+            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList)).forEach(x => x.isOpenChild = true);
+        }
+        else if (sortOrder === 2) {
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder > 2);
 
-        //}
-        let idlistData = ListRowChild.filter(x => x.sortOrder === sortOrderChildren && x.sortList.startsWith(itemParent.sortList));
-        gridApi.applyTransaction({
-            add: idlistData,
-            addIndex: row_index
-        });
-        //SetValueArrParentIds([...ListDataToShow.map(x => x.sortList)], true);
+            gridApi.applyTransaction({
+                add: idlistData,
+                addIndex: row_index
+            });
+            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder >= 2).forEach(x => x.isOpenChild = true);
+        }
+        else if (sortOrder === 3) {
+            idlistData = ListRowChild.filter(x => x.sortOrder == sortOrderChildren && x.sortList.startsWith(itemParent.sortList));
+
+            gridApi.applyTransaction({
+                add: idlistData,
+                addIndex: row_index
+            });
+            ListDataFull.filter(x => x.sortList == itemParent.sortList)[ListDataFull.filter(x => x.sortList == itemParent.sortList).length - 1].isOpenChild = true;
+        }
     }
-    ListRowChild.filter(x => x.sortList == itemParent.sortList)[ListRowChild.filter(x => x.sortList == itemParent.sortList).length - 1].isOpenChild = !itemParent.isOpenChild;
-    
     if ($(selectorRow).find('span.ag-icon').hasClass('ag-icon-tree-closed')) {
         $(selectorRow).find('span.ag-icon').removeClass('ag-icon-tree-closed').addClass('ag-icon-tree-open');
     }
