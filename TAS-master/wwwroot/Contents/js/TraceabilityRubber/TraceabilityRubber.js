@@ -10,7 +10,7 @@
 var arrParentIds = [];
 var ListDataFull = [];
 var ListRowChild = [];
-var gridApi;
+var gridApiTraceability;
 var gridOptionsTraceability;
 var ListDataToShow = [];
 
@@ -18,12 +18,8 @@ var ListDataToShow = [];
 // INITIALIZE
 // ========================================
 function initTraceabilityTableAG() {
-    //console.log('🚀 Initializing Traceability Table (4 Levels - Final)...');
-    //console.log('AG Grid version:', typeof agGrid !== 'undefined' ? agGrid.VERSION : 'N/A');
-
     CreateGridTraceability();
     RegEventTraceability();
-    
 }
 
 // ========================================
@@ -97,7 +93,7 @@ function CreateGridTraceability() {
         },
         cellSelection: true,
         onGridReady: function (params) {
-            gridApi = params.api;
+            gridApiTraceability = params.api;
             params.api.sizeColumnsToFit();
      
         },
@@ -130,7 +126,7 @@ function CreateGridTraceability() {
         return;
     }
 
-    gridApi = agGrid.createGrid(eGridDiv, gridOptionsTraceability);
+    gridApiTraceability = agGrid.createGrid(eGridDiv, gridOptionsTraceability);
     CreateRowDataTraceability();
     resizeGridTraceability();
 }
@@ -178,11 +174,11 @@ function CreateRowDataTraceability() {
                 // Only show Level 1 initially
                 //var listDataToShow = ListDataFull.filter(x => x.sortOrder === 1);
                 ListRowChild = ListDataFull.filter(x => x.sortOrder !== 1);
-                //gridApi.setGridOption("rowData", listDataToShow);
+                //gridApiTraceability.setGridOption("rowData", listDataToShow);
 
                 setTimeout(function () {
                     if (typeof renderPagination !== 'undefined') {
-                        renderPagination(agPaging, gridApi, ListDataFull, IsOptionAll);
+                        renderPagination(agPaging, gridApiTraceability, ListDataFull, IsOptionAll);
                     }
                     if (typeof updateStatusBar !== 'undefined') {
                         updateStatusBar(ListDataFull.length);
@@ -464,20 +460,20 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
         // Remove all descendants recursively
         let idlistData;        
         if (sortOrder === 1) {
-            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder != 1);
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder != sortOrder);
 
-            gridApi.applyTransaction({ remove: idlistData });
+            gridApiTraceability.applyTransaction({ remove: idlistData });
             ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList)).forEach(x => x.isOpenChild = false);
         }
         else if (sortOrder === 2) {
-            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder > 2);
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder > sortOrder);
 
-            gridApi.applyTransaction({ remove: idlistData });
-            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder >= 2).forEach(x => x.isOpenChild = false);
+            gridApiTraceability.applyTransaction({ remove: idlistData });
+            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder >= sortOrder).forEach(x => x.isOpenChild = false);
         }
         else if (sortOrder === 3) {
             idlistData = ListRowChild.filter(x => x.sortOrder == sortOrderChildren && x.sortList.startsWith(itemParent.sortList));
-            gridApi.applyTransaction({ remove: idlistData });
+            gridApiTraceability.applyTransaction({ remove: idlistData });
             ListDataFull.filter(x => x.sortList == itemParent.sortList)[ListDataFull.filter(x => x.sortList == itemParent.sortList).length - 1].isOpenChild = false;
         }
         
@@ -487,27 +483,27 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
         // ========================================
         let idlistData;
         if (sortOrder === 1) {
-            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder != 1);
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder != sortOrder);
 
-            gridApi.applyTransaction({
+            gridApiTraceability.applyTransaction({
                 add: idlistData,
                 addIndex: row_index
             });
             ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList)).forEach(x => x.isOpenChild = true);
         }
         else if (sortOrder === 2) {
-            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder > 2);
+            idlistData = ListRowChild.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder > sortOrder);
 
-            gridApi.applyTransaction({
+            gridApiTraceability.applyTransaction({
                 add: idlistData,
                 addIndex: row_index
             });
-            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder >= 2).forEach(x => x.isOpenChild = true);
+            ListDataFull.filter(x => x.sortList.startsWith(itemParent.sortList) && x.sortOrder >= sortOrder).forEach(x => x.isOpenChild = true);
         }
         else if (sortOrder === 3) {
             idlistData = ListRowChild.filter(x => x.sortOrder == sortOrderChildren && x.sortList.startsWith(itemParent.sortList));
 
-            gridApi.applyTransaction({
+            gridApiTraceability.applyTransaction({
                 add: idlistData,
                 addIndex: row_index
             });
@@ -520,7 +516,7 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
     else {
         $(selectorRow).find('span.ag-icon').removeClass('ag-icon-tree-open').addClass('ag-icon-tree-closed');
     }
-    ///gridApi.refreshCells({ force: true });
+    ///gridApiTraceability.refreshCells({ force: true });
 }
 
 // ========================================
@@ -562,7 +558,7 @@ function ShowOrHideAllRowChildren() {
         $('div[col-id="pondName"] span.ag-icon').removeClass('ag-icon-tree-closed').addClass('ag-icon-tree-open');
         $('div[col-id="agentName"] span.ag-icon').removeClass('ag-icon-tree-closed').addClass('ag-icon-tree-open');
 
-        gridApi.applyTransaction({ add: listDataChildToAdd });
+        gridApiTraceability.applyTransaction({ add: listDataChildToAdd });
 
         ListDataFull.forEach(x => {
             if (x.sortOrder > 0) x.isOpenChild = true;
@@ -581,13 +577,13 @@ function ShowOrHideAllRowChildren() {
         $('div[col-id="pondName"] span.ag-icon').removeClass('ag-icon-tree-open').addClass('ag-icon-tree-closed');
         $('div[col-id="agentName"] span.ag-icon').removeClass('ag-icon-tree-open').addClass('ag-icon-tree-closed');
 
-        gridApi.applyTransaction({ remove: listDataChildToRemove });
+        gridApiTraceability.applyTransaction({ remove: listDataChildToRemove });
 
         ListDataFull.forEach(x => x.isOpenChild = false);
     }
 
     ResetValueArrParentIds();
-    gridApi.refreshCells({ force: true });
+    gridApiTraceability.refreshCells({ force: true });
 }
 
 // Reset arrParentIds
@@ -604,7 +600,7 @@ function exportToExcel() {
         fileName: `Traceability_4Levels_${new Date().toISOString().split('T')[0]}.xlsx`,
         sheetName: 'Traceability'
     };
-    gridApi.exportDataAsExcel(params);
+    gridApiTraceability.exportDataAsExcel(params);
 }
 
 // ========================================

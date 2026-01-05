@@ -74,6 +74,8 @@ namespace TAS.DTOs
 		public string? OrderName { get; set; }
 		public string? AgentCode { get; set; }
 		public string? AgentName { get; set; }
+		public string? PondCode { get; set; }
+		public string? PondName { get; set; }
 		public string? FarmCode { get; set; }
 		public string? FarmerName { get; set; }
 		public DateTime? DatePurchase { get; set; }
