@@ -89,6 +89,12 @@ namespace TAS.Data
 				entity.Property(e => e.FarmerName).HasMaxLength(255).IsRequired();
 				entity.Property(e => e.FarmPhone).HasMaxLength(20);
 				entity.Property(e => e.FarmAddress).HasMaxLength(500);
+
+				entity.Property(e => e.Certificates).HasMaxLength(500);
+				entity.Property(e => e.TotalAreaHa).HasColumnType("decimal(5,2)");
+				entity.Property(e => e.RubberAreaHa).HasColumnType("decimal(5,2)");
+				entity.Property(e => e.TotalExploit).HasColumnType("decimal(5,2)");
+
 				entity.Property(e => e.RegisterPerson).HasMaxLength(50);
 				entity.Property(e => e.UpdatePerson).HasMaxLength(50);
 

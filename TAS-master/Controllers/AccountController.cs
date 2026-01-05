@@ -37,8 +37,8 @@ namespace TAS.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Login(LoginRequest model, string? returnUrl = null)
 		{
-			//if (!ModelState.IsValid)
-			//	return View(model);
+			if (!ModelState.IsValid)
+				return View(model);
 
 			// 1) Validate user
 			var result = await _accountModels.ValidateUserAsync(model.Username, model.Password);
@@ -70,7 +70,7 @@ namespace TAS.Controllers
 				IsPersistent = model.RememberMe, // true => cookie sống lâu
 				ExpiresUtc = model.RememberMe
 					? DateTimeOffset.UtcNow.AddDays(7)
-					: DateTimeOffset.UtcNow.AddHours(2),
+					: DateTimeOffset.UtcNow.AddHours(12),
 				AllowRefresh = true
 			};
 

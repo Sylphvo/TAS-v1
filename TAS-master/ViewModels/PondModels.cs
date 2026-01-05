@@ -318,7 +318,7 @@ namespace TAS.ViewModels
 		// ========================================
 		// GET AGENTS
 		// ========================================
-		public async Task<List<CreateRubberAgentDto>> GetAgentsAsync()
+		public async Task<List<RubberAgentDto>> GetAgentsAsync()
 		{
 			try
 			{
@@ -332,7 +332,7 @@ namespace TAS.ViewModels
                     ORDER BY AgentName
                 ";
 
-				var agents = await _dbHelper.QueryAsync<CreateRubberAgentDto>(sql);
+				var agents = await _dbHelper.QueryAsync<RubberAgentDto>(sql);
 				return agents.ToList();
 			}
 			catch (Exception ex)

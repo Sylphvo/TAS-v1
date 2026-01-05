@@ -1,449 +1,615 @@
-﻿var sortData = { sortColumnEventActual: '', sortOrderEventActual: '' }
-var gridOptionsAgent, ListDataFull;
-var page = 1;
-var pageSize = 20;
-var gridApi;
-var pagerApi;
-function CreateGridAgent() {
-    gridOptionsAgent = {
-        paginationPageSize: 100,
-        columnDefs: CreateColModelAgent(),
+﻿// ========================================
+// AGENT MANAGEMENT - AG GRID
+// ========================================
+
+var gridApiAgent;
+var gridOptions;
+var currentAgentId = null;
+var selectedRows = [];
+var map = null;
+var drawnItems = null;
+
+// ========================================
+// INITIALIZE
+// ========================================
+$(document).ready(function () {
+    console.log('🚀 Initializing Agent Management...');
+
+    initAgGrid();
+    loadAgents();
+    registerEvents();
+
+    console.log('✅ Agent Management initialized!');
+});
+
+// ========================================
+// AG GRID SETUP
+// ========================================
+function initAgGrid() {
+    const columnDefs = [
+        {
+            headerName: '',
+            checkboxSelection: true,
+            headerCheckboxSelection: true,
+            width: 50,
+            pinned: 'left',
+            lockPosition: true,
+            suppressMenu: true,
+            filter: false
+        },
+        {
+            field: 'agentId',
+            headerName: 'ID',
+            width: 80,
+            hide: true
+        },
+        {
+            field: 'agentCode',
+            headerName: 'Mã đại lý',
+            width: 150,
+            pinned: 'left',
+            cellRenderer: function (params) {
+                return `<strong>${params.value}</strong>`;
+            }
+        },
+        {
+            field: 'agentName',
+            headerName: 'Tên đại lý',
+            width: 250,
+            cellRenderer: function (params) {
+                return `<i class="fas fa-user"></i> ${params.value}`;
+            }
+        },
+        {
+            field: 'agentPhone',
+            headerName: 'Số điện thoại',
+            width: 150,
+            cellRenderer: function (params) {
+                if (!params.value) return '-';
+                return `<i class="fas fa-phone"></i> ${params.value}`;
+            }
+        },
+        {
+            field: 'agentAddress',
+            headerName: 'Địa chỉ',
+            width: 300,
+            cellRenderer: function (params) {
+                if (!params.value) return '-';
+                return `<i class="fas fa-map-marker-alt"></i> ${params.value}`;
+            }
+        },
+        {
+            field: 'isActive',
+            headerName: 'Trạng thái',
+            width: 140,
+            cellRenderer: function (params) {
+                if (params.value) {
+                    return '<span class="status-badge status-active">Đang hoạt động</span>';
+                } else {
+                    return '<span class="status-badge status-inactive">Ngưng hoạt động</span>';
+                }
+            },
+            filter: 'agSetColumnFilter',
+            filterParams: {
+                values: [true, false],
+                valueFormatter: function (params) {
+                    return params.value ? 'Đang hoạt động' : 'Ngưng hoạt động';
+                }
+            }
+        },
+        {
+            field: 'registerDate',
+            headerName: 'Ngày đăng ký',
+            width: 150,
+            valueFormatter: function (params) {
+                if (!params.value) return '';
+                return new Date(params.value).toLocaleDateString('vi-VN');
+            },
+            filter: 'agDateColumnFilter'
+        },
+        {
+            field: 'registerPerson',
+            headerName: 'Người đăng ký',
+            width: 150
+        },
+        {
+            field: 'updateDate',
+            headerName: 'Ngày cập nhật',
+            width: 150,
+            valueFormatter: function (params) {
+                if (!params.value) return '-';
+                return new Date(params.value).toLocaleDateString('vi-VN');
+            }
+        },
+        {
+            headerName: 'Thao tác',
+            width: 150,
+            pinned: 'right',
+            cellRenderer: function (params) {
+                return `
+                    <button class="btn btn-sm btn-primary action-btn" onclick="editAgent(${params.data.agentId})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-info action-btn" onclick="viewAgent(${params.data.agentId})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteAgent(${params.data.agentId})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+            },
+            filter: false,
+            sortable: false
+        }
+    ];
+
+    gridOptions = {
+        columnDefs: columnDefs,
         defaultColDef: {
-            width: 170,
+            sortable: true,
             filter: true,
-            floatingFilter: true,
+            resizable: true,
+            floatingFilter: true
         },
-		rowHeight: 45,// chiều cao hàng
-		headerHeight: 45,// chiều cao header
-		rowData: [],//data sẽ được load sau
-		rowDragManaged: true,// cho phép kéo thả hàng
-		rowDragMultiRow: true,// cho phép kéo thả nhiều hàng
-        rowSelection: 'multiple',         // cho phép chọn nhiều hàng
-        suppressRowClickSelection: false, // cho phép click hàng để chọn
-        animateRows: true,// hiệu ứng khi sắp xếp lại hàng
-        singleClickEdit: true,//
-        suppressServerSideFullWidthLoadingRow: true,
-        components: {
-            //customFloatingFilterInput: getFloatingFilterInputComponent(),
-            //customheader: CustomHeaderAgent,
-        },
-        cellSelection: true,
+        rowSelection: 'multiple',
+        suppressRowClickSelection: true,
+        pagination: true,
+        paginationPageSize: 50,
+        paginationPageSizeSelector: [25, 50, 100, 200],
+        rowHeight: 45,
+        headerHeight: 45,
+        animateRows: true,
+        enableCellTextSelection: true,
+        onSelectionChanged: onSelectionChanged,
         onGridReady: function (params) {
-            gridApi = params.api;
+            gridApiAgent = params.api;
             params.api.sizeColumnsToFit();
-        },
-        rowDragManaged: true,
-        onRowDragEnd() {
-            persistCurrentPageOrder();          // rows đã đúng thứ tự bạn vừa kéo
-        },
-        onCellValueChanged: e => {
-            UpdateDataAfterEdit(0, e.data);
+            console.log('✅ AG Grid ready!');
         }
     };
-    const eGridDiv = document.querySelector(Agent);
-    gridApi = agGrid.createGrid(eGridDiv, gridOptionsAgent);
-    CreateRowDataAgent();
-    resizeGridAgent();
+
+    const eGridDiv = document.querySelector('#agentGrid');
+    gridApiAgent = agGrid.createGrid(eGridDiv, gridOptions);
 }
-function resizeGridAgent() {
-    setTimeout(function () {
-        setWidthHeightGrid(25);
-    }, 100);
-}
-function setWidthHeightGrid(heithlayout) {
-    //gridOptionsAgent.api.sizeColumnsToFit();
-    //var heigh = $(window).height() - $('.top_header').outerHeight() - $('.dm_group.dmg-shortcut').outerHeight() - ($('.col-xl-12').outerHeight() + heithlayout);
-    //$(myGrid).css('height', heigh);
-    //gridOptions.api.sizeColumnsToFit({
-    //	defaultMinWidth: 100,
-    //	columnLimits: [{ key: "DESCRIPTION", minWidth: 200 }],
-    //});
-}
-function RefreshAllGridWhenChangeData() {
-    //ShowHideLoading(true, Agent);
-    setTimeout(function () {
-        CreateRowDataAgent();
-    }, 1);
-}
-function CreateRowDataAgent() {
-    var listSearchAgent = {};
-    $.ajax({
-        async: !false,
-        type: 'POST',
-        url: "/Agent/Agents",
-        data: listSearchAgent,
-        dataType: "json",
-        success: function (data) {
-            ListDataFull = data;            
-            gridApi.setGridOption("rowData", data);
-            renderPagination(agPaging, IsOptionAll);
+
+// ========================================
+// REGISTER EVENTS
+// ========================================
+function registerEvents() {
+    // Search
+    $('#btnSearch').on('click', loadAgents);
+
+    // Reset
+    $('#btnReset').on('click', function () {
+        $('#txtSearchKeyword').val('');
+        $('#txtAgentCode').val('');
+        $('#txtAgentName').val('');
+        $('#ddlIsActive').val('true');
+        $('#txtFromDate').val('');
+        $('#txtToDate').val('');
+        loadAgents();
+    });
+
+    // Add
+    $('#btnAdd').on('click', showAddModal);
+
+    // Save
+    $('#btnSave').on('click', saveAgent);
+
+    // Bulk Delete
+    $('#btnBulkDelete').on('click', bulkDeleteAgents);
+
+    // Export
+    $('#btnExport').on('click', exportToExcel);
+
+    // Refresh
+    $('#btnRefresh').on('click', loadAgents);
+
+    // Confirm Delete
+    $('#btnConfirmDelete').on('click', confirmDelete);
+
+    // Polygon buttons
+    $('#btnDrawPolygon').on('click', showMapModal);
+    $('#btnClearPolygon').on('click', function () {
+        $('#polygon').val('');
+    });
+    $('#btnSavePolygon').on('click', savePolygonFromMap);
+
+    // Enter to search
+    $('#txtSearchKeyword, #txtAgentCode, #txtAgentName').on('keypress', function (e) {
+        if (e.which === 13) {
+            loadAgents();
         }
     });
 }
-function CreateColModelAgent() {
-    var columnDefs = [
-        {
-            field: 'agentCode', headerName: 'Mã đại lý', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , checkboxSelection: true
-            , headerCheckbox: true
-            , headerCheckboxSelection: true // checkbox ở header để chọn tất cả
-            , rowDrag: true
-            , filter: "agTextColumnFilter"
-            , floatingFilterComponent: 'customFloatingFilterInput'
-            , floatingFilterComponentParams: { suppressFilterButton: true }
-            , headerComponent: "customHeader"
-            //, cellRenderer: cellRender_StartDate
-            //, colSpan: 2
-        },
-        {
-            field: 'agentName', headerName: 'Tên đại lý', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , filter: "agTextColumnFilter"
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
-        },
-        {
-            field: 'ownerName', headerName: 'Chủ đại lý', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , filter: "agTextColumnFilter"
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
-        },
-        {
-            field: 'agentAddress', headerName: 'Địa chỉ', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , filter: "agTextColumnFilter"
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
-        },
-        {
-            field: 'taxCode', headerName: 'Điện thoại', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , filter: "agTextColumnFilter"
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
-        },
-        {
-            field: 'isActive', headerName: 'Trạng thái', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: false
-            , filter: false
-            , cellRenderer: function (params) {
-                if (params.value == 0) {
-                    return '<span class="badge text-bg-primary">không hoạt động</span>';
-                }
-                if (params.value == 1) {
-                    return '<span class="badge text-bg-success">đang hoạt động</span>';
-                }
+
+// ========================================
+// LOAD AGENTS
+// ========================================
+function loadAgents() {
+    console.log('📥 Loading agents...');
+
+    const searchParams = {
+        searchKeyword: $('#txtSearchKeyword').val(),
+        agentCode: $('#txtAgentCode').val(),
+        agentName: $('#txtAgentName').val(),
+        isActive: $('#ddlIsActive').val() === '' ? null : $('#ddlIsActive').val() === 'true',
+        fromDate: $('#txtFromDate').val(),
+        toDate: $('#txtToDate').val(),
+        pageNumber: 1,
+        pageSize: 1000
+    };
+
+    $.ajax({
+        url: '/Agent/GetAgents',
+        type: 'GET',
+        data: searchParams,
+        success: function (response) {
+            console.log('📥 Response:', response);
+
+            if (response.success) {
+                gridApiAgent.setGridOption('rowData', response.data);
+                updateStatusBar(response.totalRecords);
+                updateLastUpdateTime();
+                console.log('✅ Loaded', response.totalRecords, 'agents');
+            } else {
+                showError(response.message);
             }
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
         },
-        {
-            field: 'updateTime', headerName: 'Ngày tạo', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , filter: "agTextColumnFilter"
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
-        },
-        {
-            field: 'updateBy', headerName: 'Người tạo', width: 110, minWidth: 110
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: true
-            , filter: "agTextColumnFilter"
-            //, cellRenderer: cellRender_StartDate
-            , headerComponent: "customHeader"
-        },
-        {
-            field: 'action', headerName: 'Chức năng', width: 160, minWidth: 160
-            , cellStyle: cellStyle_Col_Model_EventActual
-            , editable: false
-            , filter: false
-            , editType: 'fullRow'
-            , headerComponent: "customHeader"
-            , cellRenderer: ActionRenderer
+        error: function (xhr, status, error) {
+            console.error('❌ Error loading agents:', error);
+            showError('Lỗi khi tải dữ liệu: ' + error);
         }
-        
-    ]
-    return columnDefs;
-}
-function onRowSelected(event) {
-   
+    });
 }
 
-function CustomHeaderAgent() { }
+// ========================================
+// SHOW ADD MODAL
+// ========================================
+function showAddModal() {
+    currentAgentId = null;
+    $('#modalTitle').text('Thêm đại lý mới');
+    $('#agentForm')[0].reset();
+    $('#agentId').val('');
+    $('#isActive').val('true');
+    $('#agentModal').modal('show');
+}
 
-CustomHeaderAgent.prototype.init = function (params) {
-    this.params = params;
-    var strHiddenAsc = params.sortOrderDefault == 'asc' ? '' : 'ag-hidden';
-    var strHiddenDesc = params.sortOrderDefault == 'desc' ? '' : 'ag-hidden';
-    this.eGui = document.createElement('div');
-    this.eGui.className = "ag-header-cell-label";
-    this.eGui.innerHTML =
-        '' + '<span class="ag-header-cell-text">' +
-        this.params.displayName +
-        '</span>' +
-        '<span class="ag-header-icon ag-header-label-icon ag-sort-ascending-icon ' + strHiddenAsc + '"><span class="ag-icon ag-icon-asc"></span></span>' +
-        '<span class="ag-header-icon ag-header-label-icon ag-sort-descending-icon ' + strHiddenDesc + '"><span class="ag-icon ag-icon-desc"></span></span>';
+// ========================================
+// EDIT AGENT
+// ========================================
+function editAgent(id) {
+    console.log('✏️ Editing agent:', id);
+    currentAgentId = id;
 
-    //if (!IsNullOrEmpty(this.params.style)) {
-    //    this.eGui.style = this.params.style;
-    //}
-    if (this.params.style != null && this.params.style != undefined) {
-        this.eGui.style = this.params.style;
+    $.ajax({
+        url: '/Agent/GetAgentById',
+        type: 'GET',
+        data: { id: id },
+        success: function (response) {
+            if (response.success) {
+                const agent = response.data;
+
+                $('#modalTitle').text('Sửa thông tin đại lý');
+                $('#agentId').val(agent.agentId);
+                $('#agentCode').val(agent.agentCode);
+                $('#agentName').val(agent.agentName);
+                $('#agentPhone').val(agent.agentPhone);
+                $('#agentAddress').val(agent.agentAddress);
+                $('#isActive').val(agent.isActive.toString());
+                $('#polygon').val(agent.polygon || '');
+
+                $('#agentModal').modal('show');
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi tải thông tin đại lý: ' + error);
+        }
+    });
+}
+
+// ========================================
+// VIEW AGENT
+// ========================================
+function viewAgent(id) {
+    editAgent(id);
+    // Make all fields readonly
+    $('#agentForm input, #agentForm select, #agentForm textarea').prop('readonly', true);
+    $('#agentForm select').prop('disabled', true);
+    $('#btnSave').hide();
+
+    $('#agentModal').on('hidden.bs.modal', function () {
+        $('#agentForm input, #agentForm select, #agentForm textarea').prop('readonly', false);
+        $('#agentForm select').prop('disabled', false);
+        $('#btnSave').show();
+    });
+}
+
+// ========================================
+// SAVE AGENT
+// ========================================
+function saveAgent() {
+    // Validation
+    if (!$('#agentCode').val()) {
+        showWarning('Vui lòng nhập mã đại lý');
+        $('#agentCode').focus();
+        return;
     }
 
-    this.eSortDownButton = this.eGui.querySelector('.ag-sort-descending-icon');
-    this.eSortUpButton = this.eGui.querySelector('.ag-sort-ascending-icon');
-
-    //if (!IsNullOrEmpty(params.sortOrderDefault)) {
-    if (params.sortOrderDefault != null && params.sortOrderDefault != undefined) {
-        sortData.sortColumnEventActual = params.column.colId;
-        sortData.sortOrderEventActual = params.sortOrderDefault;
+    if (!$('#agentName').val()) {
+        showWarning('Vui lòng nhập tên đại lý');
+        $('#agentName').focus();
+        return;
     }
 
-    if (this.params.enableSorting) {
-        this.onSortChangedListener = this.onSortChanged.bind(this);
-        this.eGui.addEventListener(
-            'click',
-            this.onSortChangedListener
-        );
+    const agentData = {
+        agentId: $('#agentId').val() ? parseInt($('#agentId').val()) : 0,
+        agentCode: $('#agentCode').val(),
+        agentName: $('#agentName').val(),
+        agentPhone: $('#agentPhone').val(),
+        agentAddress: $('#agentAddress').val(),
+        isActive: $('#isActive').val() === 'true',
+        polygon: $('#polygon').val()
+    };
+
+    const isEdit = currentAgentId !== null && currentAgentId > 0;
+    const url = isEdit ? '/Agent/UpdateAgent' : '/Agent/CreateAgent';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    console.log(isEdit ? '✏️ Updating agent...' : '➕ Creating agent...');
+
+    $.ajax({
+        url: url,
+        type: method,
+        contentType: 'application/json',
+        data: JSON.stringify(agentData),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                $('#agentModal').modal('hide');
+                loadAgents();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi lưu đại lý: ' + error);
+        }
+    });
+}
+
+// ========================================
+// DELETE AGENT
+// ========================================
+function deleteAgent(id) {
+    currentAgentId = id;
+    $('#deleteModal').modal('show');
+}
+
+function confirmDelete() {
+    if (!currentAgentId) return;
+
+    console.log('🗑️ Deleting agent:', currentAgentId);
+
+    $.ajax({
+        url: '/Agent/DeleteAgent',
+        type: 'DELETE',
+        data: { id: currentAgentId },
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                $('#deleteModal').modal('hide');
+                loadAgents();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi xóa đại lý: ' + error);
+        }
+    });
+}
+
+// ========================================
+// BULK DELETE
+// ========================================
+function bulkDeleteAgents() {
+    if (selectedRows.length === 0) {
+        showWarning('Vui lòng chọn ít nhất một đại lý để xóa');
+        return;
+    }
+
+    if (!confirm(`Bạn có chắc chắn muốn xóa ${selectedRows.length} đại lý đã chọn?`)) {
+        return;
+    }
+
+    const agentIds = selectedRows.map(row => row.agentId);
+
+    console.log('🗑️ Bulk deleting agents:', agentIds);
+
+    $.ajax({
+        url: '/Agent/BulkDeleteAgents',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ agentIds: agentIds }),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                loadAgents();
+                selectedRows = [];
+                updateSelectedCount();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi xóa đại lý: ' + error);
+        }
+    });
+}
+
+// ========================================
+// SELECTION CHANGED
+// ========================================
+function onSelectionChanged() {
+    selectedRows = gridApiAgent.getSelectedRows();
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    $('#selectedCount').text(selectedRows.length);
+    $('#btnBulkDelete').prop('disabled', selectedRows.length === 0);
+}
+
+// ========================================
+// EXPORT TO EXCEL
+// ========================================
+function exportToExcel() {
+    console.log('📊 Exporting to Excel...');
+
+    const params = {
+        fileName: `DanhSachDaiLy_${new Date().toISOString().split('T')[0]}.xlsx`,
+        sheetName: 'Đại lý'
+    };
+
+    gridApiAgent.exportDataAsExcel(params);
+}
+
+// ========================================
+// MAP FUNCTIONS
+// ========================================
+function showMapModal() {
+    $('#mapModal').modal('show');
+
+    // Initialize map after modal is shown
+    setTimeout(function () {
+        if (!map) {
+            initMap();
+        }
+    }, 300);
+}
+
+function initMap() {
+    // Initialize Leaflet map
+    map = L.map('map').setView([10.8231, 106.6297], 13); // Ho Chi Minh City
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Initialize draw control
+    drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    var drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnItems
+        },
+        draw: {
+            polygon: true,
+            polyline: false,
+            rectangle: true,
+            circle: false,
+            marker: false,
+            circlemarker: false
+        }
+    });
+    map.addControl(drawControl);
+
+    // Load existing polygon if any
+    const existingPolygon = $('#polygon').val();
+    if (existingPolygon) {
+        try {
+            // Parse WKT and draw on map
+            const coords = parseWKT(existingPolygon);
+            if (coords) {
+                const polygon = L.polygon(coords);
+                drawnItems.addLayer(polygon);
+                map.fitBounds(polygon.getBounds());
+            }
+        } catch (e) {
+            console.error('Error parsing polygon:', e);
+        }
+    }
+
+    // Handle draw events
+    map.on(L.Draw.Event.CREATED, function (e) {
+        drawnItems.clearLayers();
+        drawnItems.addLayer(e.layer);
+    });
+}
+
+function savePolygonFromMap() {
+    if (!drawnItems || drawnItems.getLayers().length === 0) {
+        showWarning('Vui lòng vẽ vùng hoạt động trên bản đồ');
+        return;
+    }
+
+    const layer = drawnItems.getLayers()[0];
+    const coords = layer.getLatLngs()[0];
+
+    // Convert to WKT format
+    const wkt = coordsToWKT(coords);
+    $('#polygon').val(wkt);
+
+    showSuccess('Đã lưu vùng hoạt động');
+    $('#mapModal').modal('hide');
+}
+
+function coordsToWKT(coords) {
+    const points = coords.map(c => `${c.lng} ${c.lat}`).join(', ');
+    return `POLYGON((${points}, ${coords[0].lng} ${coords[0].lat}))`;
+}
+
+function parseWKT(wkt) {
+    // Simple WKT parser for POLYGON
+    const match = wkt.match(/POLYGON\(\((.*?)\)\)/);
+    if (!match) return null;
+
+    const coordsStr = match[1];
+    const coords = coordsStr.split(',').map(pair => {
+        const [lng, lat] = pair.trim().split(' ');
+        return [parseFloat(lat), parseFloat(lng)];
+    });
+
+    return coords;
+}
+
+// ========================================
+// UI HELPERS
+// ========================================
+function updateStatusBar(total) {
+    $('#totalRecords').html(`Tổng: <strong>${total}</strong> đại lý`);
+}
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN');
+    $('#lastUpdate').text(`Cập nhật: ${timeStr}`);
+}
+
+function showSuccess(message) {
+    if (typeof NotificationToast !== 'undefined') {
+        NotificationToast('success', message);
     } else {
-        this.eGui.removeChild(this.eSortDownButton);
-        this.eGui.removeChild(this.eSortUpButton);
+        alert(message);
     }
-};
-function cellStyle_Col_Model_EventActual(params) {
-    let cellAttr = {};
-    cellAttr['text-align'] = 'center';
-    return cellAttr;
 }
 
-CustomHeaderAgent.prototype.onSortChanged = function () {
-    //Remove tất cả icon sort ở col khác
-    $('.ag-sort-ascending-icon').not($(this.eSortUpButton)).addClass('ag-hidden');
-    $('.ag-sort-descending-icon').not($(this.eSortDownButton)).addClass('ag-hidden');
-    //
-    if (!$(this.eSortUpButton).hasClass('ag-hidden') || ($(this.eSortDownButton).hasClass('ag-hidden') && $(this.eSortUpButton).hasClass('ag-hidden'))) {
-        $(this.eSortDownButton).removeClass('ag-hidden');
-        $(this.eSortUpButton).addClass('ag-hidden');
-        sortData.sortOrderEventActual = 'desc';
+function showError(message) {
+    if (typeof NotificationToast !== 'undefined') {
+        NotificationToast('error', message);
+    } else {
+        alert('Lỗi: ' + message);
     }
-    else if (!$(this.eSortDownButton).hasClass('ag-hidden')) {
-        $(this.eSortUpButton).removeClass('ag-hidden');
-        $(this.eSortDownButton).addClass('ag-hidden');
-        sortData.sortOrderEventActual = 'asc';
-    }
-    sortData.sortColumnEventActual = this.params.column.colId;
-    this.onSortRequested();
-};
-
-CustomHeaderAgent.prototype.getGui = function () {
-    return this.eGui;
-};
-
-CustomHeaderAgent.prototype.onSortRequested = function () {
-    RefreshAllGridWhenChangeData();
-};
-
-CustomHeaderAgent.prototype.destroy = function () {
-    this.eGui.removeEventListener(
-        'click',
-        this.onSortChangedListener
-    );
-};
-function updateRowIndex() {
-    gridApi.forEachNodeAfterFilterAndSort((node, index) => {
-        node.setDataValue('STT', index + 1);
-    });
 }
 
-
-// Import từ URL demo
-document.getElementById('importExcelAgent').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: 'array', cellDates: true });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: null, raw: true });     
-        gridApi.setGridOption("rowData", rows);
-        notifier.show('Thành công', 'Import file Excel thành công', 'success', '', 4000);
-    } catch (err) {
-        notifier.show('Thất bại', 'Lỗi khi import file Excel!', 'danger', '', 4000);
+function showWarning(message) {
+    if (typeof NotificationToast !== 'undefined') {
+        NotificationToast('warning', message);
+    } else {
+        alert(message);
     }
-});
-// Export Excel
-function onExportExcelData() {
-    const ws = XLSX.utils.json_to_sheet(ListDataFull);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, 'datanhaplieu.xlsx');
 }
-// Export Example Excel
-function onExportExcel() {
-    const rowData_temp = [
-        { STT: 1, maNhaVuon: "NV_2", tenNhaVuon: "Đoàn Thị Diệu Hiền (giang)", KG: 99, TSC: 99, DRC: 99, thanhPham: 99, thanhPhamLyTam: 99 },
-    ];
-    const ws = XLSX.utils.json_to_sheet(rowData_temp);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, 'mau.xlsx');
-}
-
-function persistCurrentPageOrder() {
-    const start = (page - 1) * pageSize;
-    const n = gridApi.getDisplayedRowCount();
-    const ordered = [];
-    for (let i = 0; i < n; i++) {
-        ordered.push(gridApi.getDisplayedRowAtIndex(i).data);
-    }
-    // ghi đè đoạn trang hiện tại vào mảng gốc
-    ListDataFull.splice(start, n, ...ordered);
-}
-
-// --- helpers ---
-
-
-// Chuyển chuỗi sang số
-const num = v => {
-    const x = parseFloat(String(v ?? '').replace(',', '.'));
-    return Number.isFinite(x) ? x : 0;
-};
-// Cập nhật dữ liệu sau khi chỉnh sửa
-// status: 1: edit, 2: add
-function UpdateDataAfterEdit(status, rowData) {
-    var rowDataObj = {};
-    if (status == 1) {
-        rowDataObj.agentCode = $('#agentCode').val();//Mã đại lý
-        rowDataObj.agentName = $('#agentName').val();//Tên đại lý
-        rowDataObj.ownerName = $('#ownerName').val();//Chủ đại lý
-        rowDataObj.agentAddress = $('#agentAddress').val();//địa chỉ
-        rowDataObj.taxCode = $('#taxCode').val();//điện thoại
-        rowDataObj.isActive = 1;//Tổng khai thác
-        rowData = rowDataObj;
-    }
-    $.ajax({
-        async: true,
-        url: "/Agent/AddOrUpdate",
-        type: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify(rowData),
-        success: function (res) {
-            Toast.fire({
-                icon: "success",
-                title: (status == 0 ? "Cập nhật" : "Thành công") + " dữ liệu thành công"
-            });
-            RefreshAllGridWhenChangeData();
-        },
-        error: function () {
-            Toast.fire({
-                icon: "danger",
-                title: (status == 0 ? "Cập nhật" : "Thành công") + " dữ liệu thất bại"
-            });
-        }
-    });
-}
-
-function ActionRenderer(params) {
-    const wrap = document.createElement('div');
-    wrap.innerHTML =
-    (params.data.isActive == 0 ?
-    ` <button class="button_action_custom avtar avtar-xs btn-light-success js-change_isActive" title="đổi trạng thái hoạt động">
-        <i class="ti ti-check f-20"></i>
-    </button>`
-    :
-    `<button class="button_action_custom avtar avtar-xs btn-light-danger js-change_isActive" title="đổi trạng thái hoạt động">
-        <i class="ti ti-x f-20"></i>
-    </button>`)
-    +
-    `<button class="button_action_custom avtar avtar-xs btn-light-danger js-delete" title="Xóa dòng">
-      <i class="ti ti-trash f-20"></i>
-    </button>
-	`;
-    
-    const btnDelete = wrap.querySelector('.js-delete');
-    if (params.data.isActive == 0) {
-        const btnChangeIsActive = wrap.querySelector('.js-change_isActive');
-        btnChangeIsActive.addEventListener('click', (e) => {
-            ApproveDataRubberAgent(params.data.agentId, 1);
-        });
-    }
-    else {
-        const btnChangeIsActive = wrap.querySelector('.js-change_isActive');
-        btnChangeIsActive.addEventListener('click', (e) => {
-            ApproveDataRubberAgent(params.data.agentId, 0);
-        });
-    }
-    btnDelete.addEventListener('click', (e) => {
-        // e.stopPropagation();
-        Swal.fire({
-            title: 'Xóa dòng này?',
-            icon: "error",
-            showDenyButton: false,
-            showCancelButton: true,
-            confirmButtonText: `Lưu`,
-            showCloseButton: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    async: true,
-                    method: 'POST',
-                    url: "/Agent/DeleteRubberAgent",
-                    dataType: 'json',
-                    data: { agentId: params.data.agentId },
-                    success: function (res) {
-                        if (res == 1) {
-                            Toast.fire({
-                                icon: "success",
-                                title: "Xóa thành công"
-                            });
-                            params.api.applyTransaction({ remove: [params.node.data] });
-                            RefreshAllGridWhenChangeData();
-                        }
-                    },
-                    error: function () {
-                        Toast.fire({
-                            icon: "danger",
-                            title: "Xóa thất bại"
-                        });
-                    }
-                });
-            }
-        });
-    });
-
-    return wrap;
-}
-function ApproveDataRubberAgent(agentId, status) {
-    $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/Agent/ApproveDataRubberAgent",
-        dataType: 'json',
-        data: { agentId: agentId, status: status },
-        success: function (res) {
-            if (status == 1) {
-                Toast.fire({
-                    icon: "success",
-                    title: "đổi trạng thái thành công"
-                });
-            }
-            RefreshAllGridWhenChangeData();
-        },
-        error: function () {
-            Toast.fire({
-                icon: "danger",
-                title: "đổi trạng thái thất bại"
-            });
-        }
-    });
-}                           

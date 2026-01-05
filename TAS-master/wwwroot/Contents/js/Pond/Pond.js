@@ -2,7 +2,7 @@
 // POND.JS - Pond Management
 // ========================================
 
-let gridApi;
+let gridApiPond;
 let gridColumnApi;
 
 // ========================================
@@ -195,7 +195,7 @@ function setupGrid() {
         // Events
         onSelectionChanged: onSelectionChanged,
         onGridReady: function(params) {
-            gridApi = params.api;
+            gridApiPond = params.api;
             gridColumnApi = params.columnApi;
             params.api.sizeColumnsToFit();
         }
@@ -231,7 +231,7 @@ function setupEventHandlers() {
     
     // Quick filter
     $('#quickFilter').on('input', function() {
-        gridApi.setGridOption('quickFilterText', $(this).val());
+        gridApiPond.setGridOption('quickFilterText', $(this).val());
     });
     
     // Form validation
@@ -252,7 +252,7 @@ function loadPonds() {
         type: 'GET',
         success: function(response) {
             if (response.success) {
-                gridApi.setGridOption('rowData', response.data);
+                gridApiPond.setGridOption('rowData', response.data);
                 updateStatusBar(response.data.length);
                 updateLastUpdateTime();
             } else {
@@ -524,7 +524,7 @@ function exportAllToExcel() {
 }
 
 function exportSelectedToExcel() {
-    const selectedRows = gridApi.getSelectedRows();
+    const selectedRows = gridApiPond.getSelectedRows();
     if (selectedRows.length === 0) {
         showError('Vui lòng chọn ít nhất 1 hồ');
         return;
@@ -570,7 +570,7 @@ function exportSelectedToExcel() {
 // SELECTION CHANGED
 // ========================================
 function onSelectionChanged() {
-    const selectedRows = gridApi.getSelectedRows();
+    const selectedRows = gridApiPond.getSelectedRows();
     const count = selectedRows.length;
     
     if (count > 0) {

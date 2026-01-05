@@ -9,29 +9,32 @@ namespace TAS.Controllers
 	{
 		private readonly TraceabilityModels _traceabilityModels;
 		private readonly ILogger<TraceabilityController> _logger;
+		private readonly CommonModels _common;
 
-		public TraceabilityController(TraceabilityModels traceabilityTableModels, ILogger<TraceabilityController> logger)
+		public TraceabilityController(TraceabilityModels traceabilityTableModels, ILogger<TraceabilityController> logger, CommonModels common)
 		{
 			_traceabilityModels = traceabilityTableModels;
 			_logger = logger;
+			_common = common;
 		}
 
 		// ========================================
 		// GET: /Traceability/Index
 		// ========================================
+		[Breadcrumb("key_truyxuatnguongoc")]
 		public IActionResult Index()
 		{
-			ViewData["Title"] = "Traceability";
+			ViewData["Title"] = _common.GetValueByKey("key_truyxuatnguongoc");
 			return View();
 		}
-		// ========================================
-		// GET: /Traceability/Index
-		// ========================================
-		public IActionResult Traceability()
-		{
-			ViewData["Title"] = "Traceability";
-			return View();
-		}
+		//// ========================================
+		//// GET: /Traceability/Index
+		//// ========================================
+		//public IActionResult Traceability()
+		//{
+		//	ViewData["Title"] = "Traceability";
+		//	return View();
+		//}
 
 		// ========================================
 		// GET: /Traceability/GetTableData

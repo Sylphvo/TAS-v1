@@ -35,6 +35,14 @@
 	// ========================================
 	public class LoginRequest
 	{
+		public bool Success { get; set; }
+		public string Message { get; set; } = string.Empty;
+		public Guid UserId { get; set; }
+		public string? Email { get; set; }
+		public string? FirstName { get; set; }
+		public string? LastName { get; set; }
+		public string? FullName { get; set; }
+		public List<string>? Roles { get; set; }
 		public string Username { get; set; } = string.Empty;
 		public string Password { get; set; } = string.Empty;
 		public bool RememberMe { get; set; }

@@ -45,7 +45,7 @@ builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 
 builder.Services.AddScoped<RubberGardenModels>();     // <-- bắt buộc
-builder.Services.AddScoped<InformationGardenModels>();     // <-- bắt buộc
+builder.Services.AddScoped<FarmModels>();     // <-- bắt buộc
 builder.Services.AddScoped<AgentModels>();     // <-- bắt buộc
 builder.Services.AddScoped<TraceabilityModels>();     // <-- bắt buộc
 builder.Services.AddScoped<OrderModels>();     // <-- bắt buộc
@@ -110,7 +110,7 @@ builder.Services
 
 		options.Lockout.AllowedForNewUsers = true;
 		options.Lockout.MaxFailedAccessAttempts = 5;
-		options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+		options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(200);
 
 		options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier;
 		options.ClaimsIdentity.UserNameClaimType = ClaimTypes.Name;

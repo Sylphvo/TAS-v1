@@ -12,6 +12,7 @@ var ListDataFull = [];
 var ListRowChild = [];
 var gridApi;
 var gridOptionsTraceability;
+var ListDataToShow = [];
 
 // ========================================
 // INITIALIZE
@@ -232,8 +233,8 @@ function CreateColModelTraceability() {
         {
             field: 'orderCode',
             headerName: 'Mã đơn hàng',
-            width: 180,
-            minWidth: 150,
+            width: 190,
+            minWidth: 190,
             cellStyle: cellStyle_Col_Model_EventActual,
             editable: false,
             filter: true,
@@ -244,7 +245,7 @@ function CreateColModelTraceability() {
                     // Level 1: Order - show expand icon
                     var iconClass = params.data.isOpenChild ? 'ag-icon-tree-open' : 'ag-icon-tree-closed';
                     return `
-                        <div style="display: flex; align-items: center;">
+                        <div style="display: flex; align-items: center; flex-direction: row-reverse;">
                             <span class="ag-group-expanded" style="margin-right: 5px;">
                                 <span class="ag-icon ${iconClass}" 
                                       unselectable="on" 
@@ -283,7 +284,7 @@ function CreateColModelTraceability() {
         {
             field: 'pondName',
             headerName: 'Tên hồ',
-            width: 200,
+            width: 150,
             minWidth: 150,
             cellStyle: function (params) {
                 var style = cellStyle_Col_Model_EventActual(params);
@@ -301,7 +302,7 @@ function CreateColModelTraceability() {
                     var indent = 20;
                     var iconClass = params.data.isOpenChild ? 'ag-icon-tree-open' : 'ag-icon-tree-closed';
                     return `
-                        <div style="display: flex; align-items: center; padding-left: ${indent}px;">
+                        <div style="display: flex; align-items: center; flex-direction: row-reverse; padding-left: ${indent}px;">
                             <span class="ag-group-expanded" style="margin-right: 5px;">
                                 <span class="ag-icon ${iconClass}" 
                                       unselectable="on" 
@@ -340,7 +341,7 @@ function CreateColModelTraceability() {
                     var indent = 40;
                     var iconClass = params.data.isOpenChild ? 'ag-icon-tree-open' : 'ag-icon-tree-closed';
                     return `
-                        <div style="display: flex; align-items: center; padding-left: ${indent}px;">
+                        <div style="display: flex; align-items: center;flex-direction: row-reverse; padding-left: ${indent}px;">
                             <span class="ag-group-expanded" style="margin-right: 5px;">
                                 <span class="ag-icon ${iconClass}" 
                                       unselectable="on" 
@@ -466,48 +467,47 @@ function cellStyle_Col_Model_EventActual(params) {
 // SHOW/HIDE ROW CHILDREN - 4 LEVELS
 // ========================================
 function ShowOrHideRowChildren(id_list, selector, sortOrder) {
-    console.log('🔄 Toggle row:', id_list, 'sortOrder:', sortOrder);
+    //console.log('🔄 Toggle row:', id_list, 'sortOrder:', sortOrder);
 
     // Find parent row
     var itemParent = ListDataFull.find(x => x.sortList === id_list);
     if (!itemParent) {
-        console.error('❌ Parent row not found:', id_list);
+        //console.error('❌ Parent row not found:', id_list);
         return;
     }
 
     // Get row index for insertion
     var selectorCell = $(selector).parent().parent().parent();
     var selectorRow = $(selectorCell).parent();
-    var row_index = parseInt($(selectorRow).attr('row-index')) + 1;
-
-    // Find children based on sortOrder
-    var listChild;
+    var row_index = parseInt($(selectorRow).parent().attr('row-index')) + 1;
+    //console.log(row_index);
+    // Find children based on sortOrder    
 
     if (sortOrder === 1) {
         // Level 1 (Order): Find Level 2 (Ponds)
-        listChild = ListRowChild.filter(function (item) {
+        ListDataToShow = ListRowChild.filter(function (item) {
             if (item.sortOrder !== 2) return false;
             var parentPart = item.sortList.substring(0, item.sortList.lastIndexOf('__'));
             return parentPart === id_list;
         });
-        console.log('🔵 Level 1→2 children (Ponds):', listChild.length);
+        //console.log('🔵 Level 1→2 children (Ponds):', ListDataToShow.length);
 
     } else if (sortOrder === 2) {
         // Level 2 (Pond): Find Level 3 (Agents)
-        listChild = ListRowChild.filter(function (item) {
+        ListDataToShow = ListRowChild.filter(function (item) {
             return item.sortList.includes(id_list) && item.sortOrder === sortOrder + 1;
         });
-        console.log('🟡 Level 2→3 children (Agents):', listChild.length);
+        console.log('🟡 Level 2→3 children (Agents):', ListDataToShow.length);
 
     } else if (sortOrder === 3) {
         // Level 3 (Agent): Find Level 4 (Farms)
-        listChild = ListRowChild.filter(function (item) {
+        ListDataToShow = ListRowChild.filter(function (item) {
             return item.sortList.includes(id_list) && item.sortOrder === sortOrder + 1;
         });
-        console.log('🟢 Level 3→4 children (Farms):', listChild.length);
+        console.log('🟢 Level 3→4 children (Farms):', ListDataToShow.length);
     }
 
-    if (!listChild || listChild.length === 0) {
+    if (!ListDataToShow || ListDataToShow.length === 0) {
         console.warn('⚠️ No children found for:', id_list, 'sortOrder:', sortOrder);
         if (sortOrder === 3) {
             console.warn('⚠️ This might mean Level 4 data is missing in database!');
@@ -523,9 +523,9 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
 
         $(selector).attr('class', 'ag-icon ag-icon-tree-closed');
         itemParent.isOpenChild = false;
-        gridApi.applyTransaction({ remove: listChild });
+        gridApi.applyTransaction({ remove: ListDataToShow });
 
-        listChild.forEach(function (item) {
+        ListDataToShow.forEach(function (item) {
             item.isOpenChild = false;
         });
 
@@ -552,7 +552,7 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
             }
         }
 
-        SetValueArrParentIds([...listChild.map(x => x.sortList)], false);
+        SetValueArrParentIds([...ListDataToShow.map(x => x.sortList)], false);
 
     } else {
         // ========================================
@@ -564,7 +564,7 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
         if (sortOrder === 1 && typeof arrConstant !== 'undefined' && arrConstant.isCheckAll) {
             console.log('🌟 Expand ALL levels (isCheckAll = true)');
 
-            listChild = ListDataFull.filter(function (item) {
+            ListDataToShow = ListDataFull.filter(function (item) {
                 return item.sortOrder > sortOrder && item.sortList.startsWith(id_list + '__');
             });
 
@@ -577,7 +577,7 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
             $('.ag-icon-tree-closed').removeClass('ag-icon-tree-closed').addClass('ag-icon-tree-open');
         } else {
             // Normal: Only expand next level
-            listChild = listChild.filter(function (item) {
+            ListDataToShow = ListDataToShow.filter(function (item) {
                 return item.sortOrder === sortOrder + 1;
             });
         }
@@ -586,11 +586,11 @@ function ShowOrHideRowChildren(id_list, selector, sortOrder) {
         itemParent.isOpenChild = true;
 
         gridApi.applyTransaction({
-            add: listChild,
+            add: ListDataToShow,
             addIndex: row_index
         });
 
-        SetValueArrParentIds([...listChild.map(x => x.sortList)], true);
+        SetValueArrParentIds([...ListDataToShow.map(x => x.sortList)], true);
     }
 
     gridApi.refreshCells({ force: true });

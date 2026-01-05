@@ -15,7 +15,7 @@ namespace TAS.Controllers
 			_models = models;
 			_common = common;
 		}
-		[Breadcrumb("key_capnhatsolieu")]		
+		[Breadcrumb("key_capnhatsolieu")]
 		public IActionResult RubberGarden()
 		{
 			ViewData["Title"] = _common.GetValueByKey("key_capnhatsolieu");
