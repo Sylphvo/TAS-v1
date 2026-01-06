@@ -171,23 +171,13 @@ function setupGrid() {
                 cellRenderer: params => {
                     const hasShipped = params.data.shippedAt != null;
                     const shipBtn = !hasShipped ?
-                        `<button class="btn-action btn-ship" onclick="markShipped(${params.value})" title="Đánh dấu đã xuất hàng">
-                            <i class="fas fa-shipping-fast"></i>
-                        </button>` : '';
-
+                        `<a href="#" class=" avtar-xs btn-link-secondary" onclick="markShipped(${params.value})" title="Đánh dấu đã xuất hàng">
+                        <i class="ti ti-package f-20"></i> </a>` : '';
                     return `
-                        <div class="action-buttons">
-                            <button class="btn-action btn-edit" onclick="editOrder(${params.value})" title="Sửa">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-action btn-status" onclick="updateStatus(${params.value}, ${params.data.status})" title="Cập nhật trạng thái">
-                                <i class="fas fa-tasks"></i>
-                            </button>
-                            ${shipBtn}
-                            <button class="btn-action btn-delete" onclick="deleteOrder(${params.value})" title="Xóa">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="editOrder(${params.value})" title="Sửa"><i class="ti ti-edit f-20"></i> </a>
+                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value}, , ${params.data.status})" title="Cập nhật trạng thái"><i class="ti ti-eye f-20"></i> </a>
+                        ${shipBtn}
+                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.value})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
                     `;
                 },
                 filter: false,

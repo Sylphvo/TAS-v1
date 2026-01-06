@@ -1,0 +1,137 @@
+@{
+
+}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-users"></i> Quản lý Người dùng
+            </h2>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-search"></i> Tìm kiếm
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Từ khóa</label>
+                        <input type="text" id="txtSearchKeyword" class="form-control" placeholder="Username, email, tên...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="txtUserName" class="form-control" placeholder="Username">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" id="txtEmail" class="form-control" placeholder="Email">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select id="ddlIsActive" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="true" selected>Hoạt động</option>
+                            <option value="false">Không hoạt động</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Trạng thái khóa</label>
+                        <select id="ddlIsLocked" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="false">Không khóa</option>
+                            <option value="true">Đang khóa</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Từ ngày</label>
+                        <input type="date" id="txtFromDate" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Đến ngày</label>
+                        <input type="date" id="txtToDate" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-group w-100">
+                        <button type="button" id="btnSearch" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                        <button type="button" id="btnReset" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Làm mới
+                        </button>
+                        <button type="button" id="btnStatistics" class="btn btn-info">
+                            <i class="fas fa-chart-bar"></i> Thống kê
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <button type="button" id="btnAdd" class="btn btn-success">
+                <i class="fas fa-plus"></i> Thêm mới
+            </button>
+            <button type="button" id="btnLock" class="btn btn-warning" disabled>
+                <i class="fas fa-lock"></i> Khóa đã chọn (<span id="lockCount">0</span>)
+            </button>
+            <button type="button" id="btnUnlock" class="btn btn-info" disabled>
+                <i class="fas fa-unlock"></i> Mở khóa đã chọn (<span id="unlockCount">0</span>)
+            </button>
+            <button type="button" id="btnBulkDelete" class="btn btn-danger" disabled>
+                <i class="fas fa-trash"></i> Xóa đã chọn (<span id="selectedCount">0</span>)
+            </button>
+            <button type="button" id="btnExport" class="btn btn-primary">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+            <button type="button" id="btnRefresh" class="btn btn-secondary">
+                <i class="fas fa-sync"></i> Làm mới
+            </button>
+        </div>
+    </div>
+
+    <!-- AG Grid Table -->
+    <div class="card">
+        <div class="card-body">
+            <div id="userGrid" class="ag-theme-alpine" style="width: 100%; height: 600px;"></div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-md-6">
+                    <span id="totalRecords">Tổng: 0 người dùng</span>
+                </div>
+                <div class="col-md-6 text-right">
+                    <span id="lastUpdate"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/Contents/js/UserAccount/UserAccount.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Contents/css/UserAccount/UserAccount.css" />
+}

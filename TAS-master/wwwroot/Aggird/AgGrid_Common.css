@@ -37,9 +37,9 @@
     color: red !important;
 }
 
-.ag-row-hover .ag-cell-value {
+/*.ag-row-hover .ag-cell-value {
     background-color: var(--ag-row-hover-color) !important;
-}
+}*/
 
 .ag-cell, .ag-header-cell-text, .ag-header-group-text {
     user-select: text !important;

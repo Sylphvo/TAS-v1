@@ -160,17 +160,9 @@ function setupGrid() {
                 pinned: 'right',
                 cellRenderer: params => {
                     return `
-                        <div class="action-buttons">
-                            <button class="btn-action btn-edit" onclick="editPond(${params.value})" title="Sửa">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-action btn-status" onclick="updateStatus(${params.value}, ${params.data.status})" title="Cập nhật trạng thái">
-                                <i class="fas fa-tasks"></i>
-                            </button>
-                            <button class="btn-action btn-delete" onclick="deletePond(${params.value})" title="Xóa">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="editPond(${params.value})" title="Sửa"><i class="ti ti-edit f-20"></i> </a>
+                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value}, , ${params.data.status})" title="Cập nhật trạng thái"><i class="ti ti-eye f-20"></i> </a>
+                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="deletePond(${params.value})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
                     `;
                 },
                 filter: false,

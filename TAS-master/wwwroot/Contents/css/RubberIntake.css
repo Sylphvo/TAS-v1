@@ -83,9 +83,9 @@
     border-bottom: 1px solid #e0e0e0;
 }
 
-.ag-theme-alpine .ag-row:hover {
+/*.ag-theme-alpine .ag-row:hover {
     background-color: #f1f3f5;
-}
+}*/
 
 .ag-theme-alpine .ag-cell {
     /*display: flex;*/

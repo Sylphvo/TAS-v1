@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 using System.Text;
 using TAS.DTOs;
@@ -35,7 +36,7 @@ namespace TAS.ViewModels
 			{
 				var sql = @"
                     SELECT 
-                        Id, UserName, Email, PasswordHash,
+                        UserId = Id, UserName, Email, PasswordHash,
                         FirstName, LastName, IsActive
                     FROM USER_ACCOUNT
                     WHERE (UserName = @Username OR Email = @Username)
@@ -75,12 +76,12 @@ namespace TAS.ViewModels
                     INNER JOIN USER_ROLE r ON r.Id = ur.RoleId
                     WHERE ur.UserId = @UserId
                 ";
-				var roles = await _dbHelper.QueryAsync<string>(rolesSql, new { UserId = user.Id });
+				var roles = await _dbHelper.QueryAsync<string>(rolesSql, new { UserId = user.UserId });
 
 				return new LoginResult
 				{
 					Success = true,
-					UserId = user.Id,
+					UserId = user.UserId,
 					Username = user.UserName,
 					Email = user.Email,
 					FirstName = user.FirstName,
@@ -249,10 +250,10 @@ namespace TAS.ViewModels
 				}
 
 				// Get user
-				var getUserSql = "SELECT Id FROM USER_ACCOUNT WHERE Email = @Email AND IsActive = 1";
-				var userId = await _dbHelper.QueryFirstOrDefaultAsync<Guid?>(getUserSql, new { Email = email });
+				var getUserSql = "SELECT UserId FROM USER_ACCOUNT WHERE Email = @Email AND IsActive = 1";
+				var objectUser = await _dbHelper.QueryFirstOrDefaultAsync<Guid>(getUserSql, new { Email = email });
 
-				if (userId == null)
+				if (objectUser == null)
 				{
 					return new OperationResult
 					{
@@ -260,9 +261,8 @@ namespace TAS.ViewModels
 						Message = "Không tìm thấy tài khoản"
 					};
 				}
-
+				var userIdentity = new UserDto { UserId = objectUser };
 				// Hash new password
-				var userIdentity = new UserDto { Id = userId.Value };
 				var passwordHash = _passwordHasher.HashPassword(userIdentity, newPassword);
 
 				// Update password
@@ -281,7 +281,7 @@ namespace TAS.ViewModels
 
 				await _dbHelper.ExecuteAsync(updateSql, new
 				{
-					UserId = userId.Value,
+					UserId = objectUser,
 					PasswordHash = passwordHash,
 					SecurityStamp = Guid.NewGuid().ToString()
 				});
@@ -323,7 +323,8 @@ namespace TAS.ViewModels
 				}
 
 				// Verify current password
-				var userIdentity = new UserDto { Id = userId };
+				var userIdentity = new UserDto { UserId = userId };
+
 				var verifyResult = _passwordHasher.VerifyHashedPassword(
 					userIdentity,
 					currentHash,
@@ -380,27 +381,27 @@ namespace TAS.ViewModels
 				// TODO: Implement actual email sending
 				// For now, just log to console
 				_logger.LogInformation($@"
-========================================
-PASSWORD RESET EMAIL
-========================================
-To: {email}
-Subject: Đặt lại mật khẩu - TAS Admin
+					========================================
+					PASSWORD RESET EMAIL
+					========================================
+					To: {email}
+					Subject: Đặt lại mật khẩu - TAS Admin
 
-Xin chào,
+					Xin chào,
 
-Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản TAS Admin.
+					Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản TAS Admin.
 
-Vui lòng click vào link bên dưới để đặt lại mật khẩu:
-{resetLink}
+					Vui lòng click vào link bên dưới để đặt lại mật khẩu:
+					{resetLink}
 
-Link này sẽ hết hạn sau 1 giờ.
+					Link này sẽ hết hạn sau 1 giờ.
 
-Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
+					Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
 
-Trân trọng,
-TAS Admin Team
-========================================
-");
+					Trân trọng,
+					TAS Admin Team
+					========================================
+				");
 
 				// Nếu có SMTP configuration, gửi email thật
 				// await _emailService.SendEmailAsync(email, subject, body);

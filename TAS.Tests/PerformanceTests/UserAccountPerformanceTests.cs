@@ -16,7 +16,7 @@ namespace TAS.Tests.PerformanceTests
     public class UserAccountPerformanceTests
     {
         private UserAccountModels? _userAccountModels;
-        private List<UserAccountDto>? _testUsers;
+        private List<UserDto>? _testUsers;
 
         [GlobalSetup]
         public void Setup()
@@ -43,7 +43,7 @@ namespace TAS.Tests.PerformanceTests
         [Benchmark]
         public void AddOrUpdateUserAccount_Single()
         {
-            var user = new UserAccountDto
+            var user = new UserDto
 			{
                 UserName = "perftest_user",
                 Email = "perftest@test.com",

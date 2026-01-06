@@ -1,543 +1,968 @@
-var sortData = { sortColumnEventActual: '', sortOrderEventActual: '' }
-var gridOptionsUserAccount, ListDataFull;
-var page = 1;
-var pageSize = 20;
-var gridApi;
-var pagerApi;
+// ========================================
+// USER MANAGEMENT - AG GRID
+// ========================================
 
-function CreateGridUserAccount() {
-    gridOptionsUserAccount = {
-        paginationPageSize: 100,
-        columnDefs: CreateColModelUserAccount(),
-        defaultColDef: {
-            width: 170,
-            filter: true,
-            floatingFilter: true,
+var gridApi;
+var gridOptions;
+var currentUserId = null;
+var selectedRows = [];
+
+// ========================================
+// INITIALIZE
+// ========================================
+$(document).ready(function () {
+    console.log('👥 Initializing User Management...');
+
+    initAgGrid();
+    loadUsers();
+    registerEvents();
+
+    console.log('✅ User Management initialized!');
+});
+
+// ========================================
+// AG GRID SETUP
+// ========================================
+function initAgGrid() {
+    const columnDefs = [
+        {
+            headerName: '',
+            checkboxSelection: true,
+            headerCheckboxSelection: true,
+            width: 50,
+            pinned: 'left',
+            lockPosition: true,
+            suppressMenu: true,
+            filter: false
         },
+        {
+            field: 'id',
+            headerName: 'ID',
+            width: 80,
+            hide: true
+        },
+        {
+            field: 'userName',
+            headerName: 'Username',
+            width: 150,
+            pinned: 'left',
+            cellRenderer: function (params) {
+                return `<strong>${params.value}</strong>`;
+            }
+        },
+        {
+            field: 'email',
+            headerName: 'Email',
+            width: 200,
+            cellRenderer: function (params) {
+                return `<i class="fas fa-envelope"></i> ${params.value}`;
+            }
+        },
+        {
+            field: 'fullName',
+            headerName: 'Họ tên',
+            width: 180,
+            valueGetter: function (params) {
+                const firstName = params.data.firstName || '';
+                const lastName = params.data.lastName || '';
+                return `${firstName} ${lastName}`.trim() || '-';
+            },
+            cellRenderer: function (params) {
+                if (!params.value || params.value === '-') return '-';
+                return `<i class="fas fa-user"></i> ${params.value}`;
+            }
+        },
+        {
+            field: 'phoneNumber',
+            headerName: 'SĐT',
+            width: 130,
+            cellRenderer: function (params) {
+                if (!params.value) return '-';
+                return `<i class="fas fa-phone"></i> ${params.value}`;
+            }
+        },
+        {
+            field: 'isActive',
+            headerName: 'Hoạt động',
+            width: 120,
+            cellRenderer: function (params) {
+                if (params.value) {
+                    return '<span class="status-badge status-active">Hoạt động</span>';
+                } else {
+                    return '<span class="status-badge status-inactive">Không hoạt động</span>';
+                }
+            }
+        },
+        {
+            field: 'emailConfirmed',
+            headerName: 'Email xác nhận',
+            width: 130,
+            cellRenderer: function (params) {
+                if (params.value) {
+                    return '<i class="fas fa-check-circle text-success"></i> Đã xác nhận';
+                } else {
+                    return '<i class="fas fa-times-circle text-danger"></i> Chưa xác nhận';
+                }
+            }
+        },
+        {
+            field: 'twoFactorEnabled',
+            headerName: '2FA',
+            width: 100,
+            cellRenderer: function (params) {
+                if (params.value) {
+                    return '<i class="fas fa-shield-alt text-success"></i> Bật';
+                } else {
+                    return '<i class="fas fa-shield-alt text-muted"></i> Tắt';
+                }
+            }
+        },
+        {
+            field: 'isLocked',
+            headerName: 'Trạng thái khóa',
+            width: 130,
+            valueGetter: function (params) {
+                if (params.data.lockoutEnd) {
+                    const lockoutDate = new Date(params.data.lockoutEnd);
+                    return lockoutDate > new Date();
+                }
+                return false;
+            },
+            cellRenderer: function (params) {
+                if (params.value) {
+                    return '<span class="badge badge-danger">Đang khóa</span>';
+                } else {
+                    return '<span class="badge badge-success">Không khóa</span>';
+                }
+            }
+        },
+        {
+            field: 'lockoutEnd',
+            headerName: 'Khóa đến',
+            width: 150,
+            valueFormatter: function (params) {
+                if (!params.value) return '-';
+                const date = new Date(params.value);
+                if (date < new Date()) return '-';
+                return date.toLocaleString('vi-VN');
+            }
+        },
+        {
+            field: 'loginUtc',
+            headerName: 'Lần đăng nhập cuối',
+            width: 160,
+            valueFormatter: function (params) {
+                if (!params.value) return 'Chưa đăng nhập';
+                return new Date(params.value).toLocaleString('vi-VN');
+            }
+        },
+        {
+            field: 'createdAtUtc',
+            headerName: 'Ngày tạo',
+            width: 150,
+            valueFormatter: function (params) {
+                if (!params.value) return '';
+                return new Date(params.value).toLocaleString('vi-VN');
+            }
+        },
+        {
+            field: 'createdBy',
+            headerName: 'Người tạo',
+            width: 130
+        },
+        {
+            headerName: 'Thao tác',
+            width: 280,
+            pinned: 'right',
+            cellRenderer: function (params) {
+                const isLocked = params.data.lockoutEnd && new Date(params.data.lockoutEnd) > new Date();
+
+                const lockBtn = isLocked
+                    ? `<button class="btn btn-sm btn-info action-btn" onclick="unlockUser(${params.data.id})" title="Mở khóa">
+                        <i class="fas fa-unlock"></i>
+                    </button>`
+                    : `<button class="btn btn-sm btn-warning action-btn" onclick="showLockModal(${params.data.id}, '${params.data.userName}')" title="Khóa">
+                        <i class="fas fa-lock"></i>
+                    </button>`;
+
+                return `
+                    <button class="btn btn-sm btn-primary action-btn" onclick="editUser(${params.data.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success action-btn" onclick="viewUser(${params.data.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${lockBtn}
+                    <button class="btn btn-sm btn-secondary action-btn" onclick="showChangePasswordModal(${params.data.id}, '${params.data.userName}')" title="Đổi mật khẩu">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button class="btn btn-sm btn-info action-btn" onclick="showLoginHistory(${params.data.id}, '${params.data.userName}')" title="Lịch sử">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser(${params.data.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+            },
+            filter: false,
+            sortable: false
+        }
+    ];
+
+    gridOptions = {
+        columnDefs: columnDefs,
+        defaultColDef: {
+            sortable: true,
+            filter: true,
+            resizable: true,
+            floatingFilter: true
+        },
+        rowSelection: 'multiple',
+        suppressRowClickSelection: true,
+        pagination: true,
+        paginationPageSize: 50,
+        paginationPageSizeSelector: [25, 50, 100, 200],
         rowHeight: 45,
         headerHeight: 45,
-        rowData: [],
-        rowDragManaged: true,
-        rowDragMultiRow: true,
-        rowSelection: 'multiple',
-        suppressRowClickSelection: false,
         animateRows: true,
-        singleClickEdit: true,
-        suppressServerSideFullWidthLoadingRow: true,
-        components: {
-        },
-        cellSelection: true,
+        enableCellTextSelection: true,
+        onSelectionChanged: onSelectionChanged,
         onGridReady: function (params) {
             gridApi = params.api;
             params.api.sizeColumnsToFit();
-        },
-        rowDragManaged: true,
-        onRowDragEnd() {
-            persistCurrentPageOrder();
-        },
-        onCellValueChanged: e => {
-            UpdateDataAfterEdit(0, e.data);
+            console.log('✅ AG Grid ready!');
         }
     };
-    const eGridDiv = document.querySelector(UserAccount);
-    gridApi = agGrid.createGrid(eGridDiv, gridOptionsUserAccount);
-    CreateRowDataUserAccount();
-    resizeGridUserAccount();
+
+    const eGridDiv = document.querySelector('#userGrid');
+    gridApi = agGrid.createGrid(eGridDiv, gridOptions);
 }
 
-function resizeGridUserAccount() {
-    setTimeout(function () {
-        setWidthHeightGrid(25);
-    }, 100);
+// ========================================
+// REGISTER EVENTS
+// ========================================
+function registerEvents() {
+    // Search
+    $('#btnSearch').on('click', loadUsers);
+
+    // Reset
+    $('#btnReset').on('click', function () {
+        $('#txtSearchKeyword').val('');
+        $('#txtUserName').val('');
+        $('#txtEmail').val('');
+        $('#ddlIsActive').val('true');
+        $('#ddlIsLocked').val('');
+        $('#txtFromDate').val('');
+        $('#txtToDate').val('');
+        loadUsers();
+    });
+
+    // Add
+    $('#btnAdd').on('click', showAddModal);
+
+    // Save
+    $('#btnSave').on('click', saveUser);
+
+    // Lock/Unlock
+    $('#btnLock').on('click', bulkLockUsers);
+    $('#btnUnlock').on('click', bulkUnlockUsers);
+    $('#btnConfirmLock').on('click', confirmLock);
+
+    // Bulk Delete
+    $('#btnBulkDelete').on('click', bulkDeleteUsers);
+
+    // Export
+    $('#btnExport').on('click', exportToExcel);
+
+    // Refresh
+    $('#btnRefresh').on('click', loadUsers);
+
+    // Statistics
+    $('#btnStatistics').on('click', showStatistics);
+
+    // Confirm Delete
+    $('#btnConfirmDelete').on('click', confirmDelete);
+
+    // Change Password
+    $('#btnChangePassword').on('click', changePassword);
+
+    // Enter to search
+    $('#txtSearchKeyword, #txtUserName, #txtEmail').on('keypress', function (e) {
+        if (e.which === 13) {
+            loadUsers();
+        }
+    });
 }
 
-function setWidthHeightGrid(heithlayout) {
-}
+// ========================================
+// LOAD USERS
+// ========================================
+function loadUsers() {
+    console.log('📥 Loading users...');
 
-function RefreshAllGridWhenChangeData() {
-    setTimeout(function () {
-        CreateRowDataUserAccount();
-    }, 1);
-}
+    const searchParams = {
+        searchKeyword: $('#txtSearchKeyword').val(),
+        userName: $('#txtUserName').val(),
+        email: $('#txtEmail').val(),
+        isActive: $('#ddlIsActive').val() === '' ? null : $('#ddlIsActive').val() === 'true',
+        isLocked: $('#ddlIsLocked').val() === '' ? null : $('#ddlIsLocked').val() === 'true',
+        fromDate: $('#txtFromDate').val(),
+        toDate: $('#txtToDate').val(),
+        pageNumber: 1,
+        pageSize: 1000
+    };
 
-function CreateRowDataUserAccount() {
-    var listSearchUserAccount = {};
     $.ajax({
-        async: !false,
-        type: 'POST',
-        url: "/UserAccount/UserAccounts",
-        data: listSearchUserAccount,
-        dataType: "json",
-        success: function (data) {
-            ListDataFull = data;
-            gridApi.setGridOption("rowData", data);
-            renderPagination(agPaging, IsOptionAll);
-        }
-    });
-}
+        url: '/UserAccount/GetUsers',
+        type: 'GET',
+        data: searchParams,
+        success: function (response) {
+            console.log('📥 Response:', response);
 
-function CreateColModelUserAccount() {
-    var columnDefs = [
-        {
-            field: 'userName', 
-            headerName: 'Tên đăng nhập', 
-            width: 150, 
-            minWidth: 150,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: true,
-            checkboxSelection: true,
-            headerCheckbox: true,
-            headerCheckboxSelection: true,
-            rowDrag: true,
-            filter: "agTextColumnFilter",
-            floatingFilterComponent: 'customFloatingFilterInput',
-            floatingFilterComponentParams: { suppressFilterButton: true },
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'firstName', 
-            headerName: 'Tên', 
-            width: 120, 
-            minWidth: 120,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: true,
-            filter: "agTextColumnFilter",
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'lastName', 
-            headerName: 'Họ', 
-            width: 120, 
-            minWidth: 120,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: true,
-            filter: "agTextColumnFilter",
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'email', 
-            headerName: 'Email', 
-            width: 200, 
-            minWidth: 200,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: true,
-            filter: "agTextColumnFilter",
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'phoneNumber', 
-            headerName: 'Số điện thoại', 
-            width: 130, 
-            minWidth: 130,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: true,
-            filter: "agTextColumnFilter",
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'emailConfirmed', 
-            headerName: 'Email xác nhận', 
-            width: 130, 
-            minWidth: 130,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: false,
-            filter: false,
-            cellRenderer: function (params) {
-                if (params.value) {
-                    return '<span class="badge text-bg-success"><i class="ti ti-check"></i> Đã xác nhận</span>';
-                }
-                return '<span class="badge text-bg-warning"><i class="ti ti-clock"></i> Chưa xác nhận</span>';
-            },
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'twoFactorEnabled', 
-            headerName: '2FA', 
-            width: 100, 
-            minWidth: 100,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: false,
-            filter: false,
-            cellRenderer: function (params) {
-                if (params.value) {
-                    return '<span class="badge text-bg-info"><i class="ti ti-shield-check"></i> Bật</span>';
-                }
-                return '<span class="badge text-bg-secondary">Tắt</span>';
-            },
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'isActive', 
-            headerName: 'Trạng thái', 
-            width: 130, 
-            minWidth: 130,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: false,
-            filter: false,
-            cellRenderer: function (params) {
-                if (!params.value) {
-                    return '<span class="badge text-bg-danger">Không hoạt động</span>';
-                }
-                return '<span class="badge text-bg-success">Đang hoạt động</span>';
-            },
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'updatedAtUtc', 
-            headerName: 'Ngày cập nhật', 
-            width: 150, 
-            minWidth: 150,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: false,
-            filter: "agTextColumnFilter",
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'updatedBy', 
-            headerName: 'Người cập nhật', 
-            width: 130, 
-            minWidth: 130,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: false,
-            filter: "agTextColumnFilter",
-            headerComponent: "customHeader"
-        },
-        {
-            field: 'action', 
-            headerName: 'Chức năng', 
-            width: 200, 
-            minWidth: 200,
-            cellStyle: cellStyle_Col_Model_EventActual,
-            editable: false,
-            filter: false,
-            editType: 'fullRow',
-            headerComponent: "customHeader",
-            cellRenderer: ActionRenderer
-        }
-    ];
-    return columnDefs;
-}
-
-function CustomHeaderUserAccount() { }
-
-CustomHeaderUserAccount.prototype.init = function (params) {
-    this.params = params;
-    var strHiddenAsc = params.sortOrderDefault == 'asc' ? '' : 'ag-hidden';
-    var strHiddenDesc = params.sortOrderDefault == 'desc' ? '' : 'ag-hidden';
-    this.eGui = document.createElement('div');
-    this.eGui.className = "ag-header-cell-label";
-    this.eGui.innerHTML =
-        '' + '<span class="ag-header-cell-text">' +
-        this.params.displayName +
-        '</span>' +
-        '<span class="ag-header-icon ag-header-label-icon ag-sort-ascending-icon ' + strHiddenAsc + '"><span class="ag-icon ag-icon-asc"></span></span>' +
-        '<span class="ag-header-icon ag-header-label-icon ag-sort-descending-icon ' + strHiddenDesc + '"><span class="ag-icon ag-icon-desc"></span></span>';
-
-    if (this.params.style != null && this.params.style != undefined) {
-        this.eGui.style = this.params.style;
-    }
-
-    this.eSortDownButton = this.eGui.querySelector('.ag-sort-descending-icon');
-    this.eSortUpButton = this.eGui.querySelector('.ag-sort-ascending-icon');
-
-    if (params.sortOrderDefault != null && params.sortOrderDefault != undefined) {
-        sortData.sortColumnEventActual = params.column.colId;
-        sortData.sortOrderEventActual = params.sortOrderDefault;
-    }
-
-    if (this.params.enableSorting) {
-        this.onSortChangedListener = this.onSortChanged.bind(this);
-        this.eGui.addEventListener(
-            'click',
-            this.onSortChangedListener
-        );
-    }
-};
-
-CustomHeaderUserAccount.prototype.onSortChanged = function () {
-    if ($(this.eSortUpButton).hasClass('ag-hidden') && $(this.eSortDownButton).hasClass('ag-hidden')) {
-        $(this.eSortDownButton).removeClass('ag-hidden');
-        $(this.eSortUpButton).addClass('ag-hidden');
-        sortData.sortOrderEventActual = 'desc';
-    }
-    else if (!$(this.eSortDownButton).hasClass('ag-hidden')) {
-        $(this.eSortUpButton).removeClass('ag-hidden');
-        $(this.eSortDownButton).addClass('ag-hidden');
-        sortData.sortOrderEventActual = 'asc';
-    }
-    sortData.sortColumnEventActual = this.params.column.colId;
-    this.onSortRequested();
-};
-
-CustomHeaderUserAccount.prototype.getGui = function () {
-    return this.eGui;
-};
-
-CustomHeaderUserAccount.prototype.onSortRequested = function () {
-    RefreshAllGridWhenChangeData();
-};
-
-CustomHeaderUserAccount.prototype.destroy = function () {
-    this.eGui.removeEventListener(
-        'click',
-        this.onSortChangedListener
-    );
-};
-
-function updateRowIndex() {
-    gridApi.forEachNodeAfterFilterAndSort((node, index) => {
-        node.setDataValue('STT', index + 1);
-    });
-}
-
-// Import từ Excel
-document.getElementById('importExcelUserAccount').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: 'array', cellDates: true });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: null, raw: true });
-        gridApi.setGridOption("rowData", rows);
-        notifier.show('Thành công', 'Import file Excel thành công', 'success', '', 4000);
-    } catch (err) {
-        notifier.show('Thất bại', 'Lỗi khi import file Excel!', 'danger', '', 4000);
-    }
-});
-
-// Export Excel
-function onExportExcelData() {
-    const ws = XLSX.utils.json_to_sheet(ListDataFull);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, 'danh-sach-user.xlsx');
-}
-
-// Export Template Excel
-function onExportTemplateExcel() {
-    const rowData_temp = [
-        { 
-            STT: 1, 
-            userName: "user01", 
-            firstName: "Nguyễn", 
-            lastName: "Văn A",
-            email: "nguyenvana@example.com",
-            phoneNumber: "0123456789",
-            isActive: true
-        },
-    ];
-    const ws = XLSX.utils.json_to_sheet(rowData_temp);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, 'mau-user-account.xlsx');
-}
-
-function persistCurrentPageOrder() {
-    const start = (page - 1) * pageSize;
-    const n = gridApi.getDisplayedRowCount();
-    const ordered = [];
-    for (let i = 0; i < n; i++) {
-        ordered.push(gridApi.getDisplayedRowAtIndex(i).data);
-    }
-    ListDataFull.splice(start, n, ...ordered);
-}
-
-// Cập nhật dữ liệu sau khi chỉnh sửa
-// status: 0: edit inline, 1: edit from modal
-function UpdateDataAfterEdit(status, rowData) {
-    var rowDataObj = {};
-    if (status == 1) {
-        rowDataObj.id = $('#userId').val();
-        rowDataObj.firstName = $('#firstName').val();
-        rowDataObj.lastName = $('#lastName').val();
-        rowDataObj.userName = $('#userName').val();
-        rowDataObj.email = $('#email').val();
-        rowDataObj.phoneNumber = $('#phoneNumber').val();
-        rowDataObj.emailConfirmed = $('#emailConfirmed').is(':checked');
-        rowDataObj.phoneNumberConfirmed = $('#phoneNumberConfirmed').is(':checked');
-        rowDataObj.twoFactorEnabled = $('#twoFactorEnabled').is(':checked');
-        rowDataObj.lockoutEnabled = $('#lockoutEnabled').is(':checked');
-        rowDataObj.isActive = $('#isActive').is(':checked');
-        rowData = rowDataObj;
-    }
-    $.ajax({
-        async: true,
-        url: "/UserAccount/AddOrUpdate",
-        type: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify(rowData),
-        success: function (res) {
-            Toast.fire({
-                icon: "success",
-                title: (status == 0 ? "Cập nhật" : "Thêm mới") + " dữ liệu thành công"
-            });
-            $('#AddNewUserAccount').modal('hide');
-            RefreshAllGridWhenChangeData();
-        },
-        error: function () {
-            Toast.fire({
-                icon: "error",
-                title: (status == 0 ? "Cập nhật" : "Thêm mới") + " dữ liệu thất bại"
-            });
-        }
-    });
-}
-
-function ActionRenderer(params) {
-    const wrap = document.createElement('div');
-    wrap.innerHTML =
-        (params.data.isActive == false ?
-            ` <button class="button_action_custom avtar avtar-xs btn-light-success js-change_isActive" title="Kích hoạt tài khoản">
-            <i class="ti ti-check f-20"></i>
-        </button>`
-            :
-            `<button class="button_action_custom avtar avtar-xs btn-light-danger js-change_isActive" title="Vô hiệu hóa tài khoản">
-            <i class="ti ti-x f-20"></i>
-        </button>`)
-        +
-        `<button class="button_action_custom avtar avtar-xs btn-light-warning js-reset-password" title="Reset mật khẩu">
-          <i class="ti ti-key f-20"></i>
-        </button>
-        <button class="button_action_custom avtar avtar-xs btn-light-danger js-delete" title="Xóa user">
-          <i class="ti ti-trash f-20"></i>
-        </button>
-    `;
-
-    // Button change active status
-    const btnChangeIsActive = wrap.querySelector('.js-change_isActive');
-    btnChangeIsActive.addEventListener('click', (e) => {
-        ApproveDataUserAccount(params.data.id, !params.data.isActive);
-    });
-
-    // Button reset password
-    const btnResetPassword = wrap.querySelector('.js-reset-password');
-    btnResetPassword.addEventListener('click', (e) => {
-        Swal.fire({
-            title: 'Reset mật khẩu',
-            html: `
-                <input type="password" id="newPassword" class="swal2-input" placeholder="Mật khẩu mới">
-                <input type="password" id="confirmPassword" class="swal2-input" placeholder="Xác nhận mật khẩu">
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Reset',
-            cancelButtonText: 'Hủy',
-            preConfirm: () => {
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (!newPassword || !confirmPassword) {
-                    Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin');
-                    return false;
-                }
-                
-                if (newPassword !== confirmPassword) {
-                    Swal.showValidationMessage('Mật khẩu xác nhận không khớp');
-                    return false;
-                }
-                
-                if (newPassword.length < 6) {
-                    Swal.showValidationMessage('Mật khẩu phải có ít nhất 6 ký tự');
-                    return false;
-                }
-                
-                return { newPassword: newPassword };
+            if (response.success) {
+                gridApi.setGridOption('rowData', response.data);
+                updateStatusBar(response.totalRecords);
+                updateLastUpdateTime();
+                console.log('✅ Loaded', response.totalRecords, 'users');
+            } else {
+                showError(response.message);
             }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    async: true,
-                    method: 'POST',
-                    url: "/UserAccount/ResetPassword",
-                    dataType: 'json',
-                    data: { userId: params.data.id, newPassword: result.value.newPassword },
-                    success: function (res) {
-                        if (res == 1) {
-                            Toast.fire({
-                                icon: "success",
-                                title: "Reset mật khẩu thành công"
-                            });
-                        }
-                    },
-                    error: function () {
-                        Toast.fire({
-                            icon: "error",
-                            title: "Reset mật khẩu thất bại"
-                        });
-                    }
-                });
+        },
+        error: function (xhr, status, error) {
+            console.error('❌ Error loading users:', error);
+            showError('Lỗi khi tải dữ liệu: ' + error);
+        }
+    });
+}
+
+// ========================================
+// SHOW ADD MODAL
+// ========================================
+function showAddModal() {
+    currentUserId = null;
+    $('#modalTitle').text('Thêm người dùng mới');
+    $('#userForm')[0].reset();
+    $('#userId').val('');
+    $('#isActive').val('true');
+    $('#passwordSection').show();
+    $('#password').prop('required', true);
+    $('#confirmPassword').prop('required', true);
+    $('#userModal').modal('show');
+}
+
+// ========================================
+// EDIT USER
+// ========================================
+function editUser(id) {
+    console.log('✏️ Editing user:', id);
+    currentUserId = id;
+
+    $.ajax({
+        url: '/UserAccount/GetUserById',
+        type: 'GET',
+        data: { id: id },
+        success: function (response) {
+            if (response.success) {
+                const user = response.data;
+
+                $('#modalTitle').text('Sửa thông tin người dùng');
+                $('#userId').val(user.id);
+                $('#userName').val(user.userName);
+                $('#email').val(user.email);
+                $('#firstName').val(user.firstName);
+                $('#lastName').val(user.lastName);
+                $('#phoneNumber').val(user.phoneNumber);
+                $('#isActive').val(user.isActive.toString());
+                $('#emailConfirmed').prop('checked', user.emailConfirmed);
+                $('#phoneNumberConfirmed').prop('checked', user.phoneNumberConfirmed);
+                $('#twoFactorEnabled').prop('checked', user.twoFactorEnabled);
+
+                $('#passwordSection').hide();
+                $('#password').prop('required', false);
+                $('#confirmPassword').prop('required', false);
+
+                $('#userModal').modal('show');
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi tải thông tin người dùng: ' + error);
+        }
+    });
+}
+
+// ========================================
+// VIEW USER
+// ========================================
+function viewUser(id) {
+    editUser(id);
+    $('#userForm input, #userForm select').prop('readonly', true);
+    $('#userForm select').prop('disabled', true);
+    $('#userForm input[type="checkbox"]').prop('disabled', true);
+    $('#btnSave').hide();
+
+    $('#userModal').on('hidden.bs.modal', function () {
+        $('#userForm input, #userForm select').prop('readonly', false);
+        $('#userForm select').prop('disabled', false);
+        $('#userForm input[type="checkbox"]').prop('disabled', false);
+        $('#btnSave').show();
+    });
+}
+
+// Continued in Part 2...
+// ========================================
+// USER.JS - PART 2
+// ========================================
+
+// ========================================
+// SAVE USER
+// ========================================
+function saveUser() {
+    // Validation
+    if (!$('#userName').val()) {
+        showWarning('Vui lòng nhập username');
+        $('#userName').focus();
+        return;
+    }
+
+    if (!$('#email').val()) {
+        showWarning('Vui lòng nhập email');
+        $('#email').focus();
+        return;
+    }
+
+    const isCreate = !currentUserId || currentUserId === null;
+
+    if (isCreate) {
+        const password = $('#password').val();
+        const confirmPassword = $('#confirmPassword').val();
+
+        if (!password) {
+            showWarning('Vui lòng nhập mật khẩu');
+            $('#password').focus();
+            return;
+        }
+
+        if (password.length < 6) {
+            showWarning('Mật khẩu phải có ít nhất 6 ký tự');
+            $('#password').focus();
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showWarning('Mật khẩu xác nhận không khớp');
+            $('#confirmPassword').focus();
+            return;
+        }
+    }
+
+    const userData = {
+        id: $('#userId').val() ? parseInt($('#userId').val()) : 0,
+        userName: $('#userName').val(),
+        email: $('#email').val(),
+        firstName: $('#firstName').val(),
+        lastName: $('#lastName').val(),
+        phoneNumber: $('#phoneNumber').val(),
+        isActive: $('#isActive').val() === 'true',
+        emailConfirmed: $('#emailConfirmed').is(':checked'),
+        phoneNumberConfirmed: $('#phoneNumberConfirmed').is(':checked'),
+        twoFactorEnabled: $('#twoFactorEnabled').is(':checked')
+    };
+
+    if (isCreate) {
+        userData.password = $('#password').val();
+        userData.confirmPassword = $('#confirmPassword').val();
+    }
+
+    const url = isCreate ? '/UserAccount/CreateUser' : '/UserAccount/UpdateUser';
+    const method = isCreate ? 'POST' : 'PUT';
+
+    console.log(isCreate ? '➕ Creating user...' : '✏️ Updating user...');
+
+    $.ajax({
+        url: url,
+        type: method,
+        contentType: 'application/json',
+        data: JSON.stringify(userData),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                $('#userModal').modal('hide');
+                loadUsers();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi lưu người dùng: ' + error);
+        }
+    });
+}
+
+// ========================================
+// DELETE USER
+// ========================================
+function deleteUser(id) {
+    currentUserId = id;
+    $('#deleteModal').modal('show');
+}
+
+function confirmDelete() {
+    if (!currentUserId) return;
+
+    console.log('🗑️ Deleting user:', currentUserId);
+
+    $.ajax({
+        url: '/UserAccount/DeleteUser',
+        type: 'DELETE',
+        data: { id: currentUserId },
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                $('#deleteModal').modal('hide');
+                loadUsers();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi xóa người dùng: ' + error);
+        }
+    });
+}
+
+// ========================================
+// BULK DELETE
+// ========================================
+function bulkDeleteUsers() {
+    if (selectedRows.length === 0) {
+        showWarning('Vui lòng chọn ít nhất một người dùng để xóa');
+        return;
+    }
+
+    if (!confirm(`Bạn có chắc chắn muốn xóa ${selectedRows.length} người dùng đã chọn?`)) {
+        return;
+    }
+
+    const userIds = selectedRows.map(row => row.id);
+
+    console.log('🗑️ Bulk deleting users:', userIds);
+
+    $.ajax({
+        url: '/UserAccount/BulkDeleteUsers',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ userIds: userIds }),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                loadUsers();
+                selectedRows = [];
+                updateSelectedCount();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi xóa người dùng: ' + error);
+        }
+    });
+}
+
+// ========================================
+// CHANGE PASSWORD
+// ========================================
+function showChangePasswordModal(userId, userName) {
+    $('#changePasswordUserId').val(userId);
+    $('#changePasswordUserName').val(userName);
+    $('#newPassword').val('');
+    $('#confirmNewPassword').val('');
+    $('#changePasswordModal').modal('show');
+}
+
+function changePassword() {
+    const userId = parseInt($('#changePasswordUserId').val());
+    const newPassword = $('#newPassword').val();
+    const confirmNewPassword = $('#confirmNewPassword').val();
+
+    if (!newPassword) {
+        showWarning('Vui lòng nhập mật khẩu mới');
+        $('#newPassword').focus();
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        showWarning('Mật khẩu phải có ít nhất 6 ký tự');
+        $('#newPassword').focus();
+        return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        showWarning('Mật khẩu xác nhận không khớp');
+        $('#confirmNewPassword').focus();
+        return;
+    }
+
+    console.log('🔑 Changing password for user:', userId);
+
+    $.ajax({
+        url: '/UserAccount/ChangePassword',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            userId: userId,
+            newPassword: newPassword,
+            confirmPassword: confirmNewPassword
+        }),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                $('#changePasswordModal').modal('hide');
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi đổi mật khẩu: ' + error);
+        }
+    });
+}
+
+// ========================================
+// LOCK USER
+// ========================================
+function showLockModal(userId, userName) {
+    $('#lockUserId').val(userId);
+    $('#lockUserName').text(userName);
+    $('#lockDuration').val('30');
+    $('#lockModal').modal('show');
+}
+
+function confirmLock() {
+    const userId = parseInt($('#lockUserId').val());
+    const duration = $('#lockDuration').val();
+    const lockoutMinutes = duration === '' ? null : parseInt(duration);
+
+    console.log('🔒 Locking user:', userId, 'for', lockoutMinutes, 'minutes');
+
+    $.ajax({
+        url: '/UserAccount/LockUser',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            userId: userId,
+            isLocked: true,
+            lockoutMinutes: lockoutMinutes
+        }),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                $('#lockModal').modal('hide');
+                loadUsers();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi khóa tài khoản: ' + error);
+        }
+    });
+}
+
+// ========================================
+// UNLOCK USER
+// ========================================
+function unlockUser(userId) {
+    if (!confirm('Bạn có chắc chắn muốn mở khóa tài khoản này?')) {
+        return;
+    }
+
+    console.log('🔓 Unlocking user:', userId);
+
+    $.ajax({
+        url: '/UserAccount/UnlockUser',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ userId: userId }),
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                loadUsers();
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi mở khóa tài khoản: ' + error);
+        }
+    });
+}
+
+// ========================================
+// BULK LOCK/UNLOCK
+// ========================================
+function bulkLockUsers() {
+    if (selectedRows.length === 0) {
+        showWarning('Vui lòng chọn ít nhất một người dùng để khóa');
+        return;
+    }
+
+    // Filter only unlocked users
+    var unlockedUsers = selectedRows.filter(row => {
+        if (!row.lockoutEnd) return true;
+        return new Date(row.lockoutEnd) <= new Date();
+    });
+
+    if (unlockedUsers.length === 0) {
+        showWarning('Tất cả người dùng đã chọn đã bị khóa');
+        return;
+    }
+
+    if (!confirm(`Khóa ${unlockedUsers.length} người dùng đã chọn trong 30 phút?`)) {
+        return;
+    }
+
+    console.log('🔒 Bulk locking users');
+
+    let completed = 0;
+    let errors = 0;
+
+    unlockedUsers.forEach(function (user) {
+        $.ajax({
+            url: '/UserAccount/LockUser',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ userId: user.id, isLocked: true, lockoutMinutes: 30 }),
+            success: function (response) {
+                completed++;
+                if (completed + errors === unlockedUsers.length) {
+                    showSuccess(`Đã khóa ${completed} người dùng` + (errors > 0 ? ` (${errors} lỗi)` : ''));
+                    loadUsers();
+                    selectedRows = [];
+                    updateSelectedCount();
+                }
+            },
+            error: function () {
+                errors++;
+                if (completed + errors === unlockedUsers.length) {
+                    showError(`Khóa thất bại ${errors}/${unlockedUsers.length} người dùng`);
+                    loadUsers();
+                }
             }
         });
     });
+}
 
-    // Button delete
-    const btnDelete = wrap.querySelector('.js-delete');
-    btnDelete.addEventListener('click', (e) => {
-        Swal.fire({
-            title: 'Xóa user này?',
-            text: 'User: ' + params.data.userName,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: `Xóa`,
-            cancelButtonText: 'Hủy',
-            showCloseButton: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    async: true,
-                    method: 'POST',
-                    url: "/UserAccount/DeleteUserAccount",
-                    dataType: 'json',
-                    data: { userId: params.data.id },
-                    success: function (res) {
-                        if (res == 1) {
-                            Toast.fire({
-                                icon: "success",
-                                title: "Xóa user thành công"
-                            });
-                            params.api.applyTransaction({ remove: [params.node.data] });
-                            RefreshAllGridWhenChangeData();
-                        }
-                    },
-                    error: function () {
-                        Toast.fire({
-                            icon: "error",
-                            title: "Xóa user thất bại"
-                        });
-                    }
-                });
+function bulkUnlockUsers() {
+    if (selectedRows.length === 0) {
+        showWarning('Vui lòng chọn ít nhất một người dùng để mở khóa');
+        return;
+    }
+
+    // Filter only locked users
+    var lockedUsers = selectedRows.filter(row => {
+        if (!row.lockoutEnd) return false;
+        return new Date(row.lockoutEnd) > new Date();
+    });
+
+    if (lockedUsers.length === 0) {
+        showWarning('Không có người dùng nào bị khóa trong danh sách đã chọn');
+        return;
+    }
+
+    if (!confirm(`Mở khóa ${lockedUsers.length} người dùng đã chọn?`)) {
+        return;
+    }
+
+    console.log('🔓 Bulk unlocking users');
+
+    let completed = 0;
+    let errors = 0;
+
+    lockedUsers.forEach(function (user) {
+        $.ajax({
+            url: '/UserAccount/UnlockUser',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ userId: user.id }),
+            success: function (response) {
+                completed++;
+                if (completed + errors === lockedUsers.length) {
+                    showSuccess(`Đã mở khóa ${completed} người dùng` + (errors > 0 ? ` (${errors} lỗi)` : ''));
+                    loadUsers();
+                    selectedRows = [];
+                    updateSelectedCount();
+                }
+            },
+            error: function () {
+                errors++;
+                if (completed + errors === lockedUsers.length) {
+                    showError(`Mở khóa thất bại ${errors}/${lockedUsers.length} người dùng`);
+                    loadUsers();
+                }
             }
         });
     });
-
-    return wrap;
 }
 
-function ApproveDataUserAccount(userId, status) {
+// ========================================
+// LOGIN HISTORY
+// ========================================
+function showLoginHistory(userId, userName) {
+    $('#historyUserName').text(`Người dùng: ${userName}`);
+    $('#loginHistoryBody').html('<tr><td colspan="3" class="text-center">Đang tải...</td></tr>');
+    $('#loginHistoryModal').modal('show');
+
+    console.log('📜 Loading login history for user:', userId);
+
     $.ajax({
-        async: true,
-        method: 'POST',
-        url: "/UserAccount/ApproveDataUserAccount",
-        dataType: 'json',
-        data: { userId: userId, status: status },
-        success: function (res) {
-            Toast.fire({
-                icon: "success",
-                title: status ? "Kích hoạt user thành công" : "Vô hiệu hóa user thành công"
-            });
-            RefreshAllGridWhenChangeData();
+        url: '/UserAccount/GetLoginHistory',
+        type: 'GET',
+        data: { userId: userId, top: 10 },
+        success: function (response) {
+            if (response.success && response.data && response.data.length > 0) {
+                var html = '';
+                response.data.forEach(function (item) {
+                    const loginTime = item.loginUtc ? new Date(item.loginUtc).toLocaleString('vi-VN') : '-';
+                    const logoutTime = item.logOutUtc ? new Date(item.logOutUtc).toLocaleString('vi-VN') : 'Chưa đăng xuất';
+
+                    let duration = '-';
+                    if (item.loginUtc && item.logOutUtc) {
+                        const diff = new Date(item.logOutUtc) - new Date(item.loginUtc);
+                        const minutes = Math.floor(diff / 60000);
+                        const hours = Math.floor(minutes / 60);
+                        duration = hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+                    }
+
+                    html += `<tr>
+                        <td>${loginTime}</td>
+                        <td>${logoutTime}</td>
+                        <td>${duration}</td>
+                    </tr>`;
+                });
+                $('#loginHistoryBody').html(html);
+            } else {
+                $('#loginHistoryBody').html('<tr><td colspan="3" class="text-center">Chưa có lịch sử đăng nhập</td></tr>');
+            }
         },
-        error: function () {
-            Toast.fire({
-                icon: "error",
-                title: "Đổi trạng thái thất bại"
-            });
+        error: function (xhr, status, error) {
+            $('#loginHistoryBody').html('<tr><td colspan="3" class="text-center text-danger">Lỗi khi tải lịch sử</td></tr>');
         }
     });
 }
 
-function cellStyle_Col_Model_EventActual(params) {
-    let cellAttr = {};
-    cellAttr['text-align'] = 'center';
-    return cellAttr;
+// ========================================
+// STATISTICS
+// ========================================
+function showStatistics() {
+    console.log('📊 Loading statistics...');
+    $('#statsModal').modal('show');
+
+    $.ajax({
+        url: '/UserAccount/GetUserStatistics',
+        type: 'GET',
+        success: function (response) {
+            if (response.success) {
+                const stats = response.data;
+
+                $('#statTotalUsers').text(stats.totalUsers);
+                $('#statActiveUsers').text(stats.activeUsers);
+                $('#statInactiveUsers').text(stats.inactiveUsers);
+                $('#statLockedUsers').text(stats.lockedUsers);
+                $('#statEmailConfirmed').text(stats.emailConfirmedUsers);
+                $('#stat2FAEnabled').text(stats.twoFactorEnabledUsers);
+                $('#statNewUsers').text(stats.newUsersThisMonth);
+                $('#statOnlineUsers').text(stats.onlineUsers);
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            showError('Lỗi khi tải thống kê: ' + error);
+        }
+    });
+}
+
+// ========================================
+// SELECTION CHANGED
+// ========================================
+function onSelectionChanged() {
+    selectedRows = gridApi.getSelectedRows();
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    var totalCount = selectedRows.length;
+
+    // Count unlocked users (can be locked)
+    var unlockedCount = selectedRows.filter(row => {
+        if (!row.lockoutEnd) return true;
+        return new Date(row.lockoutEnd) <= new Date();
+    }).length;
+
+    // Count locked users (can be unlocked)
+    var lockedCount = selectedRows.filter(row => {
+        if (!row.lockoutEnd) return false;
+        return new Date(row.lockoutEnd) > new Date();
+    }).length;
+
+    $('#selectedCount').text(totalCount);
+    $('#lockCount').text(unlockedCount);
+    $('#unlockCount').text(lockedCount);
+
+    $('#btnBulkDelete').prop('disabled', totalCount === 0);
+    $('#btnLock').prop('disabled', unlockedCount === 0);
+    $('#btnUnlock').prop('disabled', lockedCount === 0);
+}
+
+// ========================================
+// EXPORT TO EXCEL
+// ========================================
+function exportToExcel() {
+    console.log('📊 Exporting to Excel...');
+
+    const params = {
+        fileName: `DanhSachNguoiDung_${new Date().toISOString().split('T')[0]}.xlsx`,
+        sheetName: 'Người dùng'
+    };
+
+    gridApi.exportDataAsExcel(params);
+}
+
+// ========================================
+// UI HELPERS
+// ========================================
+function updateStatusBar(total) {
+    $('#totalRecords').html(`Tổng: <strong>${total}</strong> người dùng`);
+}
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN');
+    $('#lastUpdate').text(`Cập nhật: ${timeStr}`);
+}
+
+function showSuccess(message) {
+    if (typeof NotificationToast !== 'undefined') {
+        NotificationToast('success', message);
+    } else {
+        alert(message);
+    }
+}
+
+function showError(message) {
+    if (typeof NotificationToast !== 'undefined') {
+        NotificationToast('error', message);
+    } else {
+        alert('Lỗi: ' + message);
+    }
+}
+
+function showWarning(message) {
+    if (typeof NotificationToast !== 'undefined') {
+        NotificationToast('warning', message);
+    } else {
+        alert(message);
+    }
 }

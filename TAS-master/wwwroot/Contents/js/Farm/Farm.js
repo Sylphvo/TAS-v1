@@ -214,24 +214,16 @@ function initAgGrid() {
             pinned: 'right',
             cellRenderer: function (params) {
                 var approveBtn = params.data.isActive
-                    ? `<button class="btn btn-sm btn-warning action-btn" onclick="unapproveFarm(${params.data.farmId})" title="Hủy duyệt">
-                        <i class="fas fa-times"></i>
-                    </button>`
-                    : `<button class="btn btn-sm btn-success action-btn" onclick="approveFarm(${params.data.farmId})" title="Duyệt">
-                        <i class="fas fa-check"></i>
-                    </button>`;
+                    ? `
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="unapproveFarm(${params.data.farmId})" title="Hủy duyệt"><i class="ti ti-close f-20"></i> </a>`
+                    : `
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="approveFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-check f-20"></i> </a>`;
 
                 return `
-                    <button class="btn btn-sm btn-primary action-btn" onclick="editFarm(${params.data.farmId})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-info action-btn" onclick="viewFarm(${params.data.farmId})">
-                        <i class="fas fa-eye"></i>
-                    </button>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="editFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="viewFarm(${params.data.farmId})" title="Xem"><i class="ti ti-eye f-20"></i> </a>
                     ${approveBtn}
-                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteFarm(${params.data.farmId})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteFarm(${params.data.farmId})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
                 `;
             },
             filter: false,

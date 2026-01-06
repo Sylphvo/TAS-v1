@@ -174,15 +174,9 @@ const gridOptions = {
             pinned: 'right',
             cellRenderer: params => {
                 return `
-                    <button class="btn btn-sm btn-primary" onclick="saveRow(${params.node.rowIndex})" title="Lưu">
-                        <i class="fas fa-save"></i>
-                    </button>
-                    <button class="btn btn-sm btn-success" onclick="approveRow(${params.node.rowIndex})" title="Duyệt">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteRow(${params.node.rowIndex})" title="Xóa">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-eye f-20"></i> </a>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
                 `;
             },
             suppressMenu: true,

@@ -1,203 +1,647 @@
+using Dapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
+using System.Data;
 using TAS.DTOs;
-using TAS.Helpers;
-using TAS.Models;
-using TAS.Repository;
 using TAS.TagHelpers;
 
 namespace TAS.ViewModels
 {
+	// ========================================
+	// USER TABLE MODELS - SQL QUERIES
+	// ========================================
 	public class UserAccountModels
 	{
-		private readonly ICurrentUser _userManage;
-		private readonly ILogger<UserAccountModels> _logger;
-		ConnectDbHelper dbHelper = new ConnectDbHelper();
+		private readonly ConnectDbHelper _dbHelper;
+		private readonly IPasswordHasher<object> _passwordHasher;
 
-		public UserAccountModels(ICurrentUser userManage, ILogger<UserAccountModels> logger)
+		public UserAccountModels(ConnectDbHelper connectDbHelper)
 		{
-			_userManage = userManage;
-			_logger = logger;
+			_dbHelper = connectDbHelper;
+			_passwordHasher = new PasswordHasher<object>();
 		}
 
-		// Model
-		public async Task<List<UserAccountDto>> GetUserAccountAsync()
+		// ========================================
+		// GET TABLE DATA - With Filters & Pagination
+		// ========================================
+		public async Task<UserTableResult> GetTableDataAsync(UserSearchDto searchDto)
 		{
-			var sql = @"
-				SELECT 
-					rowNo = ROW_NUMBER() OVER(ORDER BY Id ASC),
-					Id,
-					FirstName,
-					LastName,
-					UserName,
-					NormalizedUserName,
-					Email,
-					NormalizedEmail,
-					EmailConfirmed,
-					PhoneNumber,
-					PhoneNumberConfirmed,
-					TwoFactorEnabled,
-					LockoutEnd,
-					LockoutEnabled,
-					AccessFailedCount,
-					IsActive,
-					UpdatedBy = ISNULL(UpdatedBy, CreatedBy),
-					UpdatedAtUtc = CONVERT(VARCHAR, ISNULL(UpdatedAtUtc, CreatedAtUtc), 111) + ' ' + CONVERT(VARCHAR(5), ISNULL(UpdatedAtUtc, CreatedAtUtc), 108)
-				FROM dbo.USER_ACCOUNT
-				";
-			return await dbHelper.QueryAsync<UserAccountDto>(sql);
-		}
+			
 
-		public int AddOrUpdateUserAccount(UserAccountDto userAccount)
-		{
-			try
+			var whereClauses = new List<string> { "1=1" };
+			var parameters = new DynamicParameters();
+
+			// Build WHERE clauses
+			if (!string.IsNullOrWhiteSpace(searchDto.SearchKeyword))
 			{
-				if (userAccount == null)
+				whereClauses.Add("(UserName LIKE @SearchKeyword OR Email LIKE @SearchKeyword OR FirstName LIKE @SearchKeyword OR LastName LIKE @SearchKeyword)");
+				parameters.Add("@SearchKeyword", $"%{searchDto.SearchKeyword}%");
+			}
+
+			if (!string.IsNullOrWhiteSpace(searchDto.UserName))
+			{
+				whereClauses.Add("UserName LIKE @UserName");
+				parameters.Add("@UserName", $"%{searchDto.UserName}%");
+			}
+
+			if (!string.IsNullOrWhiteSpace(searchDto.Email))
+			{
+				whereClauses.Add("Email LIKE @Email");
+				parameters.Add("@Email", $"%{searchDto.Email}%");
+			}
+
+			//if (searchDto.IsActive.HasValue)
+			//{
+			//	whereClauses.Add("IsActive = @IsActive");
+			//	parameters.Add("@IsActive", searchDto.IsActive.Value);
+			//}
+
+			if (searchDto.IsLocked.HasValue)
+			{
+				if (searchDto.IsLocked.Value)
 				{
-					throw new ArgumentNullException(nameof(userAccount), "Input data cannot be null.");
+					whereClauses.Add("LockoutEnd IS NOT NULL AND LockoutEnd > GETUTCDATE()");
 				}
-
-				var sql = @"
-					IF EXISTS (SELECT TOP 1 Id FROM dbo.USER_ACCOUNT WHERE Id = @Id)
-					BEGIN
-						UPDATE dbo.USER_ACCOUNT SET
-							FirstName = @FirstName,
-							LastName = @LastName,
-							UserName = @UserName,
-							NormalizedUserName = @NormalizedUserName,
-							Email = @Email,
-							NormalizedEmail = @NormalizedEmail,
-							EmailConfirmed = @EmailConfirmed,
-							PhoneNumber = @PhoneNumber,
-							PhoneNumberConfirmed = @PhoneNumberConfirmed,
-							TwoFactorEnabled = @TwoFactorEnabled,
-							LockoutEnabled = @LockoutEnabled,
-							IsActive = @IsActive,
-							UpdatedAtUtc = GETDATE(),
-							UpdatedBy = @UpdatedBy
-						WHERE Id = @Id
-						SELECT 0;
-					END
-					ELSE
-					BEGIN
-						INSERT INTO dbo.USER_ACCOUNT
-						(FirstName, LastName, UserName, NormalizedUserName, Email, NormalizedEmail,
-							EmailConfirmed, PasswordHash, SecurityStamp, ConcurrencyStamp,
-							PhoneNumber, PhoneNumberConfirmed, TwoFactorEnabled, LockoutEnabled,
-							AccessFailedCount, IsActive, CreatedAtUtc, CreatedBy)
-						VALUES
-						(@FirstName, @LastName, @UserName, @NormalizedUserName, @Email, @NormalizedEmail,
-							@EmailConfirmed, @PasswordHash, NEWID(), NEWID(),
-							@PhoneNumber, @PhoneNumberConfirmed, @TwoFactorEnabled, @LockoutEnabled,
-							0, @IsActive, GETDATE(), @UpdatedBy)
-						SELECT SCOPE_IDENTITY() AS NewId;
-					END";
-
-				var lstResult = dbHelper.Execute(sql, new
+				else
 				{
-					Id = userAccount.Id,
-					FirstName = userAccount.FirstName,
-					LastName = userAccount.LastName,
-					UserName = userAccount.UserName,
-					NormalizedUserName = userAccount.UserName?.ToUpper(),
-					Email = userAccount.Email,
-					NormalizedEmail = userAccount.Email?.ToUpper(),
-					EmailConfirmed = userAccount.EmailConfirmed,
-					PasswordHash = userAccount.PasswordHash ?? HashPassword(userAccount.UserName ?? ""), // Default password
-					PhoneNumber = userAccount.PhoneNumber,
-					PhoneNumberConfirmed = userAccount.PhoneNumberConfirmed,
-					TwoFactorEnabled = userAccount.TwoFactorEnabled,
-					LockoutEnabled = userAccount.LockoutEnabled,
-					IsActive = userAccount.IsActive,
-					UpdatedBy = _userManage.Name
-				});
+					whereClauses.Add("(LockoutEnd IS NULL OR LockoutEnd <= GETUTCDATE())");
+				}
+			}
 
-				return lstResult;
-			}
-			catch (Exception ex)
+			if (searchDto.EmailConfirmed.HasValue)
 			{
-				_logger.LogError(ex, "Error in AddOrUpdateUserAccount method.");
-				return 0;
+				whereClauses.Add("EmailConfirmed = @EmailConfirmed");
+				parameters.Add("@EmailConfirmed", searchDto.EmailConfirmed.Value);
 			}
+
+			//if (searchDto.FromDate.HasValue)
+			//{
+			//	whereClauses.Add("CreatedAtUtc >= @FromDate");
+			//	parameters.Add("@FromDate", searchDto.FromDate.Value);
+			//}
+
+			//if (searchDto.ToDate.HasValue)
+			//{
+			//	whereClauses.Add("CreatedAtUtc <= @ToDate");
+			//	parameters.Add("@ToDate", searchDto.ToDate.Value.AddDays(1).AddSeconds(-1));
+			//}
+
+			var whereClause = string.Join(" AND ", whereClauses);
+
+			// Count total
+
+			// Get data with pagination
+			var validSortColumns = new[] { "Id", "UserName", "Email", "FirstName", "LastName", "IsActive", "CreatedAtUtc", "LoginUtc" };
+			var sortColumn = validSortColumns.Contains(searchDto.SortColumn) ? searchDto.SortColumn : "CreatedAtUtc";
+			var sortOrder = searchDto.SortOrder.ToLower() == "asc" ? "ASC" : "DESC";
+
+			var offset = (searchDto.PageNumber - 1) * searchDto.PageSize;
+
+			var query = $@"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    IsActive,
+                    EmailConfirmed,
+                    PhoneNumberConfirmed,
+                    TwoFactorEnabled,
+                    LockoutEnabled,
+                    LockoutEnd,
+                    AccessFailedCount,
+                    CreatedAtUtc,
+                    CreatedBy,
+                    UpdatedAtUtc,
+                    UpdatedBy,
+                    LoginUtc,
+                    LogOutUtc
+                FROM USER_ACCOUNT
+                WHERE {whereClause}
+                ORDER BY {sortColumn} {sortOrder}
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY";
+
+			parameters.Add("@Offset", offset);
+			parameters.Add("@PageSize", searchDto.PageSize);
+
+			var users = await _dbHelper.QueryAsync<UserDto>(query, parameters);
+
+			return new UserTableResult
+			{
+				Data = users.ToList(),
+				TotalRecords = users.Count(),
+				PageNumber = searchDto.PageNumber,
+				PageSize = searchDto.PageSize,
+				TotalPages = (int)Math.Ceiling(users.Count() / (double)searchDto.PageSize)
+			};
 		}
 
-		public int DeleteUserAccount(int userId)
+		// ========================================
+		// GET USER BY ID
+		// ========================================
+		public async Task<UserDto?> GetUserByIdAsync(int userId)
 		{
-			try
-			{
-				string sql = @"
-					DELETE FROM dbo.USER_ACCOUNT WHERE Id = @UserId
-				";
-				dbHelper.Execute(sql, new { UserId = userId });
-				return 1;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in DeleteUserAccount method.");
-				return 0;
-			}
+			
+
+			var query = @"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    IsActive,
+                    EmailConfirmed,
+                    PhoneNumberConfirmed,
+                    TwoFactorEnabled,
+                    LockoutEnabled,
+                    LockoutEnd,
+                    AccessFailedCount,
+                    CreatedAtUtc,
+                    CreatedBy,
+                    UpdatedAtUtc,
+                    UpdatedBy,
+                    LoginUtc,
+                    LogOutUtc
+                FROM USER_ACCOUNT
+                WHERE Id = @UserId";
+
+			return await _dbHelper.QueryFirstOrDefaultAsync<UserDto>(query, new { UserId = userId });
 		}
 
-		public int ApproveDataUserAccount(int userId, bool status)
+		// ========================================
+		// GET USER BY USERNAME
+		// ========================================
+		public async Task<UserDto?> GetUserByUsernameAsync(string userName)
 		{
-			try
-			{
-				string sql = @"
-					UPDATE dbo.USER_ACCOUNT 
-					SET IsActive = @Status,
-						UpdatedAtUtc = GETDATE(),
-						UpdatedBy = @UpdatedBy
-					WHERE Id = @UserId
-				";
-				dbHelper.Execute(sql, new
-				{
-					UserId = userId,
-					Status = status,
-					UpdatedBy = _userManage.Name
-				});
-				return 1;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in ApproveDataUserAccount method.");
-				return 0;
-			}
+			
+
+			var query = @"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    IsActive,
+                    EmailConfirmed,
+                    PhoneNumberConfirmed,
+                    TwoFactorEnabled,
+                    LockoutEnabled,
+                    LockoutEnd,
+                    AccessFailedCount,
+                    CreatedAtUtc,
+                    CreatedBy,
+                    UpdatedAtUtc,
+                    UpdatedBy,
+                    LoginUtc,
+                    LogOutUtc
+                FROM USER_ACCOUNT
+                WHERE UserName = @UserName";
+
+			return await _dbHelper.QueryFirstOrDefaultAsync<UserDto>(query, new { UserName = userName });
 		}
 
-		public int ResetPassword(int userId, string newPassword)
+		// ========================================
+		// GET USER BY EMAIL
+		// ========================================
+		public async Task<UserDto?> GetUserByEmailAsync(string email)
 		{
-			try
-			{
-				string sql = @"
-					UPDATE dbo.USER_ACCOUNT 
-					SET PasswordHash = @PasswordHash,
-						UpdatedAtUtc = GETDATE(),
-						UpdatedBy = @UpdatedBy,
-						SecurityStamp = NEWID()
-					WHERE Id = @UserId
-				";
-				dbHelper.Execute(sql, new
-				{
-					UserId = userId,
-					PasswordHash = HashPassword(newPassword),
-					UpdatedBy = _userManage.Name
-				});
-				return 1;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in ResetPassword method.");
-				return 0;
-			}
+			
+
+			var query = @"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    IsActive,
+                    EmailConfirmed,
+                    PhoneNumberConfirmed,
+                    TwoFactorEnabled,
+                    LockoutEnabled,
+                    LockoutEnd,
+                    AccessFailedCount,
+                    CreatedAtUtc,
+                    CreatedBy,
+                    UpdatedAtUtc,
+                    UpdatedBy
+                FROM USER_ACCOUNT
+                WHERE Email = @Email";
+
+			return await _dbHelper.QueryFirstOrDefaultAsync<UserDto>(query, new { Email = email });
 		}
 
-		// Helper method for password hashing (you should use proper hashing in production)
-		private string HashPassword(string password)
+		// ========================================
+		// CHECK USERNAME EXISTS
+		// ========================================
+		public async Task<bool> UsernameExistsAsync(string userName, int? excludeUserId = null)
 		{
-			// This is a placeholder - use proper password hashing like BCrypt or ASP.NET Core Identity's hasher
-			using (var sha256 = System.Security.Cryptography.SHA256.Create())
+			
+
+			var query = excludeUserId.HasValue
+				? "SELECT COUNT(*) FROM USER_ACCOUNT WHERE UserName = @UserName AND Id != @ExcludeUserId"
+				: "SELECT COUNT(*) FROM USER_ACCOUNT WHERE UserName = @UserName";
+
+			var count = await _dbHelper.ExecuteScalarAsync<int>(query, new
 			{
-				var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-				return Convert.ToBase64String(hashedBytes);
-			}
+				UserName = userName,
+				ExcludeUserId = excludeUserId
+			});
+
+			return count > 0;
+		}
+
+		// ========================================
+		// CHECK EMAIL EXISTS
+		// ========================================
+		public async Task<bool> EmailExistsAsync(string email, int? excludeUserId = null)
+		{
+			
+
+			var query = excludeUserId.HasValue
+				? "SELECT COUNT(*) FROM USER_ACCOUNT WHERE Email = @Email AND Id != @ExcludeUserId"
+				: "SELECT COUNT(*) FROM USER_ACCOUNT WHERE Email = @Email";
+
+			var count = await _dbHelper.ExecuteScalarAsync<int>(query, new
+			{
+				Email = email,
+				ExcludeUserId = excludeUserId
+			});
+
+			return count > 0;
+		}
+
+		// ========================================
+		// CREATE USER
+		// ========================================
+		public async Task<int> CreateUserAsync(CreateUserDto dto, string createdBy)
+		{
+			
+
+			// Hash password
+			var passwordHash = _passwordHasher.HashPassword(null!, dto.Password);
+
+			var insertQuery = @"
+                INSERT INTO USER_ACCOUNT (
+                    UserName,
+                    NormalizedUserName,
+                    Email,
+                    NormalizedEmail,
+                    EmailConfirmed,
+                    PasswordHash,
+                    SecurityStamp,
+                    ConcurrencyStamp,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    PhoneNumberConfirmed,
+                    TwoFactorEnabled,
+                    LockoutEnabled,
+                    AccessFailedCount,
+                    IsActive,
+                    CreatedAtUtc,
+                    CreatedBy
+                )
+                VALUES (
+                    @UserName,
+                    @NormalizedUserName,
+                    @Email,
+                    @NormalizedEmail,
+                    @EmailConfirmed,
+                    @PasswordHash,
+                    @SecurityStamp,
+                    @ConcurrencyStamp,
+                    @FirstName,
+                    @LastName,
+                    @PhoneNumber,
+                    0, -- PhoneNumberConfirmed
+                    0, -- TwoFactorEnabled
+                    1, -- LockoutEnabled
+                    0, -- AccessFailedCount
+                    @IsActive,
+                    GETUTCDATE(),
+                    @CreatedBy
+                );
+                SELECT CAST(SCOPE_IDENTITY() as int);";
+
+			var userId = await _dbHelper.ExecuteScalarAsync<int>(insertQuery, new
+			{
+				dto.UserName,
+				NormalizedUserName = dto.UserName.ToUpper(),
+				dto.Email,
+				NormalizedEmail = dto.Email.ToUpper(),
+				dto.EmailConfirmed,
+				PasswordHash = passwordHash,
+				SecurityStamp = Guid.NewGuid().ToString(),
+				ConcurrencyStamp = Guid.NewGuid().ToString(),
+				dto.FirstName,
+				dto.LastName,
+				dto.PhoneNumber,
+				dto.IsActive,
+				CreatedBy = createdBy
+			});
+
+			return userId;
+		}
+
+		// ========================================
+		// UPDATE USER
+		// ========================================
+		public async Task<bool> UpdateUserAsync(UpdateUserDto dto, string updatedBy)
+		{
+			
+
+			var updateQuery = @"
+                UPDATE USER_ACCOUNT
+                SET 
+                    UserName = @UserName,
+                    NormalizedUserName = @NormalizedUserName,
+                    Email = @Email,
+                    NormalizedEmail = @NormalizedEmail,
+                    EmailConfirmed = @EmailConfirmed,
+                    FirstName = @FirstName,
+                    LastName = @LastName,
+                    PhoneNumber = @PhoneNumber,
+                    PhoneNumberConfirmed = @PhoneNumberConfirmed,
+                    TwoFactorEnabled = @TwoFactorEnabled,
+                    IsActive = @IsActive,
+                    UpdatedAtUtc = GETUTCDATE(),
+                    UpdatedBy = @UpdatedBy
+                WHERE Id = @Id";
+
+			var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new
+			{
+				dto.Id,
+				dto.UserName,
+				NormalizedUserName = dto.UserName.ToUpper(),
+				dto.Email,
+				NormalizedEmail = dto.Email.ToUpper(),
+				dto.EmailConfirmed,
+				dto.FirstName,
+				dto.LastName,
+				dto.PhoneNumber,
+				dto.PhoneNumberConfirmed,
+				dto.TwoFactorEnabled,
+				dto.IsActive,
+				UpdatedBy = updatedBy
+			});
+
+			return rowsAffected > 0;
+		}
+
+		// Continued in Part 2...
+		// CHANGE PASSWORD
+		// ========================================
+		public async Task<bool> ChangePasswordAsync(int userId, string newPassword)
+		{
+			
+
+			var passwordHash = _passwordHasher.HashPassword(null!, newPassword);
+
+			var updateQuery = @"
+                UPDATE USER_ACCOUNT
+                SET 
+                    PasswordHash = @PasswordHash,
+                    SecurityStamp = @SecurityStamp,
+                    UpdatedAtUtc = GETUTCDATE()
+                WHERE Id = @UserId";
+
+			var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new
+			{
+				UserId = userId,
+				PasswordHash = passwordHash,
+				SecurityStamp = Guid.NewGuid().ToString()
+			});
+
+			return rowsAffected > 0;
+		}
+
+		// ========================================
+		// LOCK USER
+		// ========================================
+		public async Task<bool> LockUserAsync(int userId, int? lockoutMinutes)
+		{
+			
+
+			DateTimeOffset? lockoutEnd = lockoutMinutes.HasValue
+				? DateTimeOffset.UtcNow.AddMinutes(lockoutMinutes.Value)
+				: DateTimeOffset.UtcNow.AddYears(100); // Permanent lock
+
+			var updateQuery = @"
+                UPDATE USER_ACCOUNT
+                SET 
+                    LockoutEnd = @LockoutEnd,
+                    LockoutEnabled = 1,
+                    UpdatedAtUtc = GETUTCDATE()
+                WHERE Id = @UserId";
+
+			var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new
+			{
+				UserId = userId,
+				LockoutEnd = lockoutEnd
+			});
+
+			return rowsAffected > 0;
+		}
+
+		// ========================================
+		// UNLOCK USER
+		// ========================================
+		public async Task<bool> UnlockUserAsync(int userId)
+		{
+			
+
+			var updateQuery = @"
+                UPDATE USER_ACCOUNT
+                SET 
+                    LockoutEnd = NULL,
+                    AccessFailedCount = 0,
+                    UpdatedAtUtc = GETUTCDATE()
+                WHERE Id = @UserId";
+
+			var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new { UserId = userId });
+
+			return rowsAffected > 0;
+		}
+
+		// ========================================
+		// DELETE USER
+		// ========================================
+		public async Task<bool> DeleteUserAsync(int userId)
+		{
+			
+
+			var deleteQuery = "DELETE FROM USER_ACCOUNT WHERE Id = @UserId";
+			var rowsAffected = await _dbHelper.ExecuteAsync(deleteQuery, new { UserId = userId });
+
+			return rowsAffected > 0;
+		}
+
+		// ========================================
+		// BULK DELETE USERS
+		// ========================================
+		public async Task<int> BulkDeleteUsersAsync(List<int> userIds)
+		{
+			
+
+			var ids = string.Join(",", userIds);
+			var deleteQuery = $"DELETE FROM USER_ACCOUNT WHERE Id IN ({ids})";
+			var rowsAffected = await _dbHelper.ExecuteAsync(deleteQuery);
+
+			return rowsAffected;
+		}
+
+		// ========================================
+		// GET USER STATISTICS
+		// ========================================
+		public async Task<UserStatisticsDto> GetUserStatisticsAsync()
+		{
+			var query = @"
+                SELECT 
+                    COUNT(*) AS TotalUsers,
+                    SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveUsers,
+                    SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS InactiveUsers,
+                    SUM(CASE WHEN LockoutEnd IS NOT NULL AND LockoutEnd > GETUTCDATE() THEN 1 ELSE 0 END) AS LockedUsers,
+                    SUM(CASE WHEN EmailConfirmed = 1 THEN 1 ELSE 0 END) AS EmailConfirmedUsers,
+                    SUM(CASE WHEN TwoFactorEnabled = 1 THEN 1 ELSE 0 END) AS TwoFactorEnabledUsers,
+                    COUNT(CASE WHEN CreatedAtUtc >= DATEADD(MONTH, -1, GETUTCDATE()) THEN 1 END) AS NewUsersThisMonth,
+                    COUNT(CASE WHEN LoginUtc >= DATEADD(MINUTE, -15, GETUTCDATE()) THEN 1 END) AS OnlineUsers
+                FROM USER_ACCOUNT";
+
+			return await _dbHelper.QueryFirstOrDefaultAsync<UserStatisticsDto>(query);
+		}
+
+		// ========================================
+		// GET ACTIVE USERS
+		// ========================================
+		public async Task<List<UserDto>> GetActiveUsersAsync()
+		{
+			
+
+			var query = @"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    IsActive
+                FROM USER_ACCOUNT
+                WHERE IsActive = 1 
+                  AND (LockoutEnd IS NULL OR LockoutEnd <= GETUTCDATE())
+                ORDER BY UserName";
+
+			var result = await _dbHelper.QueryAsync<UserDto>(query);
+			return result.ToList();
+		}
+
+		// ========================================
+		// SEARCH USERS (Simple)
+		// ========================================
+		public async Task<List<UserDto>> SearchUsersAsync(string keyword)
+		{
+			
+
+			var query = @"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    IsActive,
+                    EmailConfirmed
+                FROM USER_ACCOUNT
+                WHERE UserName LIKE @Keyword 
+                   OR Email LIKE @Keyword 
+                   OR FirstName LIKE @Keyword
+                   OR LastName LIKE @Keyword
+                ORDER BY UserName";
+
+			var result = await _dbHelper.QueryAsync<UserDto>(query, new { Keyword = $"%{keyword}%" });
+			return result.ToList();
+		}
+
+		// ========================================
+		// GET USERS BY IDS
+		// ========================================
+		public async Task<List<UserDto>> GetUsersByIdsAsync(List<int> userIds)
+		{
+			
+
+			var ids = string.Join(",", userIds);
+			var query = $@"
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY Id DESC) AS Id,
+					UserId = Id,
+                    UserName,
+                    Email,
+                    FirstName,
+                    LastName,
+                    PhoneNumber,
+                    IsActive,
+                    EmailConfirmed
+                FROM USER_ACCOUNT
+                WHERE Id IN ({ids})
+                ORDER BY UserName";
+
+			var result = await _dbHelper.QueryAsync<UserDto>(query);
+			return result.ToList();
+		}
+
+		// ========================================
+		// GET LOGIN HISTORY
+		// ========================================
+		public async Task<List<UserLoginHistoryDto>> GetLoginHistoryAsync(int userId, int top = 10)
+		{
+			
+
+			var query = $@"
+                SELECT TOP {top}
+					ROW_NUMBER() OVER (ORDER BY Id DESC) AS UserId,
+                    UserName,
+                    LoginUtc,
+                    LogOutUtc
+                FROM USER_ACCOUNT
+                WHERE Id = @UserId
+                  AND LoginUtc IS NOT NULL
+                ORDER BY LoginUtc DESC";
+
+			var result = await _dbHelper.QueryAsync<UserLoginHistoryDto>(query, new { UserId = userId });
+			return result.ToList();
+		}
+
+		// ========================================
+		// UPDATE LAST LOGIN
+		// ========================================
+		public async Task<bool> UpdateLastLoginAsync(int userId)
+		{
+			
+
+			var updateQuery = @"
+                UPDATE USER_ACCOUNT
+                SET LoginUtc = GETUTCDATE()
+                WHERE Id = @UserId";
+
+			var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new { UserId = userId });
+
+			return rowsAffected > 0;
 		}
 	}
+
 }

@@ -124,15 +124,9 @@ function initAgGrid() {
             pinned: 'right',
             cellRenderer: function (params) {
                 return `
-                    <button class="btn btn-sm btn-primary action-btn" onclick="editAgent(${params.data.agentId})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-info action-btn" onclick="viewAgent(${params.data.agentId})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteAgent(${params.data.agentId})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="viewAgent(${params.data.agentId})" title="Lưu"><i class="ti ti-eye f-20"></i> </a>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="editAgent(${params.data.agentId})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteAgent(${params.data.agentId})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
                 `;
             },
             filter: false,

@@ -13,12 +13,13 @@ namespace TAS.Controllers
 		private readonly string _viPath;
 		private readonly string _enPath;
 		private readonly string _msgViewPath;
-		public ResxDualController(IWebHostEnvironment env)
+		public ResxDualController(IWebHostEnvironment env, CommonModels commonModels)
 		{
 			var root = Path.Combine(env.ContentRootPath, "Resources", "Views", "Shared");
 			_viPath = Path.Combine(root, "_Msg.vi.resx");
 			_enPath = Path.Combine(root, "_Msg.en.resx");
 			_msgViewPath = Path.Combine(env.ContentRootPath, "Views", "Shared", "_Msg.cshtml");
+			_common = commonModels;
 		}
 		[Breadcrumb("key_ngonngu")]
 		public IActionResult LanguageManage()

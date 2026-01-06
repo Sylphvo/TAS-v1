@@ -10,6 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="E2ETests\UserAccountE2ETests.cs" />
+    <Compile Remove="IntegrationTests\UserAccountControllerTests.cs" />
+    <Compile Remove="PerformanceTests\UserAccountPerformanceTests.cs" />
+    <Compile Remove="TestHelpers\UserAccountDataFactory.cs" />
+    <Compile Remove="UnitTests\UserAccountModelsTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageReference Include="Bogus" Version="35.6.5" />
     <PackageReference Include="coverlet.collector" Version="6.0.4">
@@ -39,6 +47,13 @@
   <ItemGroup>
     <!-- Reference your main project -->
     <ProjectReference Include="..\TAS-master\TAS.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="E2ETests\" />
+    <Folder Include="IntegrationTests\" />
+    <Folder Include="PerformanceTests\" />
+    <Folder Include="TestHelpers\" />
+    <Folder Include="UnitTests\" />
   </ItemGroup>
 
 </Project>
