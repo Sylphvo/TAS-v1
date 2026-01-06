@@ -13,13 +13,10 @@ var drawnItems = null;
 // INITIALIZE
 // ========================================
 $(document).ready(function () {
-    console.log('🚀 Initializing Agent Management...');
-
     initAgGrid();
     loadAgents();
     registerEvents();
 
-    console.log('✅ Agent Management initialized!');
 });
 
 // ========================================
@@ -46,7 +43,7 @@ function initAgGrid() {
         {
             field: 'agentCode',
             headerName: 'Mã đại lý',
-            width: 150,
+            width: 100,
             pinned: 'left',
             cellRenderer: function (params) {
                 return `<strong>${params.value}</strong>`;
@@ -55,9 +52,9 @@ function initAgGrid() {
         {
             field: 'agentName',
             headerName: 'Tên đại lý',
-            width: 250,
+            width: 200,
             cellRenderer: function (params) {
-                return `<i class="fas fa-user"></i> ${params.value}`;
+                return `${params.value}`;
             }
         },
         {
@@ -66,16 +63,16 @@ function initAgGrid() {
             width: 150,
             cellRenderer: function (params) {
                 if (!params.value) return '-';
-                return `<i class="fas fa-phone"></i> ${params.value}`;
+                return `${params.value}`;
             }
         },
         {
             field: 'agentAddress',
             headerName: 'Địa chỉ',
-            width: 300,
+            width: 250,
             cellRenderer: function (params) {
                 if (!params.value) return '-';
-                return `<i class="fas fa-map-marker-alt"></i> ${params.value}`;
+                return `${params.value}`;
             }
         },
         {
@@ -164,7 +161,6 @@ function initAgGrid() {
         onGridReady: function (params) {
             gridApiAgent = params.api;
             params.api.sizeColumnsToFit();
-            console.log('✅ AG Grid ready!');
         }
     };
 
@@ -227,8 +223,6 @@ function registerEvents() {
 // LOAD AGENTS
 // ========================================
 function loadAgents() {
-    console.log('📥 Loading agents...');
-
     const searchParams = {
         searchKeyword: $('#txtSearchKeyword').val(),
         agentCode: $('#txtAgentCode').val(),

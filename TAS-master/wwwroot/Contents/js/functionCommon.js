@@ -4122,3 +4122,12 @@ function LogoutAuth() {
     form.submit();
     
 }
+// ========================================
+// CLOSE MODAL
+// ========================================
+function closeModal(idModal, idForm) {
+    if (!IsNullOrEmpty(idModal)) {
+        $('#' + idModal).fadeOut(300).hide();
+    };
+    if (!IsNullOrEmpty(idForm)) { $('#' + idForm)[0].reset() };
+}

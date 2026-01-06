@@ -245,28 +245,6 @@ namespace TAS.Controllers
 		}
 
 		// ========================================
-		// API: Lấy tất cả ComboBox
-		// ========================================
-		[HttpPost]
-		public IActionResult GetAllCombos()
-		{
-			try
-			{
-				return Json(new
-				{
-					success = true,
-					comboAgent = _common.ComboAgent(),
-					comboFarmCode = _common.ComboFarmCode(),
-					comboOrder = _common.ComboOrderCode()
-				});
-			}
-			catch (Exception ex)
-			{
-				return Json(new { success = false, message = ex.Message });
-			}
-		}
-
-		// ========================================
 		// API: Tạo đơn hàng mới
 		// ========================================
 		[HttpPost]

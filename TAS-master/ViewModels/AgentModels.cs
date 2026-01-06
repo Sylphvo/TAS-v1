@@ -123,27 +123,22 @@ namespace TAS.ViewModels
 		// ========================================
 		public async Task<RubberAgentDto?> GetAgentByIdAsync(int agentId)
 		{
-			
-
 			var query = @"
                 SELECT 
-                    AgentId,
-                    AgentCode,
-                    AgentName,
-                    AgentPhone,
-                    AgentAddress,
-                    IsActive,
-                    RegisterDate,
-                    RegisterPerson,
-                    UpdateDate,
-                    UpdatePerson,
-                    CASE 
-                        WHEN Polygon IS NOT NULL THEN Polygon.STAsText()
-                        ELSE NULL
-                    END AS Polygon
-                FROM RubberAgent
+					A.AgentId,
+					A.AgentCode,
+					A.AgentName,
+					A.AgentPhone,
+					A.AgentAddress,
+					A.IsActive,
+					A.RegisterDate,
+					A.RegisterPerson,
+					A.UpdateDate,
+					A.UpdatePerson,
+					F.Polygon
+                FROM RubberAgent A
+				LEFT JOIN RubberFarm F ON A.AgentCode = F.AgentCode
                 WHERE AgentId = @AgentId";
-
 			return await _dbHelper.QueryFirstOrDefaultAsync<RubberAgentDto>(query, new { AgentId = agentId });
 		}
 
@@ -152,25 +147,21 @@ namespace TAS.ViewModels
 		// ========================================
 		public async Task<RubberAgentDto?> GetAgentByCodeAsync(string agentCode)
 		{
-			
-
 			var query = @"
                 SELECT 
-                    AgentId,
-                    AgentCode,
-                    AgentName,
-                    AgentPhone,
-                    AgentAddress,
-                    IsActive,
-                    RegisterDate,
-                    RegisterPerson,
-                    UpdateDate,
-                    UpdatePerson,
-                    CASE 
-                        WHEN Polygon IS NOT NULL THEN Polygon.STAsText()
-                        ELSE NULL
-                    END AS Polygon
-                FROM RubberAgent
+					A.AgentId,
+					A.AgentCode,
+					A.AgentName,
+					A.AgentPhone,
+					A.AgentAddress,
+					A.IsActive,
+					A.RegisterDate,
+					A.RegisterPerson,
+					A.UpdateDate,
+					A.UpdatePerson,
+					F.Polygon
+                FROM RubberAgent A
+				LEFT JOIN RubberFarm F ON A.AgentCode = F.AgentCode
                 WHERE AgentCode = @AgentCode";
 
 			return await _dbHelper.QueryFirstOrDefaultAsync<RubberAgentDto>(query, new { AgentCode = agentCode });
@@ -330,8 +321,7 @@ namespace TAS.ViewModels
                     AgentAddress, 
                     IsActive, 
                     RegisterDate, 
-                    RegisterPerson,
-                    Polygon
+                    RegisterPerson
                 )
                 VALUES (
                     @AgentCode, 
@@ -340,10 +330,7 @@ namespace TAS.ViewModels
                     @AgentAddress, 
                     @IsActive, 
                     GETDATE(), 
-                    @RegisterPerson,
-                    " + (string.IsNullOrWhiteSpace(dto.Polygon)
-						? "NULL"
-						: $"geography::STGeomFromText('{dto.Polygon}', 4326)") + @"
+                    @RegisterPerson                    
                 );
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
@@ -376,10 +363,7 @@ namespace TAS.ViewModels
                     AgentAddress = @AgentAddress,
                     IsActive = @IsActive,
                     UpdateDate = GETDATE(),
-                    UpdatePerson = @UpdatePerson,
-                    Polygon = " + (string.IsNullOrWhiteSpace(dto.Polygon)
-						? "NULL"
-						: $"geography::STGeomFromText('{dto.Polygon}', 4326)") + @"
+                    UpdatePerson = @UpdatePerson
                 WHERE AgentId = @AgentId";
 
 			var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new

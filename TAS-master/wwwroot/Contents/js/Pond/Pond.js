@@ -383,7 +383,7 @@ function savePond() {
         success: function(response) {
             if (response.success) {
                 showSuccess(response.message);
-                closeModal();
+                closeModal('modalPond','pondForm');
                 loadPonds();
             } else {
                 showError(response.message);
@@ -582,13 +582,7 @@ function onSelectionChanged() {
     }
 }
 
-// ========================================
-// CLOSE MODAL
-// ========================================
-function closeModal() {
-    $('#modalPond').fadeOut(300);
-    $('#pondForm')[0].reset();
-}
+
 
 // ========================================
 // UPDATE STATUS BAR

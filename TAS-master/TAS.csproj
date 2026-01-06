@@ -9,21 +9,25 @@
 
   <ItemGroup>
     <Compile Remove="Common\**" />
+    <Compile Remove="Views\Shared\Modal\**" />
     <Compile Remove="wwwroot\Contents\js\Lake\**" />
     <Compile Remove="wwwroot\css\InformationGarden\**" />
     <Compile Remove="wwwroot\css\RubberGarden\**" />
     <Compile Remove="wwwroot\css\Traceability\**" />
     <Content Remove="Common\**" />
+    <Content Remove="Views\Shared\Modal\**" />
     <Content Remove="wwwroot\Contents\js\Lake\**" />
     <Content Remove="wwwroot\css\InformationGarden\**" />
     <Content Remove="wwwroot\css\RubberGarden\**" />
     <Content Remove="wwwroot\css\Traceability\**" />
     <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Views\Shared\Modal\**" />
     <EmbeddedResource Remove="wwwroot\Contents\js\Lake\**" />
     <EmbeddedResource Remove="wwwroot\css\InformationGarden\**" />
     <EmbeddedResource Remove="wwwroot\css\RubberGarden\**" />
     <EmbeddedResource Remove="wwwroot\css\Traceability\**" />
     <None Remove="Common\**" />
+    <None Remove="Views\Shared\Modal\**" />
     <None Remove="wwwroot\Contents\js\Lake\**" />
     <None Remove="wwwroot\css\InformationGarden\**" />
     <None Remove="wwwroot\css\RubberGarden\**" />

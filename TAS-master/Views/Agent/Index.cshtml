@@ -1,6 +1,8 @@
-﻿
-@{
-    ViewData["Title"] = "Thông Tin Đại lý";
+﻿@{
+
+}
+@section Style {
+    <link rel="stylesheet" href="../Contents/css/Agent/Agent.css">
 }
 <div class="row">
     <div class="col-12">
@@ -46,132 +48,10 @@
         </div>
     </div>
 </div>
-<!-- Add/Edit Modal -->
-<div class="modal fade" id="agentModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Thêm đại lý</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="agentForm">
-                    <input type="hidden" id="agentId">
+<partial name="~/Views/Agent/_AddEditModal.cshtml" />
+<partial name="~/Views/Agent/_DeleteModal.cshtml" />
+<partial name="~/Views/Agent/_MapModal.cshtml" />
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Mã đại lý <span class="text-danger">*</span></label>
-                                <input type="text" id="agentCode" class="form-control" required maxlength="50">
-                                <small class="form-text text-muted">Mã duy nhất, không trùng lặp</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Tên đại lý <span class="text-danger">*</span></label>
-                                <input type="text" id="agentName" class="form-control" required maxlength="200">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Số điện thoại</label>
-                                <input type="tel" id="agentPhone" class="form-control" maxlength="20">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Trạng thái</label>
-                                <select id="isActive" class="form-control">
-                                    <option value="true">Đang hoạt động</option>
-                                    <option value="false">Ngưng hoạt động</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Địa chỉ</label>
-                        <textarea id="agentAddress" class="form-control" rows="3" maxlength="500"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Vùng hoạt động (WKT)</label>
-                        <textarea id="polygon" class="form-control" rows="3" placeholder="POLYGON((...))" readonly></textarea>
-                        <small class="form-text text-muted">
-                            <button type="button" class="btn btn-sm btn-info" id="btnDrawPolygon">
-                                <i class="fas fa-map"></i> Vẽ trên bản đồ
-                            </button>
-                            <button type="button" class="btn btn-sm btn-warning" id="btnClearPolygon">
-                                <i class="fas fa-eraser"></i> Xóa vùng
-                            </button>
-                        </small>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    <i class="fas fa-times"></i> Đóng
-                </button>
-                <button type="button" id="btnSave" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Xác nhận xóa</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa đại lý này?</p>
-                <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác!</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="button" id="btnConfirmDelete" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Xóa
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Map Modal for Drawing Polygon -->
-<div class="modal fade" id="mapModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Vẽ vùng hoạt động</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="map" style="width: 100%; height: 500px;"></div>
-                <small class="text-muted">Click để vẽ vùng hoạt động của đại lý</small>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                <button type="button" id="btnSavePolygon" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu vùng
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 @section Scripts {
     <script type="text/javascript" src="~/Contents/js/Agent/Agent.js"></script>
     @* <script>

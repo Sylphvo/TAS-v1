@@ -1,0 +1,122 @@
+﻿<!-- Add/Edit Modal -->
+<div class="modal fade" id="farmModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm nhà vườn</h5>
+                <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="farmForm">
+                    <input type="hidden" id="farmId">
+
+                    <!-- Row 1: Basic Info -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Mã nhà vườn <span class="text-danger">*</span></label>
+                                <input type="text" id="farmCode" class="form-control" required maxlength="50">
+                                <small class="form-text text-muted">Mã duy nhất, không trùng lặp</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Tên chủ vườn <span class="text-danger">*</span></label>
+                                <input type="text" id="farmerName" class="form-control" required maxlength="200">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Đại lý <span class="text-danger">*</span></label>
+                                <select id="agentCode" class="form-control" required>
+                                    <option value="">-- Chọn đại lý --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Contact Info -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" id="farmPhone" class="form-control" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Chứng chỉ</label>
+                                <input type="text" id="certificates" class="form-control" maxlength="200" placeholder="VD: VietGAP, FSC...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select id="isActive" class="form-control">
+                                    <option value="true">Đã duyệt</option>
+                                    <option value="false">Chưa duyệt</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Address -->
+                    <div class="form-group">
+                        <label>Địa chỉ</label>
+                        <textarea id="farmAddress" class="form-control" rows="2" maxlength="500"></textarea>
+                    </div>
+
+                    <!-- Row 4: Area Info -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Tổng diện tích (ha)</label>
+                                <input type="number" id="totalAreaHa" class="form-control" step="0.01" min="0" max="10000" placeholder="0.00">
+                                <small class="form-text text-muted">Diện tích toàn bộ vườn</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Diện tích mủ (ha)</label>
+                                <input type="number" id="rubberAreaHa" class="form-control" step="0.01" min="0" max="10000" placeholder="0.00">
+                                <small class="form-text text-muted">Diện tích cây cao su khai thác</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Sản lượng khai thác (kg/năm)</label>
+                                <input type="number" id="totalExploit" class="form-control" step="0.01" min="0" max="1000000" placeholder="0.00">
+                                <small class="form-text text-muted">Sản lượng mủ dự kiến/năm</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Map -->
+                    <div class="form-group">
+                        <label>Vùng vườn (WKT)</label>
+                        <textarea id="polygon" class="form-control" rows="3" placeholder="POLYGON((...))" readonly></textarea>
+                        <small class="form-text text-muted">
+                            <button type="button" class="btn btn-sm btn-info" id="btnDrawPolygon">
+                                <i class="fas fa-map"></i> Vẽ trên bản đồ
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" id="btnClearPolygon">
+                                <i class="fas fa-eraser"></i> Xóa vùng
+                            </button>
+                            <button type="button" class="btn btn-sm btn-success" id="btnImportPolygon">
+                                <i class="fas fa-file-import"></i> Import từ file
+                            </button>
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+                <button type="button" id="btnSave" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

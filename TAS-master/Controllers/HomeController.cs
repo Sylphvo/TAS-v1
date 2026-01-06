@@ -6,7 +6,6 @@ namespace TAS.Controllers
 	[Authorize]
 	public class HomeController : Controller
 	{
-		CommonController commonController = new CommonController();
 		public HomeController()
 		{
 

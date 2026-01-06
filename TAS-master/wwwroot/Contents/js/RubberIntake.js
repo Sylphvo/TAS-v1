@@ -744,7 +744,7 @@ function onRowDragEnd(event) {
 async function loadAllCombos() {
     try {
         const response = await $.ajax({
-            url: '/RubberIntake/GetAllCombos',
+            url: '/Common/GetAllCombos',
             type: 'POST'
         });
         

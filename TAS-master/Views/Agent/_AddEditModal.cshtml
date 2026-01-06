@@ -1,0 +1,76 @@
+﻿<!-- Add/Edit Modal -->
+<div class="modal fade" id="agentModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm đại lý</h5>
+                <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="agentForm">
+                    <input type="hidden" id="agentId">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Mã đại lý <span class="text-danger">*</span></label>
+                                <input type="text" id="agentCode" class="form-control" required maxlength="50">
+                                <small class="form-text text-muted">Mã duy nhất, không trùng lặp</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Tên đại lý <span class="text-danger">*</span></label>
+                                <input type="text" id="agentName" class="form-control" required maxlength="200">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" id="agentPhone" class="form-control" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select id="isActive" class="form-control">
+                                    <option value="true">Đang hoạt động</option>
+                                    <option value="false">Ngưng hoạt động</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ</label>
+                        <textarea id="agentAddress" class="form-control" rows="3" maxlength="500"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vùng hoạt động (WKT)</label>
+                        <textarea id="polygon" class="form-control" rows="3" placeholder="POLYGON((...))" readonly></textarea>
+                        <small class="form-text text-muted">
+                            <button type="button" class="btn btn-sm btn-info" id="btnDrawPolygon">
+                                <i class="fas fa-map"></i> Vẽ trên bản đồ
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" id="btnClearPolygon">
+                                <i class="fas fa-eraser"></i> Xóa vùng
+                            </button>
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+                <button type="button" id="btnSave" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
