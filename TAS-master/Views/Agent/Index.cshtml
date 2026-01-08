@@ -13,11 +13,11 @@
                     </div>
                     <div class="d-flex">
                         <!-- Nút chọn file -->
-                        <label for="importExcelAgent" class="btn btn-primary"><i class="ti ti-upload f-20"></i>&nbsp; <span data-i18n="key_importexcel"></span></label>
+                        <label for="importExcelAgent" class="btn btn-custom-tas"><i class="ti ti-upload f-20"></i>&nbsp; <span data-i18n="key_importexcel"></span></label>
                         <input type="file" id="importExcelAgent" hidden>
                         <span id="file-name" class="ms-2 d-none"></span>
-                        <button onclick="onExportTemplateExcel()" class="btn btn-primary buttonSearch"><i class="ti ti-file-x f-20"></i>&nbsp; Mẫu Excel</button>
-                        <button class="btn btn-primary buttonSearch" data-bs-toggle="modal" data-bs-target="#AddNewRubberAgent"><i class="ti ti-plus f-20"></i>&nbsp;  <span data-i18n="key_themmoi"></span></button>
+                        <button onclick="onExportTemplateExcel()" class="btn btn-custom-tas buttonSearch"><i class="ti ti-file-x f-20"></i>&nbsp; Mẫu Excel</button>
+                        <button class="btn btn-custom-tas buttonSearch" data-bs-toggle="modal" data-bs-target="#AddNewRubberAgent"><i class="ti ti-plus f-20"></i>&nbsp;  <span data-i18n="key_themmoi"></span></button>
                     </div>
                 </div>
             </div>
@@ -26,16 +26,16 @@
                     <!-- Action Buttons -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <button type="button" id="btnAdd" class="btn btn-success">
+                            <button type="button" id="btnAdd" class="btn btn-custom-tas">
                                 <i class="fas fa-plus"></i> Thêm mới
                             </button>
-                            <button type="button" id="btnBulkDelete" class="btn btn-danger" disabled>
+                            <button type="button" id="btnBulkDelete" class="btn btn-custom-tas" disabled>
                                 <i class="fas fa-trash"></i> Xóa đã chọn (<span id="selectedCount">0</span>)
                             </button>
-                            <button type="button" id="btnExport" class="btn btn-info">
+                            <button type="button" id="btnExport" class="btn btn-custom-tas">
                                 <i class="fas fa-file-excel"></i> Xuất Excel
                             </button>
-                            <button type="button" id="btnRefresh" class="btn btn-secondary">
+                            <button type="button" id="btnRefresh" class="btn btn-custom-tas">
                                 <i class="fas fa-sync"></i> Làm mới
                             </button>
                         </div>

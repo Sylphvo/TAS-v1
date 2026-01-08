@@ -4076,15 +4076,29 @@ function OnDragMoveSetRow() {
     ListDataFull.splice(start, n, ...ordered);
 }
 function ApplyCboSelect2() {
+    /* =========================================
+       Cbobox Select2 No Search
+    ========================================= */
+    $('.cboSelect2NoSearch').each(function () {
+        if ($(this).find('option').length === 0) {
+            $(this).append('<option></option>');
+        }
+    });
     $('.cboSelect2NoSearch').select2({
+        placeholder: 'Vui lòng chọn',
         minimumResultsForSearch: Infinity
     });
     $('.cboSelect2NoSearch').on('click', function (e) {
         let idElemnt = $(this).attr('id');
         RemoveValidateError(idElemnt);
     })
+    /* =========================================
+       Cbobox Select2 Search
+    ========================================= */
     $('.cboSelect2Search').css("width", 200);
-    $('.cboSelect2Search').select2();
+    $('.cboSelect2Search').select2({
+        placeholder: 'Vui lòng chọn'
+    });
 }
 function RenderComboBox(arrlstData, idElemnt, selectFirst) {
     let ComboBoxHtml = "";

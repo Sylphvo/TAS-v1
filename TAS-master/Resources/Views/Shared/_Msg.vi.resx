@@ -303,4 +303,7 @@
   <data name="key_quanlydonhang">
     <value>Quản lý đơn hàng</value>
   </data>
+  <data name="key_reload">
+    <value>Tải lại</value>
+  </data>
 </root>

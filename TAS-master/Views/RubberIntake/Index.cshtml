@@ -39,11 +39,8 @@
                                 </select>
                             </div>
 
-                            <div class="divboxOrder">
-                                <button type="button" class="btn btn-primary btn-sm" onclick="loadData()">
-                                    <i class="fas fa-search"></i> Tìm kiếm
-                                </button>
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearFilter()">
+                            <div class="divboxOrder">                       
+                                <button type="button" class="btn btn-custom-tas btn-sm" onclick="clearFilter()">
                                     <i class="fas fa-eraser"></i> Xóa lọc
                                 </button>
                             </div>
@@ -51,25 +48,25 @@
 
                         <!-- Right side: Actions -->
                         <div class="datatable-actions">
-                            <button type="button" class="btn btn-success btn-sm" onclick="addNewRow()">
-                                <i class="fas fa-plus"></i> Thêm mới
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="addNewRow()">
+                                <i class="fas fa-plus"></i> <span data-i18n="key_themmoi"></span>
                             </button>
-                            <button type="button" class="btn btn-info btn-sm" onclick="saveAll()">
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="saveAll()">
                                 <i class="fas fa-save"></i> Lưu tất cả
                             </button>
-                            <button type="button" class="btn btn-warning btn-sm" onclick="approveAll()">
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="approveAll()">
                                 <i class="fas fa-check"></i> Duyệt tất cả
                             </button>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelected()">
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="deleteSelected()">
                                 <i class="fas fa-trash"></i> Xóa đã chọn
                             </button>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="importExcel()">
-                                <i class="fas fa-file-import"></i> Import Excel
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="importExcel()">
+                                <i class="fas fa-file-import"></i> <span data-i18n="key_importexcel"></span>
                             </button>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="exportExcel()">
-                                <i class="fas fa-file-export"></i> Export Excel
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="exportExcel()">
+                                <i class="fas fa-file-export"></i> <span data-i18n="key_xuatexcel"></span>
                             </button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="reloadPage()">
+                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="reloadPage()">
                                 <i class="fas fa-sync-alt"></i> Reload
                             </button>
                         </div>
@@ -126,6 +123,10 @@
             setTimeout(() => {
                 ApplyCboSelect2();
             }, 1000);
+
+            $('#cboAgent,#cboFarm,#cboOrder,#cboStatus').change(function (e) {
+                loadData();
+            });
         });
     </script>
 }

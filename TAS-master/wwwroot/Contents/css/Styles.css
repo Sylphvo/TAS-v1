@@ -728,7 +728,7 @@ li.page-item button.page-link {
 
 .form-control {
     padding: 10px 12px;
-    border: 2px solid #e0e0e0;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
@@ -833,4 +833,38 @@ textarea.form-control {
 
 div[col-id="orderId"]{
     padding:0 !important;
+}
+
+/* =========================================
+   Cusstom Styles Button Action
+========================================= */
+.btn-custom-tas {
+    border: 1px solid #e5e7eb;
+    opacity: 0.8;
+}
+    .btn-custom-tas:hover {
+        opacity: 1;
+        border: 1px solid #a9adb5;
+    }
+.btn-custom-tas-action {
+    background-color: #066fd1;
+    color:#fff;
+}
+
+    .btn-custom-tas-action:hover {
+        opacity: 0.7;
+        background-color: #066fd1;
+        color: #fff;
+    }
+.select2-container--default .select2-selection--single {
+    border: 1px solid #e5e7eb;
+}
+    .select2-container--default .select2-selection--single:hover {
+        border: 1px solid #a9adb5;
+    }
+.dropdown .dropdown-item:hover .pc-icon {
+	color: #ffffff !important;
+}
+.pc-header .pc-head-link:hover::before {
+    transform: scale(0);
 }

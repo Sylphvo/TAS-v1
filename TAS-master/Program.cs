@@ -12,12 +12,10 @@ using TAS.Services;
 using TAS.TagHelpers;
 using TAS.ViewModels; // DbContext của bạn
 
-// Tạo builder
-var builder = WebApplication.CreateBuilder(args);
-// lấy chuỗi kết nối: appsettings.ConnectionStrings.Default
-var cs = builder.Configuration.GetConnectionString("DefaultConnection");
-// Đăng ký DI cho SQL Server + Dapper executor
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(cs));
+
+var builder = WebApplication.CreateBuilder(args);// Tạo builder
+var cs = builder.Configuration.GetConnectionString("DefaultConnection");// lấy chuỗi kết nối: appsettings.ConnectionStrings.Default
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(cs));// Đăng ký DI cho SQL Server + Dapper executor
 builder.Services.AddScoped<ILanguageService, LanguageService>();// Đăng ký dịch vụ ngôn ngữ
 builder.Services.AddSingleton<IBreadcrumbService, BreadcrumbService>();
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -44,7 +42,7 @@ builder.Services.AddScoped<ConnectDbHelper>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 
-builder.Services.AddScoped<RubberGardenModels>();     // <-- bắt buộc
+//builder.Services.AddScoped<RubberGardenModels>();     // <-- bắt buộc
 builder.Services.AddScoped<FarmModels>();     // <-- bắt buộc
 builder.Services.AddScoped<AgentModels>();     // <-- bắt buộc
 builder.Services.AddScoped<TraceabilityModels>();     // <-- bắt buộc
@@ -135,7 +133,6 @@ builder.Services.ConfigureApplicationCookie(opt =>
 	opt.SlidingExpiration = true;
 	opt.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
-
 builder.Services.AddAuthorization();
 
 
@@ -153,16 +150,12 @@ if (!app.Environment.IsDevelopment())
 	app.UseExceptionHandler("/Home/Error");
 	app.UseHsts();
 }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession(); // if using session
-
-// ✅✅✅ QUAN TRỌNG: ĐÚNG THỨ TỰ ✅✅✅
 app.UseAuthentication();  // ✅ 1. Authentication TRƯỚC
 app.UseAuthorization();   // ✅ 2. Authorization SAU
-
 
 // ========================================
 // LOCALIZATION MIDDLEWARE
@@ -176,6 +169,4 @@ app.UseRequestLocalization(opts);
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// Chạy ứng dụng
-app.Run();
+app.Run();// Chạy ứng dụng

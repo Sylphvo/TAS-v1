@@ -303,4 +303,7 @@
   <data name="key_quanlydonhang">
     <value>Order Management</value>
   </data>
+  <data name="key_reload">
+    <value>Reload</value>
+  </data>
 </root>

@@ -53,7 +53,7 @@ File: style.css
 	--pc-sidebar-background: transparent;
 	--pc-sidebar-color: #5b6b79;
 	--pc-sidebar-color-rgb: 91, 107, 121;
-	--pc-sidebar-active-color: #0d6efd;
+	--pc-sidebar-active-color: #066fd1;
 	--pc-sidebar-shadow: none;
 	--pc-sidebar-caption-color: #3e4853;
 	--pc-sidebar-border: 1px dashed #bec8d0;
@@ -69,7 +69,7 @@ File: style.css
 [data-pc-theme_contrast=true] {
 	--bs-body-bg: #ffffff;
 	--pc-sidebar-background: transparent;
-	--pc-sidebar-active-color: #0d6efd;
+	--pc-sidebar-active-color: #066fd1;
 	--pc-sidebar-shadow: 1px 0 3px 0px #dbe0e5;
 	--pc-sidebar-border: none;
 	--pc-card-box-shadow: 0px 8px 24px rgba(27, 46, 94, 0.08);

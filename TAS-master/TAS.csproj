@@ -9,30 +9,42 @@
 
   <ItemGroup>
     <Compile Remove="Common\**" />
+    <Compile Remove="Views\RubberGarden\**" />
     <Compile Remove="Views\Shared\Modal\**" />
+    <Compile Remove="wwwroot\Contents\css\RubberGarden\**" />
     <Compile Remove="wwwroot\Contents\css\UserAccount.css\**" />
     <Compile Remove="wwwroot\Contents\js\Lake\**" />
+    <Compile Remove="wwwroot\Contents\js\RubberGarden\**" />
     <Compile Remove="wwwroot\css\InformationGarden\**" />
     <Compile Remove="wwwroot\css\RubberGarden\**" />
     <Compile Remove="wwwroot\css\Traceability\**" />
     <Content Remove="Common\**" />
+    <Content Remove="Views\RubberGarden\**" />
     <Content Remove="Views\Shared\Modal\**" />
+    <Content Remove="wwwroot\Contents\css\RubberGarden\**" />
     <Content Remove="wwwroot\Contents\css\UserAccount.css\**" />
     <Content Remove="wwwroot\Contents\js\Lake\**" />
+    <Content Remove="wwwroot\Contents\js\RubberGarden\**" />
     <Content Remove="wwwroot\css\InformationGarden\**" />
     <Content Remove="wwwroot\css\RubberGarden\**" />
     <Content Remove="wwwroot\css\Traceability\**" />
     <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Views\RubberGarden\**" />
     <EmbeddedResource Remove="Views\Shared\Modal\**" />
+    <EmbeddedResource Remove="wwwroot\Contents\css\RubberGarden\**" />
     <EmbeddedResource Remove="wwwroot\Contents\css\UserAccount.css\**" />
     <EmbeddedResource Remove="wwwroot\Contents\js\Lake\**" />
+    <EmbeddedResource Remove="wwwroot\Contents\js\RubberGarden\**" />
     <EmbeddedResource Remove="wwwroot\css\InformationGarden\**" />
     <EmbeddedResource Remove="wwwroot\css\RubberGarden\**" />
     <EmbeddedResource Remove="wwwroot\css\Traceability\**" />
     <None Remove="Common\**" />
+    <None Remove="Views\RubberGarden\**" />
     <None Remove="Views\Shared\Modal\**" />
+    <None Remove="wwwroot\Contents\css\RubberGarden\**" />
     <None Remove="wwwroot\Contents\css\UserAccount.css\**" />
     <None Remove="wwwroot\Contents\js\Lake\**" />
+    <None Remove="wwwroot\Contents\js\RubberGarden\**" />
     <None Remove="wwwroot\css\InformationGarden\**" />
     <None Remove="wwwroot\css\RubberGarden\**" />
     <None Remove="wwwroot\css\Traceability\**" />
@@ -40,6 +52,8 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\AccounttempController.cs" />
+    <Compile Remove="Controllers\RubberGardenController.cs" />
+    <Compile Remove="ViewModels\RubberGardenModels.cs" />
   </ItemGroup>
 
   <ItemGroup>
