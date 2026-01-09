@@ -274,21 +274,22 @@ namespace TAS.ViewModels
 		// ========================================
 		public async Task<FarmStatisticsDto> GetFarmStatisticsAsync()
 		{
-			
 
-			var query = @"
-                SELECT 
-                    COUNT(*) AS TotalFarms,
-                    SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveFarms,
-                    SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS InactiveFarms,
-                    COUNT(DISTINCT CASE WHEN RegisterDate >= DATEADD(MONTH, -1, GETDATE()) THEN FarmId END) AS NewFarmsThisMonth,
-                    SUM(ISNULL(TotalAreaHa, 0)) AS TotalAreaHa,
-                    SUM(ISNULL(RubberAreaHa, 0)) AS TotalRubberAreaHa,
-                    SUM(ISNULL(TotalExploit, 0)) AS TotalExploitKg,
-                    COUNT(DISTINCT AgentCode) AS TotalAgents
-                FROM RubberFarm";
 
-			return await dbHelper.QueryFirstOrDefaultAsync<FarmStatisticsDto>(query);
+			//var query = @"
+			//             SELECT 
+			//                 COUNT(*) AS TotalFarms,
+			//                 SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveFarms,
+			//                 SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS InactiveFarms,
+			//                 COUNT(DISTINCT CASE WHEN RegisterDate >= DATEADD(MONTH, -1, GETDATE()) THEN FarmId END) AS NewFarmsThisMonth,
+			//                 SUM(ISNULL(TotalAreaHa, 0)) AS TotalAreaHa,
+			//                 SUM(ISNULL(RubberAreaHa, 0)) AS TotalRubberAreaHa,
+			//                 SUM(ISNULL(TotalExploit, 0)) AS TotalExploitKg,
+			//                 COUNT(DISTINCT AgentCode) AS TotalAgents
+			//             FROM RubberFarm";
+
+			//return await dbHelper.QueryFirstOrDefaultAsync<FarmStatisticsDto>(query);
+			return new FarmStatisticsDto();
 		}
 
 		// ========================================

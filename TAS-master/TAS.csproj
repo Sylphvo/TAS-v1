@@ -766,6 +766,7 @@
 
   <ItemGroup>
     <None Include="TAS.sln" />
+    <None Include="Views\Home\GeoJson.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>

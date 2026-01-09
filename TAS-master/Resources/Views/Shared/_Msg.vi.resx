@@ -306,4 +306,7 @@
   <data name="key_reload">
     <value>Tải lại</value>
   </data>
+  <data name="key_map">
+    <value>Bản đồ</value>
+  </data>
 </root>

@@ -306,4 +306,7 @@
   <data name="key_reload">
     <value>Reload</value>
   </data>
+  <data name="key_map">
+    <value>Map</value>
+  </data>
 </root>
