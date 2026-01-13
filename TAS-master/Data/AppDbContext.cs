@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
+using TAS.DTOs;
 using TAS.Helpers;
 using TAS.Models;
 

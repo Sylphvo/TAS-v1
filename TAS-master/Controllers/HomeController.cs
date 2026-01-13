@@ -16,6 +16,8 @@ namespace TAS.Controllers
 		// GET: Products
 		public IActionResult Index()
 		{
+			ViewData["Title"] = _common.GetValueByKey("key_tongquan");
+			ViewBag.TotalSystem = _common.TotalReportSystem();
 			return View();
 		}
 		public IActionResult Layout()

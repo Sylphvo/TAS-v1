@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Xml.Linq;
+using TAS.DTOs;
 using TAS.Helpers;
 using TAS.Models;
 using TAS.TagHelpers;
@@ -203,7 +204,7 @@ namespace TAS.ViewModels
 			}
 		}
 		#region Resx Dual Language
-		
+
 		public string? GetValueByKey(string key)
 		{
 			string culture = _lang.GetUiCulture();
@@ -215,7 +216,64 @@ namespace TAS.ViewModels
 		}
 		// Load file
 		public XElement LoadXml(string path) => XElement.Load(path);
-		
+
 		#endregion
+		// ========================================
+		// ComboBox Agent (Đại lý)
+		// ========================================
+		public List<TotalCommonSystem> TotalReportSystem()
+		{
+			try
+			{
+				var sql = @"
+                    CREATE TABLE #ChartData (
+						Type NVARCHAR(20),
+						Label NVARCHAR(100),
+						Color NVARCHAR(20),
+						Total INT
+					);
+					INSERT INTO #ChartData
+					SELECT 
+					'AGENT',
+					N'Tổng đại lý',
+					'#4680FF',
+					Total = COUNT(DISTINCT AgentCode)
+					FROM RubberAgent 
+
+					INSERT INTO #ChartData
+					SELECT 
+					'FARM',
+					N'Tổng nhà vườn',
+					'#E58A00',
+					Total = COUNT(DISTINCT FarmCode)
+					FROM RubberFarm 
+
+					INSERT INTO #ChartData
+					SELECT 
+					'REPORTIN',
+					N'Tổng nguyên liệu thu mua',
+					'#2CA87F',
+					Total = 5
+
+					INSERT INTO #ChartData
+					SELECT 
+					'REPORTOUT',
+					N'Tổng thành phẩm đã xuất',
+					'#4680FF',
+					Total = 5
+
+					SELECT * FROM #ChartData
+					DROP TABLE #ChartData
+                ";
+
+				var result = _dbHelper.Query<TotalCommonSystem>(sql);
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error in ComboAgent: {ex.Message}");
+				return new List<TotalCommonSystem>();
+			}
+		}
 	}
 }
