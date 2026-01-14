@@ -24,25 +24,23 @@ const Toast = Swal.mixin({
 function NotificationToast(icon, title) {
     Toast.fire({ icon: icon, title: title });
 }
-///function ToastConfirm(icon, title) {
-    //Swal.fire({
-    //    title: "Are you sure?",
-    //    text: "You won't be able to revert this!",
-    //    icon: "warning",
-    //    showCancelButton: true,
-    //    confirmButtonColor: "#3085d6",
-    //    cancelButtonColor: "#d33",
-    //    confirmButtonText: "Yes, delete it!"
-    //}).then((result) => {
-    //    if (result.isConfirmed) {
-    //        Swal.fire({
-    //            title: "Deleted!",
-    //            text: "Your file has been deleted.",
-    //            icon: "success"
-    //        });
-    //    }
-    //});
-//}
+async function ToastConfirm(
+    text = "Are you sure?"
+) {
+    let msg = arrMsg.key_bancochacchan;
+    const result = await Swal.fire({
+        msg,
+        text,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: arrMsg.key_yes,
+        cancelButtonText: arrMsg.key_cancel
+    });
+
+    return result.isConfirmed;
+}
 // Các hằng số cho Traceability
 var arrConstant = {
     SortOrder_Lot: 1, // Order
@@ -4122,7 +4120,7 @@ function ApplyCboSelect2() {
 function RenderComboBox(arrlstData, idElemnt, selectFirst) {
     let ComboBoxHtml = "";
     if (selectFirst) {
-        //ComboBoxHtml += `<option value="*">${arrMsg.key_vuilongchon}</option>`;
+        ComboBoxHtml += `<option value="">${arrMsg.key_vuilongchon}</option>`;
     }
     arrlstData.forEach((item, index) => {
         ComboBoxHtml += `<option value="${item.value}">${item.text}</option>`;

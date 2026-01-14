@@ -170,14 +170,24 @@ const gridOptions = {
         },
         {
             headerName: 'Thao tác',
+            field: 'action',
             width: 150,
             pinned: 'right',
             cellRenderer: params => {
-                return `
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-eye f-20"></i> </a>
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
+                const isNew = params.data.intakeId === 0;
+                let html = '';
+                // CHỈ hiện nút lưu khi chưa lưu
+                if (isNew) {
+                    html += `
+                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Duyệt"><i class="ti ti-save f-20"></i> </a>
+                    `;
+                }
+                return html + `
+                    
+                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i> </a>
                 `;
+                //<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-eye f-20"></i> </a>
+                    
             },
             suppressMenu: true,
             suppressMovable: true,
@@ -203,6 +213,10 @@ const gridOptions = {
     animateRows: true,
     enableRangeSelection: true,
     enableCellTextSelection: true,
+    suppressMultiRangeSelection: false,
+    enableClipboard: true,
+    enableFillHandle: true, // Enterprise
+    fillHandleDirection: 'y', // CHỈ kéo dọc
     //pagination: true,
     paginationPageSize: 50,
     paginationPageSizeSelector: [20, 50, 100, 200],
@@ -212,7 +226,8 @@ const gridOptions = {
     // Events
     onGridReady: onGridReady,
     onCellValueChanged: onCellValueChanged,
-    onRowDragEnd: onRowDragEnd
+    onRowDragEnd: onRowDragEnd,
+
 };
 
 
@@ -276,12 +291,22 @@ async function loadData() {
 // ========================================
 // CRUD OPERATIONS
 // ========================================
+function generateIntakeCode() {
+    const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    const randomPart = crypto
+        .getRandomValues(new Uint32Array(1))[0]
+        .toString(16)
+        .toUpperCase();
+
+    return `INT_${datePart}_${randomPart}`;
+}
 
 // Add New Row
 function addNewRow() {
     const newRow = {
         intakeId: 0,
-        intakeCode: '',
+        intakeCode: generateIntakeCode(),
         agentCode: '',
         agentName: '',
         farmCode: '',
@@ -296,6 +321,11 @@ function addNewRow() {
     };
     
     gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
+    // 👇 BẮT BUỘC
+    gridApiIntake.refreshCells({
+        columns: ['action'], // colId của cột Thao tác
+        force: true
+    });
     updateRowNumbers();
     
     NotificationToast('info', 'Đã thêm dòng mới. Hãy nhập thông tin và lưu.');
@@ -339,7 +369,8 @@ async function saveRow(rowIndex) {
             }
             // Reload row
             gridApiIntake.applyTransaction({ update: [data] });
-            reloadPage();
+            gridApiIntake.refreshCells({ rowNodes: [rowNode], force: true });
+            loadData();
         } else {
             NotificationToast('error', response.message || 'Lưu thất bại');
         }
@@ -451,10 +482,8 @@ async function deleteSelected() {
         NotificationToast('warning', 'Vui lòng chọn các dòng cần xóa');
         return;
     }
-
-    if (!confirm(`Bạn có chắc muốn xóa ${selectedRows.length} dòng đã chọn?`)) {
-        return;
-    }
+    const ok = await ToastConfirm(arrMsg.key_msgconfirmdelete);
+    if (!ok) return;
     
     const intakeIds = selectedRows
         .filter(row => row.intakeId > 0)
@@ -467,9 +496,7 @@ async function deleteSelected() {
         NotificationToast('success', 'Đã xóa các dòng mới');
         return;
     }
-    
     showLoading(true);
-    
     try {
         const response = await $.ajax({
             url: '/RubberIntake/DeleteMultiple',
@@ -765,6 +792,7 @@ function clearFilter() {
 }
 
 function reloadPage() {
+    NotificationToast('success', 'Tải dữ liệu thành công');
     loadData();
 }
 

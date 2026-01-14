@@ -139,8 +139,8 @@
             <td><input class="form-control vi text_control" value="${x.vi}"></td>
             <td><input class="form-control en text_control" value="${x.en}"></td>
             <td>
-                <button class="btn btn-danger btn-sm" onclick="del('${x.key}')">delete</button>
-                <button class="btn btn-success btn-sm" onclick="save('${x.key}')">Save</button>
+                <button class="btn btn-danger btn-sm" onclick="del('${x.key}')">${arrMsg.key_delete}</button>
+                <button class="btn btn-success btn-sm" onclick="save('${x.key}')">${arrMsg.key_update}</button>
             </td>
         </tr>`);
     }

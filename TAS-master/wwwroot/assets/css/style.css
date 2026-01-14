@@ -27601,7 +27601,7 @@ pre[class*=language-] {
 	}
 
 	.btn-link-secondary:hover {
-		background: rgb(238.6, 240.2, 241.6);
+		/*background: rgb(238.6, 240.2, 241.6);*/
 		color: #5b6b79;
 		border-color: rgb(238.6, 240.2, 241.6);
 	}
@@ -34159,7 +34159,7 @@ body .swal2-container {
 }
 
 	body .swal2-container.swal2-noanimation, body .swal2-container.swal2-backdrop-show {
-		background: none !important;
+		/*background: none !important;*/
 	}
 
 .swal-icon--error {

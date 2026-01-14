@@ -243,7 +243,11 @@ div.ag-cell-value:not(div[col-id="ag-Grid-AutoColumn"]) {
     background-color: #51515126 !important;
 }
 .ag-cell-range-selected-1:not(.ag-cell-focus), .ag-root:not(.ag-context-menu-open) .ag-body-viewport:not(.ag-has-focus) .ag-cell-range-selected-1:not(.ag-cell-inline-editing) {
-    border: 1px solid #918f8f !important;
+    border: 3px solid #066fd1 !important;
+    border-radius: 3px;
+    border-left-width: 2px !important;
+    border-right-width: 2px !important;
+    border-bottom-width: 2px !important;
 }
 .ag-ltr .ag-cell-range-single-cell {
     border: 1px solid #918f8f !important;
@@ -856,6 +860,9 @@ div[col-id="orderId"]{
         background-color: #066fd1;
         color: #fff;
     }
+.btn-link-secondary:hover {
+    opacity: 0.7;
+}
 .select2-container--default .select2-selection--single {
     border: 1px solid #e5e7eb;
 }
@@ -867,4 +874,36 @@ div[col-id="orderId"]{
 }
 .pc-header .pc-head-link:hover::before {
     transform: scale(0);
+}
+.swal2-toast .swal2-icon{
+    margin-top: 0 !important;
+}
+.ag-ltr .ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-ltr .ag-cell-range-single-cell, .ag-ltr .ag-cell-range-single-cell.ag-cell-range-handle, .ag-ltr .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected), .ag-ltr .ag-full-width-row.ag-row-focus:focus .ag-cell-wrapper.ag-row-group, .ag-rtl .ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-rtl .ag-cell-range-single-cell, .ag-rtl .ag-cell-range-single-cell.ag-cell-range-handle, .ag-rtl .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected), .ag-rtl .ag-full-width-row.ag-row-focus:focus .ag-cell-wrapper.ag-row-group {
+    border: 3px solid #066fd1 !important;
+    border-radius: 3px;
+    border-left-width: 2px !important;
+    border-right-width: 2px !important;
+    border-bottom-width: 2px !important;
+}
+/* Border khi kéo chọn */
+.ag-theme-alpine .ag-cell-range-selected {
+    border: 2px solid #4da3ff !important;
+    box-sizing: border-box;
+}
+
+/* Ô đầu của vùng kéo */
+.ag-theme-alpine .ag-cell-range-selected-1 {
+    border-top: 2px solid #4da3ff;
+    border-left: 2px dashed #4da3ff;
+}
+
+/* Ô cuối */
+.ag-theme-alpine .ag-cell-range-selected-last {
+    border-bottom: 2px solid #4da3ff;
+    border-right: 2px solid #4da3ff;
+}
+
+.ag-fill-handle {
+    border: 3px solid #066fd1 !important;
+    cursor: n-resize;
 }

@@ -123,220 +123,235 @@
   <data name="key_showall" xml:space="preserve">
     <value>Show All</value>
   </data>
-  <data name="key_capnhat">
+  <data name="key_capnhat" xml:space="preserve">
     <value>Update</value>
   </data>
-  <data name="key_themmoi">
+  <data name="key_themmoi" xml:space="preserve">
     <value>Add New</value>
   </data>
-  <data name="key_tongquan">
+  <data name="key_tongquan" xml:space="preserve">
     <value>Overview</value>
   </data>
-  <data name="key_templatepdf">
+  <data name="key_templatepdf" xml:space="preserve">
     <value>PDF Template</value>
   </data>
-  <data name="key_thongtinnhavuon">
+  <data name="key_thongtinnhavuon" xml:space="preserve">
     <value>Farm Information</value>
   </data>
-  <data name="key_agent">
+  <data name="key_agent" xml:space="preserve">
     <value>Agent</value>
   </data>
-  <data name="key_truyxuatnguongoc">
+  <data name="key_truyxuatnguongoc" xml:space="preserve">
     <value>Traceability</value>
   </data>
-  <data name="key_of">
+  <data name="key_of" xml:space="preserve">
     <value>of</value>
   </data>
-  <data name="key_donhang">
+  <data name="key_donhang" xml:space="preserve">
     <value>Order</value>
   </data>
-  <data name="key_capnhatsolieu">
+  <data name="key_capnhatsolieu" xml:space="preserve">
     <value>Update Data</value>
   </data>
-  <data name="key_ngonngu">
+  <data name="key_ngonngu" xml:space="preserve">
     <value>Language</value>
   </data>
-  <data name="key_home">
+  <data name="key_home" xml:space="preserve">
     <value>Home</value>
   </data>
-  <data name="key_thongbaoxuatexcel">
+  <data name="key_thongbaoxuatexcel" xml:space="preserve">
     <value>Export Excel successfully</value>
   </data>
-  <data name="key_xuatexcel">
+  <data name="key_xuatexcel" xml:space="preserve">
     <value>Export Excel</value>
   </data>
-  <data name="key_importexcel">
+  <data name="key_importexcel" xml:space="preserve">
     <value>Import Excel</value>
   </data>
-  <data name="key_mauexcel">
+  <data name="key_mauexcel" xml:space="preserve">
     <value>Sample Excel</value>
   </data>
-  <data name="key_thongbaonhapexcel">
+  <data name="key_thongbaonhapexcel" xml:space="preserve">
     <value>Import Excel successfully</value>
   </data>
-  <data name="key_agentinfo">
+  <data name="key_agentinfo" xml:space="preserve">
     <value>Agent Information</value>
   </data>
-  <data name="key_nhaptenfileexcel">
+  <data name="key_nhaptenfileexcel" xml:space="preserve">
     <value>Enter name file excel</value>
   </data>
-  <data name="key_thongtindonhang">
+  <data name="key_thongtindonhang" xml:space="preserve">
     <value>Add new Infomation order</value>
   </data>
-  <data name="key_thongbaonhapexcelthatbai">
+  <data name="key_thongbaonhapexcelthatbai" xml:space="preserve">
     <value>Import Excel failed</value>
   </data>
-  <data name="key_thongbaonhapexcelthanhcong">
+  <data name="key_thongbaonhapexcelthanhcong" xml:space="preserve">
     <value>Import Excel successfully</value>
   </data>
-  <data name="key_thongbaoxuatexcelthanhcong">
+  <data name="key_thongbaoxuatexcelthanhcong" xml:space="preserve">
     <value>Export Excel successfully</value>
   </data>
-  <data name="key_thongbaoxuatexcelthatbai">
+  <data name="key_thongbaoxuatexcelthatbai" xml:space="preserve">
     <value>Export Excel failed</value>
   </data>
-  <data name="key_taodonhangthanhcong">
+  <data name="key_taodonhangthanhcong" xml:space="preserve">
     <value>Order created successfully</value>
   </data>
-  <data name="key_taodonhangthatbai">
+  <data name="key_taodonhangthatbai" xml:space="preserve">
     <value>Order creation failed</value>
   </data>
-  <data name="key_trangthai">
+  <data name="key_trangthai" xml:space="preserve">
     <value>Status</value>
   </data>
-  <data name="key_doitrangthaithanhcong">
+  <data name="key_doitrangthaithanhcong" xml:space="preserve">
     <value>Change status successfully</value>
   </data>
-  <data name="key_doitrangthaithatbai">
+  <data name="key_doitrangthaithatbai" xml:space="preserve">
     <value>Change status failed</value>
   </data>
-  <data name="key_close">
+  <data name="key_close" xml:space="preserve">
     <value>Close</value>
   </data>
-  <data name="key_save">
+  <data name="key_save" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="key_vuilongchon">
+  <data name="key_vuilongchon" xml:space="preserve">
     <value>Please select</value>
   </data>
-  <data name="key_dangxuly">
+  <data name="key_dangxuly" xml:space="preserve">
     <value>Processing</value>
   </data>
-  <data name="key_taodonhang">
+  <data name="key_taodonhang" xml:space="preserve">
     <value>Create Order</value>
   </data>
-  <data name="key_vuilongchontrangthai">
+  <data name="key_vuilongchontrangthai" xml:space="preserve">
     <value>Please select status</value>
   </data>
-  <data name="key_apdung">
+  <data name="key_apdung" xml:space="preserve">
     <value>Apply</value>
   </data>
-  <data name="key_taodonhangmoi">
+  <data name="key_taodonhangmoi" xml:space="preserve">
     <value>Create new order</value>
   </data>
-  <data name="key_loainguyenlieu">
+  <data name="key_loainguyenlieu" xml:space="preserve">
     <value>Ingredient type</value>
   </data>
-  <data name="key_hoso">
+  <data name="key_hoso" xml:space="preserve">
     <value>Profile</value>
   </data>
-  <data name="key_loginemail">
+  <data name="key_loginemail" xml:space="preserve">
     <value>Login with your email</value>
   </data>
-  <data name="key_quenmatkhau">
+  <data name="key_quenmatkhau" xml:space="preserve">
     <value>Forgot Password</value>
   </data>
-  <data name="key_login">
+  <data name="key_login" xml:space="preserve">
     <value>Login</value>
   </data>
-  <data name="key_chuacotaikhoan">
+  <data name="key_chuacotaikhoan" xml:space="preserve">
     <value>Dont have an Account?</value>
   </data>
-  <data name="key_taotaikhoan">
+  <data name="key_taotaikhoan" xml:space="preserve">
     <value>Create Account</value>
   </data>
-  <data name="key_signup">
+  <data name="key_signup" xml:space="preserve">
     <value>Sign up</value>
   </data>
-  <data name="key_dangkytaikhoan">
+  <data name="key_dangkytaikhoan" xml:space="preserve">
     <value>Sign up account</value>
   </data>
-  <data name="key_xoadulieunay">
+  <data name="key_xoadulieunay" xml:space="preserve">
     <value>Delete this data?</value>
   </data>
-  <data name="key_xoathanhcong">
+  <data name="key_xoathanhcong" xml:space="preserve">
     <value>Delete successfully</value>
   </data>
-  <data name="key_xoathatbai">
+  <data name="key_xoathatbai" xml:space="preserve">
     <value>Delete failed</value>
   </data>
-  <data name="key_xoa">
+  <data name="key_xoa" xml:space="preserve">
     <value>Delete</value>
   </data>
-  <data name="key_capnhatdulieuthanhcong">
+  <data name="key_capnhatdulieuthanhcong" xml:space="preserve">
     <value>Update data successfully</value>
   </data>
-  <data name="key_lammoi">
+  <data name="key_lammoi" xml:space="preserve">
     <value>Reload</value>
   </data>
-  <data name="key_Order">
+  <data name="key_Order" xml:space="preserve">
     <value>Order</value>
   </data>
-  <data name="key_Lake">
+  <data name="key_Lake" xml:space="preserve">
     <value>Lake</value>
   </data>
-  <data name="key_setting">
+  <data name="key_setting" xml:space="preserve">
     <value>Setting</value>
   </data>
-  <data name="key_management_info">
+  <data name="key_management_info" xml:space="preserve">
     <value>Information Management</value>
   </data>
-  <data name="key_quanlynguoidung">
+  <data name="key_quanlynguoidung" xml:space="preserve">
     <value>User Management</value>
   </data>
-  <data name="key_orderinfo">
+  <data name="key_orderinfo" xml:space="preserve">
     <value>Order</value>
   </data>
-  <data name="key_nhavuon">
+  <data name="key_nhavuon" xml:space="preserve">
     <value>Farm</value>
   </data>
-  <data name="key_quanlydonhang">
+  <data name="key_quanlydonhang" xml:space="preserve">
     <value>Order Management</value>
   </data>
-  <data name="key_reload">
+  <data name="key_reload" xml:space="preserve">
     <value>Reload</value>
   </data>
-  <data name="key_map">
+  <data name="key_map" xml:space="preserve">
     <value>Map</value>
   </data>
-  <data name="key_tongdaily">
+  <data name="key_tongdaily" xml:space="preserve">
     <value>Total Agent</value>
   </data>
-  <data name="key_tongnhavuon">
+  <data name="key_tongnhavuon" xml:space="preserve">
     <value>Total Farm</value>
   </data>
-  <data name="key_tongsoluongnguyenlieudamua">
+  <data name="key_tongsoluongnguyenlieudamua" xml:space="preserve">
     <value>Total quantity of raw materials purchased</value>
   </data>
-  <data name="key_tongthanhphamdavanchuyen">
+  <data name="key_tongthanhphamdavanchuyen" xml:space="preserve">
     <value>total finished goods shipped</value>
   </data>
-  <data name="key_them">
+  <data name="key_them" xml:space="preserve">
     <value>Add</value>
   </data>
-  <data name="key_tiengviet">
+  <data name="key_tiengviet" xml:space="preserve">
     <value>Vietnamese</value>
   </data>
-  <data name="key_tienganh">
+  <data name="key_tienganh" xml:space="preserve">
     <value>English</value>
   </data>
-  <data name="key_tukhoa">
+  <data name="key_tukhoa" xml:space="preserve">
     <value>Key</value>
   </data>
-  <data name="key_action">
+  <data name="key_action" xml:space="preserve">
     <value>Action</value>
   </data>
-  <data name="key_msgconfirmdelete">
-    <value>Are you sure you want to delete the ${0} selected rows?</value>
+  <data name="key_msgconfirmdelete" xml:space="preserve">
+    <value>Are you sure you want to delete the __0__ selected rows?</value>
+  </data>
+  <data name="key_bancochacchan">
+    <value>Are you sure?</value>
+  </data>
+  <data name="key_yes">
+    <value>Yes</value>
+  </data>
+  <data name="key_cancel">
+    <value>Cancel</value>
+  </data>
+  <data name="key_update">
+    <value>Update</value>
+  </data>
+  <data name="key_delete">
+    <value>Delete</value>
   </data>
 </root>

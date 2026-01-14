@@ -123,220 +123,235 @@
   <data name="key_showall" xml:space="preserve">
     <value>Hiện tất cả</value>
   </data>
-  <data name="key_capnhat">
+  <data name="key_capnhat" xml:space="preserve">
     <value>Cập nhật</value>
   </data>
-  <data name="key_themmoi">
-    <value>Thêm mới.</value>
+  <data name="key_themmoi" xml:space="preserve">
+    <value>Thêm mới</value>
   </data>
-  <data name="key_tongquan">
+  <data name="key_tongquan" xml:space="preserve">
     <value>Tổng quan</value>
   </data>
-  <data name="key_templatepdf">
+  <data name="key_templatepdf" xml:space="preserve">
     <value>PDF Template</value>
   </data>
-  <data name="key_thongtinnhavuon">
+  <data name="key_thongtinnhavuon" xml:space="preserve">
     <value>Thông tin nhà vườn</value>
   </data>
-  <data name="key_agent">
+  <data name="key_agent" xml:space="preserve">
     <value>Đại lý</value>
   </data>
-  <data name="key_truyxuatnguongoc">
+  <data name="key_truyxuatnguongoc" xml:space="preserve">
     <value>Truy xuất nguồn gốc</value>
   </data>
-  <data name="key_of">
+  <data name="key_of" xml:space="preserve">
     <value>của</value>
   </data>
-  <data name="key_donhang">
+  <data name="key_donhang" xml:space="preserve">
     <value>Đơn hàng</value>
   </data>
-  <data name="key_capnhatsolieu">
+  <data name="key_capnhatsolieu" xml:space="preserve">
     <value>Cập nhật số liệu</value>
   </data>
-  <data name="key_ngonngu">
+  <data name="key_ngonngu" xml:space="preserve">
     <value>Ngôn ngữ</value>
   </data>
-  <data name="key_home">
+  <data name="key_home" xml:space="preserve">
     <value>Trang chủ</value>
   </data>
-  <data name="key_thongbaoxuatexcel">
+  <data name="key_thongbaoxuatexcel" xml:space="preserve">
     <value>Xuất Excel thành công</value>
   </data>
-  <data name="key_xuatexcel">
+  <data name="key_xuatexcel" xml:space="preserve">
     <value>Xuất Excel</value>
   </data>
-  <data name="key_importexcel">
+  <data name="key_importexcel" xml:space="preserve">
     <value>Nhập Excel</value>
   </data>
-  <data name="key_mauexcel">
+  <data name="key_mauexcel" xml:space="preserve">
     <value>Mẫu Excel</value>
   </data>
-  <data name="key_thongbaonhapexcel">
+  <data name="key_thongbaonhapexcel" xml:space="preserve">
     <value>Nhập Excel thành công</value>
   </data>
-  <data name="key_agentinfo">
+  <data name="key_agentinfo" xml:space="preserve">
     <value>Thông tin đại lý</value>
   </data>
-  <data name="key_nhaptenfileexcel">
+  <data name="key_nhaptenfileexcel" xml:space="preserve">
     <value>Nhập tên file excel</value>
   </data>
-  <data name="key_thongtindonhang">
+  <data name="key_thongtindonhang" xml:space="preserve">
     <value>Thêm mới thông tin đơn hàng</value>
   </data>
-  <data name="key_thongbaonhapexcelthatbai">
+  <data name="key_thongbaonhapexcelthatbai" xml:space="preserve">
     <value>Nhập Excel thất bại</value>
   </data>
-  <data name="key_thongbaonhapexcelthanhcong">
+  <data name="key_thongbaonhapexcelthanhcong" xml:space="preserve">
     <value>Nhập Excel thành công</value>
   </data>
-  <data name="key_thongbaoxuatexcelthanhcong">
+  <data name="key_thongbaoxuatexcelthanhcong" xml:space="preserve">
     <value>Xuất Excel thành công</value>
   </data>
-  <data name="key_thongbaoxuatexcelthatbai">
+  <data name="key_thongbaoxuatexcelthatbai" xml:space="preserve">
     <value>Xuất Excel thất bại</value>
   </data>
-  <data name="key_taodonhangthanhcong">
+  <data name="key_taodonhangthanhcong" xml:space="preserve">
     <value>Tạo đơn hàng thành công</value>
   </data>
-  <data name="key_taodonhangthatbai">
+  <data name="key_taodonhangthatbai" xml:space="preserve">
     <value>Tạo đơn hàng thất bại</value>
   </data>
-  <data name="key_trangthai">
+  <data name="key_trangthai" xml:space="preserve">
     <value>Trạng thái</value>
   </data>
-  <data name="key_doitrangthaithanhcong">
+  <data name="key_doitrangthaithanhcong" xml:space="preserve">
     <value>Đổi trạng thái thành công</value>
   </data>
-  <data name="key_doitrangthaithatbai">
+  <data name="key_doitrangthaithatbai" xml:space="preserve">
     <value>Đổi trạng thái thất bại</value>
   </data>
-  <data name="key_close">
+  <data name="key_close" xml:space="preserve">
     <value>Đóng</value>
   </data>
-  <data name="key_save">
+  <data name="key_save" xml:space="preserve">
     <value>Lưu</value>
   </data>
-  <data name="key_vuilongchon">
+  <data name="key_vuilongchon" xml:space="preserve">
     <value>Vui lòng chọn</value>
   </data>
-  <data name="key_dangxuly">
+  <data name="key_dangxuly" xml:space="preserve">
     <value>Đang xử lý</value>
   </data>
-  <data name="key_taodonhang">
+  <data name="key_taodonhang" xml:space="preserve">
     <value>Tạo đơn hàng</value>
   </data>
-  <data name="key_vuilongchontrangthai">
+  <data name="key_vuilongchontrangthai" xml:space="preserve">
     <value>Vui lòng chọn trạng thái</value>
   </data>
-  <data name="key_apdung">
+  <data name="key_apdung" xml:space="preserve">
     <value>Áp dụng</value>
   </data>
-  <data name="key_taodonhangmoi">
+  <data name="key_taodonhangmoi" xml:space="preserve">
     <value>Tạo đơn hàng mới</value>
   </data>
-  <data name="key_loainguyenlieu">
+  <data name="key_loainguyenlieu" xml:space="preserve">
     <value>Loại Nguyên liệu</value>
   </data>
-  <data name="key_hoso">
+  <data name="key_hoso" xml:space="preserve">
     <value>Hồ sơ</value>
   </data>
-  <data name="key_loginemail">
+  <data name="key_loginemail" xml:space="preserve">
     <value>Đăng nhập bằng email của bạn</value>
   </data>
-  <data name="key_quenmatkhau">
+  <data name="key_quenmatkhau" xml:space="preserve">
     <value>Quên mật khẩu</value>
   </data>
-  <data name="key_login">
+  <data name="key_login" xml:space="preserve">
     <value>Đăng nhập</value>
   </data>
-  <data name="key_chuacotaikhoan">
+  <data name="key_chuacotaikhoan" xml:space="preserve">
     <value>Bạn chưa có tài khoản?</value>
   </data>
-  <data name="key_taotaikhoan">
+  <data name="key_taotaikhoan" xml:space="preserve">
     <value>Tạo tài khoản</value>
   </data>
-  <data name="key_signup">
+  <data name="key_signup" xml:space="preserve">
     <value>Đăng ký</value>
   </data>
-  <data name="key_dangkytaikhoan">
+  <data name="key_dangkytaikhoan" xml:space="preserve">
     <value>Đăng ký tài khoản</value>
   </data>
-  <data name="key_xoadulieunay">
+  <data name="key_xoadulieunay" xml:space="preserve">
     <value>Xóa dữ liệu này?</value>
   </data>
-  <data name="key_xoathanhcong">
+  <data name="key_xoathanhcong" xml:space="preserve">
     <value>Xóa thành công</value>
   </data>
-  <data name="key_xoathatbai">
+  <data name="key_xoathatbai" xml:space="preserve">
     <value>Xóa thất bại</value>
   </data>
-  <data name="key_xoa">
+  <data name="key_xoa" xml:space="preserve">
     <value>Xóa</value>
   </data>
-  <data name="key_capnhatdulieuthanhcong">
+  <data name="key_capnhatdulieuthanhcong" xml:space="preserve">
     <value>Cập nhật dữ liệu thành công</value>
   </data>
-  <data name="key_lammoi">
+  <data name="key_lammoi" xml:space="preserve">
     <value>Làm mới</value>
   </data>
-  <data name="key_Order">
+  <data name="key_Order" xml:space="preserve">
     <value>Đơn hàng</value>
   </data>
-  <data name="key_Lake">
+  <data name="key_Lake" xml:space="preserve">
     <value>Hồ</value>
   </data>
-  <data name="key_setting">
+  <data name="key_setting" xml:space="preserve">
     <value>Cài đặt</value>
   </data>
-  <data name="key_management_info">
+  <data name="key_management_info" xml:space="preserve">
     <value>Quản Lý Thông Tin</value>
   </data>
-  <data name="key_quanlynguoidung">
+  <data name="key_quanlynguoidung" xml:space="preserve">
     <value>Quản lý người dùng</value>
   </data>
-  <data name="key_orderinfo">
+  <data name="key_orderinfo" xml:space="preserve">
     <value>Đơn hàng</value>
   </data>
-  <data name="key_nhavuon">
+  <data name="key_nhavuon" xml:space="preserve">
     <value>Nhà vườn</value>
   </data>
-  <data name="key_quanlydonhang">
+  <data name="key_quanlydonhang" xml:space="preserve">
     <value>Quản lý đơn hàng</value>
   </data>
-  <data name="key_reload">
+  <data name="key_reload" xml:space="preserve">
     <value>Tải lại</value>
   </data>
-  <data name="key_map">
+  <data name="key_map" xml:space="preserve">
     <value>Bản đồ</value>
   </data>
-  <data name="key_tongdaily">
+  <data name="key_tongdaily" xml:space="preserve">
     <value>Tổng đại lý</value>
   </data>
-  <data name="key_tongnhavuon">
+  <data name="key_tongnhavuon" xml:space="preserve">
     <value>Tổng nhà vườn</value>
   </data>
-  <data name="key_tongsoluongnguyenlieudamua">
+  <data name="key_tongsoluongnguyenlieudamua" xml:space="preserve">
     <value>Tổng số lượng nguyên liệu đã thu mua</value>
   </data>
-  <data name="key_tongthanhphamdavanchuyen">
+  <data name="key_tongthanhphamdavanchuyen" xml:space="preserve">
     <value>Tổng thành phẩm đã vận chuyển</value>
   </data>
-  <data name="key_them">
+  <data name="key_them" xml:space="preserve">
     <value>Thêm</value>
   </data>
-  <data name="key_tiengviet">
+  <data name="key_tiengviet" xml:space="preserve">
     <value>Tiếng việt</value>
   </data>
-  <data name="key_tienganh">
+  <data name="key_tienganh" xml:space="preserve">
     <value>Tiếng anh</value>
   </data>
-  <data name="key_tukhoa">
+  <data name="key_tukhoa" xml:space="preserve">
     <value>Từ khóa</value>
   </data>
-  <data name="key_action">
+  <data name="key_action" xml:space="preserve">
     <value>Hành động</value>
   </data>
-  <data name="key_msgconfirmdelete">
-    <value>Bạn có chắc chắn muốn xóa ${0} dòng đã chọn không?</value>
+  <data name="key_msgconfirmdelete" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa dòng __0__ đã chọn không?</value>
+  </data>
+  <data name="key_bancochacchan">
+    <value>Bạn có chác chắn</value>
+  </data>
+  <data name="key_yes">
+    <value>Đúng</value>
+  </data>
+  <data name="key_cancel">
+    <value>Hủy bỏ</value>
+  </data>
+  <data name="key_update">
+    <value>Cập nhật</value>
+  </data>
+  <data name="key_delete">
+    <value>Xóa</value>
   </data>
 </root>
