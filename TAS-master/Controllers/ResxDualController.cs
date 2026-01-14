@@ -24,6 +24,7 @@ namespace TAS.Controllers
 		[Breadcrumb("key_ngonngu")]
 		public IActionResult LanguageManage()
 		{
+			ViewData["Title"] = _common.GetValueByKey("key_ngonngu");
 			return View();
 		}
 		

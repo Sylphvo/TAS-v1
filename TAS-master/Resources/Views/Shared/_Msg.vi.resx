@@ -315,4 +315,28 @@
   <data name="key_tongnhavuon">
     <value>Tổng nhà vườn</value>
   </data>
+  <data name="key_tongsoluongnguyenlieudamua">
+    <value>Tổng số lượng nguyên liệu đã thu mua</value>
+  </data>
+  <data name="key_tongthanhphamdavanchuyen">
+    <value>Tổng thành phẩm đã vận chuyển</value>
+  </data>
+  <data name="key_them">
+    <value>Thêm</value>
+  </data>
+  <data name="key_tiengviet">
+    <value>Tiếng việt</value>
+  </data>
+  <data name="key_tienganh">
+    <value>Tiếng anh</value>
+  </data>
+  <data name="key_tukhoa">
+    <value>Từ khóa</value>
+  </data>
+  <data name="key_action">
+    <value>Hành động</value>
+  </data>
+  <data name="key_msgconfirmdelete">
+    <value>Bạn có chắc chắn muốn xóa ${0} dòng đã chọn không?</value>
+  </data>
 </root>

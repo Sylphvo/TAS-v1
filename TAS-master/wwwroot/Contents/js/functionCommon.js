@@ -24,6 +24,25 @@ const Toast = Swal.mixin({
 function NotificationToast(icon, title) {
     Toast.fire({ icon: icon, title: title });
 }
+///function ToastConfirm(icon, title) {
+    //Swal.fire({
+    //    title: "Are you sure?",
+    //    text: "You won't be able to revert this!",
+    //    icon: "warning",
+    //    showCancelButton: true,
+    //    confirmButtonColor: "#3085d6",
+    //    cancelButtonColor: "#d33",
+    //    confirmButtonText: "Yes, delete it!"
+    //}).then((result) => {
+    //    if (result.isConfirmed) {
+    //        Swal.fire({
+    //            title: "Deleted!",
+    //            text: "Your file has been deleted.",
+    //            icon: "success"
+    //        });
+    //    }
+    //});
+//}
 // Các hằng số cho Traceability
 var arrConstant = {
     SortOrder_Lot: 1, // Order
@@ -4103,7 +4122,7 @@ function ApplyCboSelect2() {
 function RenderComboBox(arrlstData, idElemnt, selectFirst) {
     let ComboBoxHtml = "";
     if (selectFirst) {
-        ComboBoxHtml += `<option value="*">${arrMsg.key_vuilongchon}</option>`;
+        //ComboBoxHtml += `<option value="*">${arrMsg.key_vuilongchon}</option>`;
     }
     arrlstData.forEach((item, index) => {
         ComboBoxHtml += `<option value="${item.value}">${item.text}</option>`;
@@ -4144,4 +4163,128 @@ function closeModal(idModal, idForm) {
         $('#' + idModal).fadeOut(300).hide();
     };
     if (!IsNullOrEmpty(idForm)) { $('#' + idForm)[0].reset() };
+}
+function loadChartOverview(idElement, type) {
+    let objectChart;
+    if (type == 'overview') {
+        objectChart = {
+            chart: {
+                height: 320,
+                type: 'donut'
+            },
+            series: [objectAgent.total, objectFarm.total],
+            colors: [objectAgent.color, objectFarm.color],
+            labels: [arrMsg.key_tongdaily, arrMsg.key_tongnhavuon],
+            fill: {
+                opacity: [1, 1, 1, 0.3]
+            },
+            legend: {
+                show: false
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '65%',
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true
+                            },
+                            value: {
+                                show: true
+                            }
+                        }
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            responsive: [
+                {
+                    breakpoint: 575,
+                    options: {
+                        chart: {
+                            height: 250
+                        },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    size: '65%',
+                                    labels: {
+                                        show: false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+
+    }
+    else if (type == 'sale') {
+        objectChart = {
+            chart: {
+                type: 'bar',
+                height: 430,
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+                bar: {
+                    columnWidth: '40%',
+                    borderRadius: 4
+                }
+            },
+            stroke: {
+                show: true,
+                width: 8,
+                colors: ['transparent']
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'right',
+                show: true,
+                fontFamily: `'Public Sans', sans-serif`,
+                offsetX: 10,
+                offsetY: 10,
+                labels: {
+                    useSeriesColors: false
+                },
+                markers: {
+                    width: 10,
+                    height: 10,
+                    radius: '50%',
+                    offsexX: 2,
+                    offsexY: 2
+                },
+                itemMargin: {
+                    horizontal: 15,
+                    vertical: 5
+                }
+            },
+            colors: ['#E58A00', '#4680FF'],
+            series: [
+                {
+                    name: arrMsg.key_tongsoluongnguyenlieudamua,
+                    data: [180, 90, 135, 114, 120, 145]
+                },
+                {
+                    name: arrMsg.key_tongthanhphamdavanchuyen,
+                    data: [120, 45, 78, 150, 168, 99]
+                }
+            ],
+            xaxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+            }
+        };
+    }
+    
+    var chart = new ApexCharts(document.querySelector('#' + idElement), objectChart);
+    chart.render();
 }

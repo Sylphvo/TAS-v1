@@ -767,6 +767,7 @@
   <ItemGroup>
     <None Include="TAS.sln" />
     <None Include="Views\Home\GeoJson.cshtml" />
+    <None Include="wwwroot\assets\js\widgets\sales-report-chart.js" />
   </ItemGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>

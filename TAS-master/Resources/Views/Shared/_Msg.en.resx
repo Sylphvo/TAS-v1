@@ -315,4 +315,28 @@
   <data name="key_tongnhavuon">
     <value>Total Farm</value>
   </data>
+  <data name="key_tongsoluongnguyenlieudamua">
+    <value>Total quantity of raw materials purchased</value>
+  </data>
+  <data name="key_tongthanhphamdavanchuyen">
+    <value>total finished goods shipped</value>
+  </data>
+  <data name="key_them">
+    <value>Add</value>
+  </data>
+  <data name="key_tiengviet">
+    <value>Vietnamese</value>
+  </data>
+  <data name="key_tienganh">
+    <value>English</value>
+  </data>
+  <data name="key_tukhoa">
+    <value>Key</value>
+  </data>
+  <data name="key_action">
+    <value>Action</value>
+  </data>
+  <data name="key_msgconfirmdelete">
+    <value>Are you sure you want to delete the ${0} selected rows?</value>
+  </data>
 </root>

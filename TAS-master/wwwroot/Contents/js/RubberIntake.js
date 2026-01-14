@@ -451,7 +451,7 @@ async function deleteSelected() {
         NotificationToast('warning', 'Vui lòng chọn các dòng cần xóa');
         return;
     }
-    
+
     if (!confirm(`Bạn có chắc muốn xóa ${selectedRows.length} dòng đã chọn?`)) {
         return;
     }

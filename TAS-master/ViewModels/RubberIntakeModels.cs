@@ -279,15 +279,11 @@ namespace TAS.ViewModels
 		{
 			try
 			{
-				var sql = @"
-                    DELETE FROM RubberIntake 
-                    WHERE IntakeId IN @IntakeIds
-                    AND NOT EXISTS (
-                        SELECT 1 FROM RubberPondIntake 
-                        WHERE IntakeId = RubberIntake.IntakeId
-                    )
-                ";
-
+				var ids = string.Join(",", intakeIds);
+				var sql = $@"
+				DELETE FROM RubberIntake
+				WHERE IntakeId IN ({ids})
+				";
 				return _dbHelper.Execute(sql, new { IntakeIds = intakeIds });
 			}
 			catch (Exception ex)

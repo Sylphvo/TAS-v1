@@ -58,53 +58,33 @@
                             </h6>
                         </div>
                     </div>
-                    <div class="col-sm-6">
-                        <div class="bg-body p-3 rounded">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="flex-shrink-0">
-                                    <span class="p-1 d-block bg-success rounded-circle">
-                                        <span class="visually-hidden"> New alerts </span>
-                                    </span>
-                                </div>
-                                <div class="flex-grow-1 ms-2">
-                                    <p class="mb-0">
-                                        @objectReportIn.Label
-                                    </p>
-                                </div>
-                            </div>
-                            <h6 class="mb-0">@objectReportIn.Total</h6>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="bg-body p-3 rounded">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="flex-shrink-0">
-                                    <span class="p-1 d-block bg-light-primary rounded-circle">
-                                        <span class="visually-hidden"> New alerts </span>
-                                    </span>
-                                </div>
-                                <div class="flex-grow-1 ms-2">
-                                    <p class="mb-0">
-                                        @objectReportOut.Label
-                                    </p>
-                                </div>
-                            </div>
-                            <h6 class="mb-0">@objectReportOut.Total</h6>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="col-md-6 col-xl-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="mb-3">Sales Report</h5>
+                <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
+                <h3 class="mb-0">$7,650</h3>
+                <div id="sales-report-chart"></div>
+            </div>
+        </div>
+    </div>
+    
 </div>
 
 <!-- [ Main Content ] end -->
 
+<script src="../assets/js/plugins/apexcharts.min.js"></script> 
 <script>
     var objectAgent = @Json.Serialize(objectAgent);
     var objectFarm = @Json.Serialize(objectFarm);
     var objectReportIn = @Json.Serialize(objectReportIn);
     var objectReportOut = @Json.Serialize(objectReportOut);
+    setTimeout(function () {
+        //loadChartOverview('total-income-graph', 'overview');
+        //loadChartOverview('sales-report-chart', 'sale');
+    }, 500);
 </script>
-<script src="../assets/js/plugins/apexcharts.min.js"></script> 
-<script src="../assets/js/widgets/total-income-graph.js"></script>

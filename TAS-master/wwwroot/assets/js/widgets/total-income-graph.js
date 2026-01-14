@@ -6,9 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
 				height: 320,
 				type: 'donut'
 			},
-			series: [objectAgent.total, objectFarm.total, objectReportIn.total, objectReportOut.total],
-			colors: [objectAgent.color, objectFarm.color, objectReportIn.color, objectReportOut.color],
-			labels: [objectAgent.label, objectFarm.label, objectReportIn.label, objectReportOut.label],	
+			series: [objectAgent.total, objectFarm.total],
+			colors: [objectAgent.color, objectFarm.color],
+			labels: [objectAgent.label, objectFarm.label],	
 			fill: {
 				opacity: [1, 1, 1, 0.3]
 			},
