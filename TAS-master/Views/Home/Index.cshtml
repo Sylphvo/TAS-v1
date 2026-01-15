@@ -1,4 +1,5 @@
-﻿@{
+﻿@using TAS.Resources
+@{
     var listData = ((IEnumerable<dynamic>)ViewBag.TotalSystem);
     var objectAgent = listData.Where(x => x.Type == "AGENT").ToList().FirstOrDefault();
     var objectFarm = listData.Where(x => x.Type == "FARM").ToList().FirstOrDefault();
@@ -10,7 +11,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0" data-i18n="key_tongquan"></h5>
+                    <h5 class="mb-0">@Language.key_tongquan</h5>
                     <div class="dropdown">
                         <a class="avtar avtar-s btn-link-secondary dropdown-toggle arrow-none" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="ti ti-dots-vertical f-18"></i>
@@ -33,7 +34,7 @@
                                     </span>
                                 </div>
                                 <div class="flex-grow-1 ms-2">
-                                    <p class="mb-0"><span class="pc-mtext" data-i18n="key_tongdaily"></span></p>
+                                    <p class="mb-0"><span class="pc-mtext">@Language.key_tongdaily</span></p>
                                 </div>
                             </div>
                             <h6 class="mb-0">
@@ -50,7 +51,7 @@
                                     </span>
                                 </div>
                                 <div class="flex-grow-1 ms-2">
-                                    <p class="mb-0"><span class="pc-mtext" data-i18n="key_tongnhavuon"></span></p>
+                                    <p class="mb-0"><span class="pc-mtext">@Language.key_tongnhavuon</span></p>
                                 </div>
                             </div>
                             <h6 class="mb-0">
@@ -65,9 +66,9 @@
     <div class="col-md-6 col-xl-6">
         <div class="card">
             <div class="card-body">
-                <h5 class="mb-3">Sales Report</h5>
-                <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
-                <h3 class="mb-0">$7,650</h3>
+                <h5 class="mb-3">Báo cáo </h5>
+              @*   <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
+                <h3 class="mb-0">$7,650</h3> *@
                 <div id="sales-report-chart"></div>
             </div>
         </div>

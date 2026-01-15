@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TAS.ConstantVaribles;
 using TAS.DTOs;
+using TAS.Resources;
 using TAS.ViewModels;
 
 namespace TAS.Controllers
@@ -21,7 +23,7 @@ namespace TAS.Controllers
 		[Breadcrumb("key_capnhatsolieu")]
 		public IActionResult Index()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_capnhatsolieu");
+			ViewData["Title"] = Language.key_capnhatsolieu;
 			ViewBag.ComboAgent = _common.ComboAgent();
 			ViewBag.ComboFarmCode = _common.ComboFarmCode();
 			ViewBag.ComboOrder = _common.ComboOrderCode();
@@ -150,7 +152,7 @@ namespace TAS.Controllers
 				if (result > 0)
 					return Json(new { success = true, message = $"Đã xóa {result} bản ghi" });
 
-				return Json(new { success = false, message = "Xóa thất bại" });
+				return Json(new { success = false, message = MsgReponses.DeleteFail });
 			}
 			catch (Exception ex)
 			{

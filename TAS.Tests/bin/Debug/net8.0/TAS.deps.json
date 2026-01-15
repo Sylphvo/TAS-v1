@@ -27,17 +27,8 @@
           "TAS.dll": {}
         },
         "resources": {
-          "en-US/TAS.resources.dll": {
-            "locale": "en-US"
-          },
-          "vi-VN/TAS.resources.dll": {
-            "locale": "vi-VN"
-          },
           "en/TAS.resources.dll": {
             "locale": "en"
-          },
-          "vi/TAS.resources.dll": {
-            "locale": "vi"
           }
         }
       },

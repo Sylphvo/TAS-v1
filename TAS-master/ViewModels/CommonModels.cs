@@ -16,14 +16,15 @@ namespace TAS.ViewModels
 		private readonly string _enPath;
 		private readonly string _msgViewPath;
 		private readonly ILanguageService _lang;
+		private readonly string fileName = "Language";
 		public CommonModels(ILogger<CommonModels> logger, IWebHostEnvironment env, ILanguageService lang)
 		{
-			var root = Path.Combine(env.ContentRootPath, "Resources", "Views", "Shared");
+			var root = Path.Combine(env.ContentRootPath, "Resources");
 			_dbHelper = new ConnectDbHelper();
 			_logger = logger;
-			_viPath = Path.Combine(root, "_Msg.vi.resx");
-			_enPath = Path.Combine(root, "_Msg.en.resx");
-			_msgViewPath = Path.Combine(env.ContentRootPath, "Views", "Shared", "_Msg.cshtml");
+			_viPath = Path.Combine(root, fileName + ".vi.resx");
+			_enPath = Path.Combine(root, fileName + ".en.resx");
+			_msgViewPath = Path.Combine(env.ContentRootPath, fileName + ".cshtml");
 			_lang = lang;
 		}
 

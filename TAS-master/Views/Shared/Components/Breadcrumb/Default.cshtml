@@ -13,11 +13,10 @@
                 <ul class="breadcrumb">
                     @foreach (var c in crumbs)
                     {
-                        @* <li class="breadcrumb-item"><a href="https://ableproadmin.com/dashboard/index.html">Home</a></li> *@
                         <li class="breadcrumb-item" aria-current="page">
                             @if (!string.IsNullOrEmpty(c.Url))
                             {
-                                <a href="@c.Url" data-i18n="@c.Key_language">@c.Title</a>
+                                <a href="@c.Url">@c.Key_language</a>
                             }
                             else
                             {
@@ -31,7 +30,7 @@
             </div>
             <div class="col-md-12">
                 <div class="page-header-title">
-                    <h2 class="mb-0" data-i18n="@(crumbs.LastOrDefault().Key_language)"></h2>
+                    <h2 class="mb-0">@(crumbs.LastOrDefault().Key_language)</h2>
                 </div>
             </div>
         </div>

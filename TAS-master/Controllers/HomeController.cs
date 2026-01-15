@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TAS.Resources;
 using TAS.ViewModels;
 using static Azure.Core.HttpHeader;
 
@@ -16,7 +17,7 @@ namespace TAS.Controllers
 		// GET: Products
 		public IActionResult Index()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_tongquan");
+			ViewData["Title"] = Language.key_tongquan;
 			ViewBag.TotalSystem = _common.TotalReportSystem();
 			return View();
 		}
@@ -39,8 +40,14 @@ namespace TAS.Controllers
 		[Breadcrumb("key_map")]
 		public IActionResult GeoJson()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_map");
+			ViewData["Title"] = Language.key_map;
 			return View();
 		}
+		//[Breadcrumb("key_menu")]
+		//public IActionResult LoadMenu()
+		//{
+		//	ViewData["Title"] = _common.GetValueByKey("key_map");
+		//	return View();
+		//}
 	}
 }

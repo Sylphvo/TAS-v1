@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Remove="Common\**" />
+    <Compile Remove="Resources\Views\**" />
     <Compile Remove="Views\RubberGarden\**" />
     <Compile Remove="Views\Shared\Modal\**" />
     <Compile Remove="wwwroot\Contents\css\RubberGarden\**" />
@@ -19,6 +20,7 @@
     <Compile Remove="wwwroot\css\RubberGarden\**" />
     <Compile Remove="wwwroot\css\Traceability\**" />
     <Content Remove="Common\**" />
+    <Content Remove="Resources\Views\**" />
     <Content Remove="Views\RubberGarden\**" />
     <Content Remove="Views\Shared\Modal\**" />
     <Content Remove="wwwroot\Contents\css\RubberGarden\**" />
@@ -29,6 +31,7 @@
     <Content Remove="wwwroot\css\RubberGarden\**" />
     <Content Remove="wwwroot\css\Traceability\**" />
     <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Resources\Views\**" />
     <EmbeddedResource Remove="Views\RubberGarden\**" />
     <EmbeddedResource Remove="Views\Shared\Modal\**" />
     <EmbeddedResource Remove="wwwroot\Contents\css\RubberGarden\**" />
@@ -39,6 +42,7 @@
     <EmbeddedResource Remove="wwwroot\css\RubberGarden\**" />
     <EmbeddedResource Remove="wwwroot\css\Traceability\**" />
     <None Remove="Common\**" />
+    <None Remove="Resources\Views\**" />
     <None Remove="Views\RubberGarden\**" />
     <None Remove="Views\Shared\Modal\**" />
     <None Remove="wwwroot\Contents\css\RubberGarden\**" />
@@ -53,7 +57,13 @@
   <ItemGroup>
     <Compile Remove="Controllers\AccounttempController.cs" />
     <Compile Remove="Controllers\RubberGardenController.cs" />
+    <Compile Remove="Resources\LanguageLocalizer.cs" />
     <Compile Remove="ViewModels\RubberGardenModels.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Resources\LanguageLocalizer.en.resx" />
+    <EmbeddedResource Remove="Resources\LanguageLocalizer.vi.resx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -768,6 +778,21 @@
     <None Include="TAS.sln" />
     <None Include="Views\Home\GeoJson.cshtml" />
     <None Include="wwwroot\assets\js\widgets\sales-report-chart.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Language.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Language.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Language.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Language.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>

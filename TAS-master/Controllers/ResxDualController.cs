@@ -10,15 +10,14 @@ namespace TAS.Controllers
 	public class ResxDualController : Controller
 	{
 		private readonly CommonModels _common;
-		private readonly string _viPath;
-		private readonly string _enPath;
-		private readonly string _msgViewPath;
+		private readonly string _viPath, _enPath, _defaultPath, _msgViewPath, fileName = "Language";
 		public ResxDualController(IWebHostEnvironment env, CommonModels commonModels)
 		{
-			var root = Path.Combine(env.ContentRootPath, "Resources", "Views", "Shared");
-			_viPath = Path.Combine(root, "_Msg.vi.resx");
-			_enPath = Path.Combine(root, "_Msg.en.resx");
-			_msgViewPath = Path.Combine(env.ContentRootPath, "Views", "Shared", "_Msg.cshtml");
+			var root = Path.Combine(env.ContentRootPath, "Resources");
+			_viPath = Path.Combine(root, fileName + ".vi.resx");
+			_enPath = Path.Combine(root, fileName + ".en.resx");
+			_defaultPath = Path.Combine(root, fileName + ".resx");
+			_msgViewPath = Path.Combine(env.ContentRootPath, fileName + ".cshtml");
 			_common = commonModels;
 		}
 		[Breadcrumb("key_ngonngu")]
@@ -61,25 +60,17 @@ namespace TAS.Controllers
 		[HttpPost]
 		public IActionResult Create([FromBody] ResxDualItem req)
 		{
-			var vi = LoadXml(_viPath);
-			var en = LoadXml(_enPath);
-			bool exist = vi.Elements("data")
-				.Any(x => x.Attribute("name")!.Value == req.key);
+			var vi = LoadXml(_viPath); var en = LoadXml(_enPath); var defaultLanguage = LoadXml(_defaultPath);
+			bool exist = vi.Elements("data").Any(x => x.Attribute("name")!.Value == req.key);
 
 			if (exist)
 				return BadRequest("Key đã tồn tại.");
 
-			vi.Add(new XElement("data",
-				new XAttribute("name", req.key ?? ""),
-				new XElement("value", req.vi ?? "")
-			));
-			en.Add(new XElement("data",
-				new XAttribute("name", req.key ?? ""),
-				new XElement("value", req.en ?? "")
-			));
+			vi.Add(new XElement("data", new XAttribute("name", req.key ?? ""), new XElement("value", req.vi ?? "")));
+			en.Add(new XElement("data", new XAttribute("name", req.key ?? ""), new XElement("value", req.en ?? "")));
+			defaultLanguage.Add(new XElement("data", new XAttribute("name", req.key ?? ""), new XElement("value", req.en ?? "")));
 
-			vi.Save(_viPath);
-			en.Save(_enPath);
+			vi.Save(_viPath); en.Save(_enPath); defaultLanguage.Save(_defaultPath);
 			RegenerateMsgFile();
 
 			return Json(req);
@@ -89,14 +80,14 @@ namespace TAS.Controllers
 		[HttpPost]
 		public IActionResult Update([FromBody] ResxDualItem req)
 		{
-			var vi = LoadXml(_viPath);
-			var en = LoadXml(_enPath);
+			var vi = LoadXml(_viPath); var en = LoadXml(_enPath);var defaultLanguage = LoadXml(_defaultPath);
 			// VI update
-			var viNode = vi.Elements("data")
-				.FirstOrDefault(x => x.Attribute("name")!.Value == req.key);
+			var viNode = vi.Elements("data").FirstOrDefault(x => x.Attribute("name")!.Value == req.key);
+			var defaultNode = defaultLanguage.Elements("data").FirstOrDefault(x => x.Attribute("name")!.Value == req.key);
 
 			if (viNode != null)
 				viNode.Element("value")!.Value = req.vi ?? "";
+				defaultNode.Element("value")!.Value = req.vi ?? "";
 
 			// EN update
 			var enNode = en.Elements("data")
@@ -105,9 +96,9 @@ namespace TAS.Controllers
 			if (enNode != null)
 				enNode.Element("value")!.Value = req.en ?? "";
 
-			vi.Save(_viPath);
-			en.Save(_enPath);
+			vi.Save(_viPath); en.Save(_enPath); defaultLanguage.Save(_defaultPath);
 			RegenerateMsgFile();
+
 			return Json(req);
 		}
 
@@ -115,18 +106,15 @@ namespace TAS.Controllers
 		[HttpPost]
 		public IActionResult Delete([FromBody] ResxDualItem req)
 		{
-			var vi = LoadXml(_viPath);
-			var en = LoadXml(_enPath);
-			vi.Elements("data")
-				.Where(x => x.Attribute("name")!.Value == req.key)
-				.Remove();
+			var vi = LoadXml(_viPath); var en = LoadXml(_enPath); var defaultLanguage = LoadXml(_defaultPath);
 
-			en.Elements("data")
-				.Where(x => x.Attribute("name")!.Value == req.key)
-				.Remove();
-			vi.Save(_viPath);
-			en.Save(_enPath);
+			vi.Elements("data").Where(x => x.Attribute("name")!.Value == req.key).Remove();
+			en.Elements("data").Where(x => x.Attribute("name")!.Value == req.key).Remove();
+			defaultLanguage.Elements("data").Where(x => x.Attribute("name")!.Value == req.key).Remove();
+
+			vi.Save(_viPath); en.Save(_enPath); defaultLanguage.Save(_defaultPath);
 			RegenerateMsgFile();
+
 			return Json(new { success = true });
 		}
 		public XElement LoadXml(string path) => XElement.Load(path);
@@ -138,20 +126,14 @@ namespace TAS.Controllers
 
 			var sb = new System.Text.StringBuilder();
 
-			sb.AppendLine(@"@using Microsoft.Extensions.Localization
-@inject Microsoft.Extensions.Localization.IStringLocalizer<TAS.Resources.SharedResource> localizerShared
-@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
-			");
+			sb.AppendLine(@"@using TAS.Resources");
 			sb.AppendLine("<script>");
 			sb.AppendLine("var arrMsg = {");
-
 			foreach (var key in keys)
 			{
-				sb.AppendLine($"	{key}: '@localizer[\"{key}\"]',");
+				sb.AppendLine($"	{key}: ''@Html.Raw(@Language.\"{key}\")'");
 			}
-
 			sb.AppendLine("};");
-			sb.AppendLine("document.querySelectorAll(\"[data-i18n]\").forEach(el => {\r\n\tconst key = el.getAttribute(\"data-i18n\");\r\n\tif (arrMsg[key]) {\r\n\t\tel.textContent = arrMsg[key];\r\n\t}\r\n});");
 			sb.AppendLine("</script>");
 			System.IO.File.WriteAllText(_msgViewPath, sb.ToString());
 		}

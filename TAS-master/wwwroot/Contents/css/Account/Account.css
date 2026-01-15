@@ -24,3 +24,6 @@
 		background-color: #066fd1;
 		color: #fff;
 	}
+.form-control{
+	padding:8px !important;
+}

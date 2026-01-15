@@ -7,9 +7,9 @@ public interface IBreadcrumbService
 }
 public class BreadcrumbService : IBreadcrumbService
 {
-	private readonly IStringLocalizer<SharedResource> _localizer;
+	private readonly IStringLocalizer<Language> _localizer;
 
-	public BreadcrumbService(IStringLocalizer<SharedResource> localizer)
+	public BreadcrumbService(IStringLocalizer<Language> localizer)
 	{
 		_localizer = localizer;
 	}

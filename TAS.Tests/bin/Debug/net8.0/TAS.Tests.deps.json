@@ -2079,14 +2079,8 @@
           "en/TAS.resources.dll": {
             "locale": "en"
           },
-          "en-US/TAS.resources.dll": {
-            "locale": "en-US"
-          },
           "vi/TAS.resources.dll": {
             "locale": "vi"
-          },
-          "vi-VN/TAS.resources.dll": {
-            "locale": "vi-VN"
           }
         }
       }
