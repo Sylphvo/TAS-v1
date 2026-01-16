@@ -20,10 +20,9 @@
 .ag-cell .ag-selection-checkbox {
     order: 1;
 }
-.ag-header-cell .ag-checkbox-input-wrapper {
-    margin-left: 10px;
-}
-.ag-row-drag, .ag-selection-checkbox{
+
+
+.ag-row-drag, .ag-selection-checkbox {
     margin: 0 4px;
 }
 /*.ag-header-cell[col-id="maNhaVuon"] {
@@ -242,13 +241,15 @@ div.ag-cell-value:not(div[col-id="ag-Grid-AutoColumn"]) {
 .ag-cell-highlight {
     background-color: #51515126 !important;
 }
-.ag-cell-range-selected-1:not(.ag-cell-focus), .ag-root:not(.ag-context-menu-open) .ag-body-viewport:not(.ag-has-focus) .ag-cell-range-selected-1:not(.ag-cell-inline-editing) {
-    border: 3px solid #066fd1 !important;
+.ag-cell-range-selected-1:not(.ag-cell-focus), .ag-root:not(.ag-context-menu-open) .ag-body-viewport:not(.ag-has-focus) .ag-cell-range-selected-1:not(.ag-cell-inline-editing), .ag-root:not(.ag-context-menu-open) .ag-body-viewport:not(.ag-has-focus) .ag-cell-range-selected-1:not([col-id="rowNo"]) {
+    border: 2px solid #066fd1 !important;
     border-radius: 3px;
     border-left-width: 2px !important;
     border-right-width: 2px !important;
     border-bottom-width: 2px !important;
+    border-top-width: 2px !important;
 }
+
 .ag-ltr .ag-cell-range-single-cell {
     border: 1px solid #918f8f !important;
 }
@@ -879,11 +880,12 @@ div[col-id="orderId"]{
     margin-top: 0 !important;
 }
 .ag-ltr .ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-ltr .ag-cell-range-single-cell, .ag-ltr .ag-cell-range-single-cell.ag-cell-range-handle, .ag-ltr .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected), .ag-ltr .ag-full-width-row.ag-row-focus:focus .ag-cell-wrapper.ag-row-group, .ag-rtl .ag-cell-focus:not(.ag-cell-range-selected):focus-within, .ag-rtl .ag-cell-range-single-cell, .ag-rtl .ag-cell-range-single-cell.ag-cell-range-handle, .ag-rtl .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected), .ag-rtl .ag-full-width-row.ag-row-focus:focus .ag-cell-wrapper.ag-row-group {
-    border: 3px solid #066fd1 !important;
+    border: 2px solid #066fd1 !important;
     border-radius: 3px;
     border-left-width: 2px !important;
     border-right-width: 2px !important;
     border-bottom-width: 2px !important;
+    border-top-width: 2px !important;
 }
 /* Border khi kéo chọn */
 .ag-theme-alpine .ag-cell-range-selected {
@@ -906,4 +908,82 @@ div[col-id="orderId"]{
 .ag-fill-handle {
     border: 3px solid #066fd1 !important;
     cursor: n-resize;
+}
+/* ========= CHECKBOX =========*/
+.ag-checkbox-input-wrapper {
+	width: 18px;
+	height: 18px;
+	border: 1px solid #6b7280;
+	border-radius: 4px;
+	background: #066fd100;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: all .15s ease;
+	font-size: 13px;
+}
+    .ag-checkbox-input-wrapper.ag-checked {
+        border: 1px solid #066fd1 !important;
+    }
+    .ag-checkbox-input-wrapper.ag-indeterminate {
+        border: 1px solid #bdbebf !important;
+    }
+
+.ag-header-cell .ag-checkbox-input-wrapper::before,
+.ag-header-cell .ag-checkbox-input-wrapper::after {
+    color: #00000000 !important;
+}
+.ag-checkbox-input-wrapper.ag-indeterminate::after {
+    color: #fff !important;
+    background: #066fd1 !important;
+    border: 1px solid #066fd1;
+}
+.ag-checkbox-input-wrapper.ag-indeterminate::before {
+    color: #fff !important;
+    background: #bdbebf !important;
+    border: 1px solid #bdbebf;
+}
+
+
+
+
+.ag-header-cell .ag-checkbox-input-wrapper.ag-checked::before,
+.ag-header-cell .ag-checkbox-input-wrapper.ag-checked::after {
+    color: #fff !important;
+    background: #066fd1 !important;
+    border: 1px solid #066fd1;
+    opacity: 0.8;
+}
+.ag-cell-wrapper .ag-checkbox-input-wrapper::before,
+.ag-cell-wrapper .ag-checkbox-input-wrapper::after {
+    color: #00000000 !important;
+
+}
+.ag-cell-wrapper .ag-checkbox-input-wrapper.ag-checked::before,
+.ag-cell-wrapper .ag-checkbox-input-wrapper.ag-checked::after {
+    color: #fff !important;
+    background: #066fd1 !important;
+    border: 1px solid #066fd1;
+}
+div[col-id="selected"] .ag-header-cell .ag-checkbox-input-wrapper {
+    margin-left: 0px !important;
+}
+div[col-id="selected"] span[class="ag-cell-value"]{
+    display:none;
+}
+.ag-ltr .ag-header-select-all{
+    margin-right: 0 !important;
+}
+
+/* ========= CUSTOM CHECKBOX =========*/
+/* ========= ẩn sao chép =========*/
+div[col-id="rowNo"] .ag-fill-handle,
+div[col-id="agentName"] .ag-fill-handle,
+div[col-id="farmerName"] .ag-fill-handle
+{
+    display: none;
+}
+/* ========= CUSTOM CHECKBOX =========*/
+.ag-header-group-cell-label, .ag-header-cell-label {
+    justify-content: center !important;
 }

@@ -1,4 +1,5 @@
-﻿@{
+﻿@using TAS.Resources
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -14,22 +15,22 @@
                         <!-- Left side: Filters -->
                         <div class="button_filter">
                             <div class="divboxOrder">
-                                <label data-i18n="key_agent"></label>
+                                <label>@Language.key_agent</label>
                                 <select id="cboAgent" class="form-control form-control-sm cboSelect2Search"></select>
                             </div>
 
                             <div class="divboxOrder">
-                                <label data-i18n="key_nhavuon"></label>
+                                <label>@Language.key_nhavuon</label>
                                 <select id="cboFarm" class="form-control form-control-sm cboSelect2Search"></select>
                             </div>
 
                             <div class="divboxOrder">
-                                <label data-i18n="key_donhang">:</label>
+                                <label>@Language.key_donhang</label>
                                 <select id="cboOrder" class="form-control form-control-sm cboSelect2Search"></select>
                             </div>
 
                             <div class="divboxOrder">
-                                <label data-i18n="key_trangthai">:</label>
+                                <label>@Language.key_trangthai</label>
                                 <select id="cboStatus" class="form-control form-control-sm cboSelect2NoSearch" style="width: 150px">
                                     <option value="">Vui lòng chọn</option>
                                     <option value="0">Chưa duyệt</option>
@@ -49,11 +50,11 @@
                         <!-- Right side: Actions -->
                         <div class="datatable-actions">
                             <button type="button" class="btn btn-custom-tas btn-sm" onclick="addNewRow()">
-                                <i class="fas fa-plus"></i> <span data-i18n="key_themmoi"></span>
+                                <i class="fas fa-plus"></i> <span>@Language.key_themmoi</span>
                             </button>
-                            <button type="button" class="btn btn-custom-tas btn-sm" onclick="saveAll()">
+                            @* <button type="button" class="btn btn-custom-tas btn-sm" onclick="saveAll()">
                                 <i class="fas fa-save"></i> Lưu tất cả
-                            </button>
+                            </button> *@
                             <button type="button" class="btn btn-custom-tas btn-sm" onclick="approveAll()">
                                 <i class="fas fa-check"></i> Duyệt tất cả
                             </button>
@@ -61,10 +62,10 @@
                                 <i class="fas fa-trash"></i> Xóa đã chọn
                             </button>
                             <button type="button" class="btn btn-custom-tas btn-sm" onclick="importExcel()">
-                                <i class="fas fa-file-import"></i> <span data-i18n="key_importexcel"></span>
+                                <i class="fas fa-file-import"></i> <span>@Language.key_importexcel</span>
                             </button>
                             <button type="button" class="btn btn-custom-tas btn-sm" onclick="exportExcel()">
-                                <i class="fas fa-file-export"></i> <span data-i18n="key_xuatexcel"></span>
+                                <i class="fas fa-file-export"></i> <span>@Language.key_xuatexcel</span>
                             </button>
                             <button type="button" class="btn btn-custom-tas btn-sm" onclick="reloadPage()">
                                 <i class="fas fa-sync-alt"></i> Reload
@@ -112,7 +113,7 @@
             loadData();
             // Setup filter change events
             loadAllCombos();
-            RegisterCheckAll();
+            
             //đăng ký select trang
             $('#selectorPaging').change(function (e) {
                 let selectPage = $(this).val();
@@ -121,6 +122,7 @@
             });
             setTimeout(() => {
                 ApplyCboSelect2();
+                RegisterCheckAll();
             }, 1000);
 
             $('#cboAgent,#cboFarm,#cboOrder,#cboStatus').change(function (e) {

@@ -15,6 +15,7 @@ namespace TAS.Controllers
 			_common = common;
 		}
 		// GET: Products
+		[Breadcrumb(nameof(Language.key_tongquan), "#", false)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = Language.key_tongquan;

@@ -31,17 +31,31 @@ const gridOptions = {
     // Column Definitions
     columnDefs: [
         {
+            headerName:'',
+            field: 'selected',
+            headerCheckboxSelection: true,
+            checkboxSelection: true,
+            width: 30,
+            minWidth: 30,
+            maxWidth: 30,
+            pinned: 'left',
+            lockPinned: true,
+            suppressMovable: true,
+            filter: false,
+        },
+        {
             headerName: 'STT',
             field: 'rowNo',
-            minWidth: 70,
+            minWidth: 50,
+            width: 50,
             pinned: 'left',
-            suppressMenu: true,
+            //suppressMenu: true,
             cellStyle: cellStyle_Col_Model_EventActual,
             rowDrag: true,
             filter: false,
-            checkboxSelection: true,          // checkbox từng dòng
-            headerCheckboxSelection: true,    // checkbox chọn tất cả
-            headerCheckboxSelectionFilteredOnly: true, // chỉ chọn những dòng đang filter
+            //checkboxSelection: true,          // checkbox từng dòng
+            //headerCheckboxSelection: true,    // checkbox chọn tất cả
+            //headerCheckboxSelectionFilteredOnly: true, // chỉ chọn những dòng đang filter
         },
         {
             headerName: 'Mã Intake',
@@ -159,7 +173,8 @@ const gridOptions = {
             field: 'timeDate_Person',
             width: 130,
             editable: false,
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellStyle: cellStyle_Col_Model_EventActual,
+			hide: true
         },
         {
             headerName: 'Thời gian',
@@ -174,19 +189,17 @@ const gridOptions = {
             width: 150,
             pinned: 'right',
             cellRenderer: params => {
-                const isNew = params.data.intakeId === 0;
                 let html = '';
                 // CHỈ hiện nút lưu khi chưa lưu
-                if (isNew) {
+                if (params.data.intakeId === 0) {
                     html += `
-                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Duyệt"><i class="ti ti-save f-20"></i> </a>
+                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Duyệt"><i class="fas fa-save f-16"></i> </a>
                     `;
                 }
-                return html + `
-                    
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i> </a>
-                `;
-                //<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-eye f-20"></i> </a>
+                html += `
+                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="fas fa-trash f-16"></i> </a>
+                    `;
+                return html;
                     
             },
             suppressMenu: true,
@@ -197,6 +210,7 @@ const gridOptions = {
     ],
 
     // Default Column Definition
+    rowSelection: 'multiple',
     defaultColDef: {
         sortable: true,
         filter: true,
@@ -207,7 +221,17 @@ const gridOptions = {
     },
 
     // Grid Options
-    rowSelection: 'multiple',
+    //rowSelection: {
+    //    mode: "multiRow",
+    //    checkboxes: true,
+    //    headerCheckbox: true,
+    //    enableClickSelection: true,
+    //    selectionColumnDef: {
+    //        pinned: 'left',
+    //        width: 50,
+    //        headerCheckboxSelection: true
+    //    }
+    //},
     rowDragManaged: true,
     rowDragEntireRow: true,
     animateRows: true,
@@ -321,6 +345,7 @@ function addNewRow() {
     };
     
     gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
+    rowData.push(newRow);
     // 👇 BẮT BUỘC
     gridApiIntake.refreshCells({
         columns: ['action'], // colId của cột Thao tác
@@ -396,10 +421,7 @@ async function saveAll() {
         NotificationToast('warning', 'Không có dữ liệu để lưu');
         return;
     }
-    
-    if (!confirm(`Bạn có chắc muốn lưu ${allData.length} bản ghi?`)) {
-        return;
-    }
+    if (!await IsToastConfirmDelete(allData.length)) return;
     
     showLoading(true);
     
@@ -435,10 +457,8 @@ async function saveAll() {
 
 // Delete Single Row
 async function deleteRow(rowIndex) {
-    if (!confirm('Bạn có chắc muốn xóa dòng này?')) {
-        return;
-    }
-    
+
+    if (!await IsToastConfirmDelete(rowIndex)) return;
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
     const data = rowNode.data;
     
@@ -482,8 +502,9 @@ async function deleteSelected() {
         NotificationToast('warning', 'Vui lòng chọn các dòng cần xóa');
         return;
     }
-    const ok = await ToastConfirm(arrMsg.key_msgconfirmdelete);
-    if (!ok) return;
+
+
+    if (!await IsToastConfirmDelete(selectedRows.length)) return;
     
     const intakeIds = selectedRows
         .filter(row => row.intakeId > 0)
@@ -513,7 +534,6 @@ async function deleteSelected() {
             NotificationToast('error', response.message || 'Xóa thất bại');
         }
     } catch (error) {
-        console.error('Error deleting multiple:', error);
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
         showLoading(false);
@@ -557,7 +577,8 @@ async function approveRow(rowIndex) {
 
 // Approve All
 async function approveAll() {
-    if (!confirm('Bạn có chắc muốn duyệt tất cả các bản ghi chưa duyệt?')) {
+    let str = "'Bạn có chắc muốn duyệt tất cả các bản ghi chưa duyệt?'";
+    if (!await ToastConfirm(str)) {
         return;
     }
     
@@ -810,4 +831,9 @@ function cellStyle_Col_Model_EventActual(params) {
     let cellAttr = {};
     cellAttr['text-align'] = 'center';
     return cellAttr;
+}
+async function IsToastConfirmDelete(numRow) {
+    var message = arrMsg.key_msgconfirmdelete.replace("__0__", numRow);
+    let isConfirm = await ToastConfirm(message);
+    return isConfirm;
 }

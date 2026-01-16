@@ -1,36 +1,41 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Infrastructure
+@using TAS.Resources
 @inject IBreadcrumbService breadcrumb
 @inject IActionContextAccessor ActionAccessor
 @{
     var crumbs = ActionAccessor.ActionContext != null
         ? breadcrumb.GetBreadcrumb(ActionAccessor.ActionContext)
-        : new List<(string Key_language, string Title, string Url)>();    
+        : new List<(string title, string url, bool isparent)>();
 }
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
             <div class="col-md-12">
                 <ul class="breadcrumb">
-                    @foreach (var c in crumbs)
+                    @if (crumbs.Count > 0)
                     {
-                        <li class="breadcrumb-item" aria-current="page">
-                            @if (!string.IsNullOrEmpty(c.Url))
-                            {
-                                <a href="@c.Url">@c.Key_language</a>
-                            }
-                            else
-                            {
-                                <span>@c.Title</span>
-                            }
-
-                        </li>
+                        foreach (var c in crumbs)
+                        {
+                            <li class="breadcrumb-item" aria-current="page">
+                                @if (!string.IsNullOrEmpty(c.url))
+                                {
+                                    var TitlePage = Language.ResourceManager.GetString(@c.title);
+                                    <a href="@c.url">@TitlePage</a>
+                                }
+                            </li>
+                        }
                     }
-                   
                 </ul>
             </div>
             <div class="col-md-12">
                 <div class="page-header-title">
-                    <h2 class="mb-0">@(crumbs.LastOrDefault().Key_language)</h2>
+                    @{
+                        if (crumbs.Count > 0)
+                        {
+                            var TitlePageCurrent = Language.ResourceManager.GetString(crumbs.LastOrDefault().title);
+                            <h2 class="mb-0">@TitlePageCurrent</h2>
+                        }
+                    }
                 </div>
             </div>
         </div>

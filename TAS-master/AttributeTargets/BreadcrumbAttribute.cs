@@ -3,20 +3,20 @@
 [AttributeUsage(AttributeTargets.Method)]
 public class BreadcrumbAttribute : Attribute
 {
-	public string Key_language { get; }
 	public string Title { get; }
-	public string Parent { get; }
+	public bool IsParent { get; }
+	public string Url { get; }
 
 	/// <summary>
 	/// tạo breadcrumb trên đầu trang
 	/// </summary>
-	/// <param name="key_language">key từ khóa</param>
-	/// <param name="title">tiêu đề trang</param>
-	/// <param name="parent">cấp cha</param>
-	public BreadcrumbAttribute(string key_language, string title = "", string parent = "")
+	/// <param name="title">key từ khóa</param>
+	/// <param name="isparent">tiêu đề trang</param>
+	/// <param name="url">cấp cha</param>
+	public BreadcrumbAttribute(string title, string url = "", bool isparent = true)
 	{
-		Key_language = key_language;
 		Title = title;
-		Parent = parent;
+		Url = url;
+		IsParent = isparent;
 	}
 }

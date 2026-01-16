@@ -20,13 +20,10 @@ namespace TAS.Controllers
 		// ========================================
 		// VIEW: Trang chính
 		// ========================================
-		[Breadcrumb("key_capnhatsolieu")]
+		[Breadcrumb(nameof(Language.key_capnhatsolieu), "#")]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = Language.key_capnhatsolieu;
-			ViewBag.ComboAgent = _common.ComboAgent();
-			ViewBag.ComboFarmCode = _common.ComboFarmCode();
-			ViewBag.ComboOrder = _common.ComboOrderCode();
 			return View();
 		}
 

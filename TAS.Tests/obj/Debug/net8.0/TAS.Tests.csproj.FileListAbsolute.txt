@@ -727,3 +727,4 @@ C:\Users\phuvm\source\TAS-master\TAS.Tests\obj\Debug\net8.0\refint\TAS.Tests.dll
 C:\Users\phuvm\source\TAS-master\TAS.Tests\obj\Debug\net8.0\TAS.Tests.pdb
 C:\Users\phuvm\source\TAS-master\TAS.Tests\obj\Debug\net8.0\TAS.Tests.genruntimeconfig.cache
 C:\Users\phuvm\source\TAS-master\TAS.Tests\obj\Debug\net8.0\ref\TAS.Tests.dll
+C:\Users\phuvm\source\TAS-master\TAS.Tests\bin\Debug\net8.0\vi\TAS.resources.dll
