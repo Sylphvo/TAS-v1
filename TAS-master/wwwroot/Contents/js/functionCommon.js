@@ -22,7 +22,9 @@ const Toast = Swal.mixin({
     }
 });
 function NotificationToast(icon, title) {
-    Toast.fire({ icon: icon, title: title });
+    setTimeout(function () {
+        Toast.fire({ icon: icon, title: title });
+    }, 1000);
 }
 async function ToastConfirm(
     text = "Are you sure?"

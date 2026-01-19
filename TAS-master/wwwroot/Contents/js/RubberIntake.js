@@ -131,7 +131,7 @@ const gridOptions = {
             cellStyle: cellStyle_Col_Model_EventActual
         },
         {
-            headerName: 'TSC (%)',
+            headerName: 'TSC',
             field: 'tscPercent',
             width: 100,
             editable: true,
@@ -140,9 +140,27 @@ const gridOptions = {
             cellStyle: cellStyle_Col_Model_EventActual
         },
         {
-            headerName: 'Thành phẩm (kg)',
+            headerName: 'DRC',
+            field: 'drcPercent',
+            width: 100,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value, 2),
+            cellStyle: cellStyle_Col_Model_EventActual
+        },
+        {
+            headerName: 'Thành phẩm',
             field: 'finishedProductKg',
-            width: 140,
+            width: 150,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value),
+            cellStyle: cellStyle_Col_Model_EventActual
+        },
+        {
+            headerName: 'Thành Phẩm Ly Tâm',
+            field: 'centrifugeProductKg',
+            width: 170,
             editable: true,
             type: 'numericColumn',
             valueFormatter: params => formatNumber(params.value),
@@ -338,7 +356,9 @@ function addNewRow() {
         farmerName: '',
         rubberKg: 0,
         tscPercent: 0,
+        drcPercent: 0,
         finishedProductKg: 0,
+        centrifugeProductKg: 0,
         status: 0,
         statusText: 'Chưa duyệt',
         timeDate_Person: '',
@@ -382,7 +402,9 @@ async function saveRow(rowIndex) {
                 farmerName: data.farmerName,
                 rubberKg: data.rubberKg,
                 tscPercent: data.tscPercent,
+                drcPercent: data.drcPercent,
                 finishedProductKg: data.finishedProductKg,
+                centrifugeProductKg: data.centrifugeProductKg,
                 status: data.status
             })
         });
@@ -436,8 +458,10 @@ async function saveAll() {
                 farmCode: item.farmCode,
                 farmerName: item.farmerName,
                 rubberKg: item.rubberKg,
-                tscPercent: item.tscPercent,
-                finishedProductKg: item.finishedProductKg,
+                tscPercent: data.tscPercent,
+                drcPercent: data.drcPercent,
+                finishedProductKg: data.finishedProductKg,
+                centrifugeProductKg: data.centrifugeProductKg,
                 status: item.status
             })))
         });
@@ -635,7 +659,9 @@ async function handleFileImport(event) {
             farmerName: row['Tên Nhà vườn'] || '',
             rubberKg: parseFloat(row['KL Mủ (kg)']) || 0,
             tscPercent: parseFloat(row['TSC (%)']) || 0,
-            finishedProductKg: parseFloat(row['Thành phẩm (kg)']) || 0
+            drcPercent: parseFloat(row['DRC (%)']) || 0,
+            finishedProductKg: parseFloat(row['Thành phẩm (kg)']) || 0,
+            centrifugeProductKg: parseFloat(row['Thành phẩm ly tâm (kg)']) || 0
         }));
         
         // Send to server
@@ -688,7 +714,9 @@ async function exportExcel() {
                 'Tên Nhà vườn': row.farmerName,
                 'KL Mủ (kg)': row.rubberKg,
                 'TSC (%)': row.tscPercent,
+                'DRC (%)': row.drcPercent,
                 'Thành phẩm (kg)': row.finishedProductKg,
+                'Thành phẩm ly tâm (kg)': row.centrifugeProductKg,
                 'Trạng thái': row.statusText,
                 'Người cập nhật': row.timeDate_Person,
                 'Thời gian': row.timeDate
@@ -766,6 +794,7 @@ function onCellValueChanged(event) {
             event.data.farmerName = objData[objData.length - 1].text;
         }
         gridApiIntake.applyTransaction({ update: [event.data] });
+        saveRow(event.rowIndex);
     }
     
     // Auto calculate finishedProductKg if rubberKg or tscPercent changed
@@ -777,9 +806,29 @@ function onCellValueChanged(event) {
             event.data.finishedProductKg = Math.round((rubberKg * tscPercent / 100) * 100) / 100;
             gridApiIntake.applyTransaction({ update: [event.data] });
         }
+        saveRow(event.rowIndex);
+    }
+    if (event.colDef.field == 'tscPercent') {
+        //calcDRCPercent(e.data);
+        event.data.drcPercent = event.data.tscPercent - 3;
+        event.api.refreshCells({ rowNodes: [event.node], columns: ['drcPercent'], force: true });
+    }
+    if (['rubberKg', 'drcPercent'].includes(event.colDef.field)) {
+        //calcFinish(event.data);
+        //calcCentrifuge(event.data);
+        event.data.finishedProductKg = +(num(event.data.rubberKg) * num(event.data.drcPercent) / 100).toFixed(3);
+        event.data.centrifugeProductKg = +((num(event.data.rubberKg) * num(event.data.drcPercent) / 100) * 1.5).toFixed(3);
+
+        event.api.refreshCells({ rowNodes: [event.node], columns: ['finishedProductKg'], force: true });
+        event.api.refreshCells({ rowNodes: [event.node], columns: ['centrifugeProductKg'], force: true });
+        saveRow(event.rowIndex);
     }
 }
-
+// Chuyển chuỗi sang số
+const num = v => {
+    const x = parseFloat(String(v).replace(',', '.'));
+    return Number.isFinite(x) ? x : 0;
+};
 function onRowDragEnd(event) {
     updateRowNumbers();
 }
@@ -837,4 +886,24 @@ async function IsToastConfirmDelete(numRow) {
     var message = arrMsg.key_msgconfirmdelete.replace("__0__", numRow);
     let isConfirm = await ToastConfirm(message);
     return isConfirm;
+}
+function FilterType(dataType) {
+    if (dataType == '1') {
+        gridApiIntake.setColumnsVisible(['tscPercent'], true);
+        gridApiIntake.setColumnsVisible(['finishedProductKg'], true);
+        gridApiIntake.setColumnsVisible(['centrifugeProductKg'], false);
+        gridApiIntake.setColumnsVisible(['drcPercent'], false);
+    }
+    else if (dataType == '2') {
+        gridApiIntake.setColumnsVisible(['tscPercent'], false);
+        gridApiIntake.setColumnsVisible(['drcPercent'], true);
+        gridApiIntake.setColumnsVisible(['finishedProductKg'], true);
+        gridApiIntake.setColumnsVisible(['centrifugeProductKg'], false);
+    }
+    else if (dataType == '3') {
+        gridApiIntake.setColumnsVisible(['tscPercent'], true);
+        gridApiIntake.setColumnsVisible(['centrifugeProductKg'], true);
+        gridApiIntake.setColumnsVisible(['finishedProductKg'], false);
+    }
+    gridApiIntake.sizeColumnsToFit();
 }

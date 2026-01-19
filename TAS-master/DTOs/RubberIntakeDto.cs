@@ -11,34 +11,38 @@ namespace TAS.DTOs
 	// ========================================
 	public class RubberIntakeDto
 	{
-		public long IntakeId { get; set; }
-		public string? IntakeCode { get; set; }
-		public string FarmCode { get; set; } = string.Empty;
-		public string FarmerName { get; set; } = string.Empty;
-		public decimal RubberKg { get; set; }
-		public decimal? TSCPercent { get; set; }
-		public decimal FinishedProductKg { get; set; }
-		public byte Status { get; set; }
-		public string StatusText => Status switch
+		public long intakeId { get; set; }
+		public string? intakeCode { get; set; }
+		public string farmCode { get; set; } = string.Empty;
+		public string farmerName { get; set; } = string.Empty;
+		public decimal rubberKg { get; set; }
+		public decimal? tscPercent { get; set; }
+		public decimal? drcPercent { get; set; }
+		public decimal? finishedProductKg { get; set; }
+		public decimal? centrifugeProductKg { get; set; }
+		public byte status { get; set; }
+		public string statusText => status switch
 		{
 			1 => "Chưa xử lý",
 			2 => "Đã vào hồ",
 			3 => "Hoàn thành",
 			_ => "Không xác định"
 		};
-		public DateTime RegisterDate { get; set; }
+		public DateTime registerDate { get; set; }
 
 		// Navigation
-		public RubberFarmDto? Farm { get; set; }
+		public RubberFarmDto? farm { get; set; }
 	}
 
 	public class CreateRubberIntakeDto
 	{
-		public string FarmCode { get; set; } = string.Empty;
-		public string FarmerName { get; set; } = string.Empty;
-		public decimal RubberKg { get; set; }
-		public decimal? TSCPercent { get; set; }
-		public decimal FinishedProductKg { get; set; }
+		public string farmCode { get; set; } = string.Empty;
+		public string farmerName { get; set; } = string.Empty;
+		public decimal rubberKg { get; set; }
+		public decimal? tscPercent { get; set; }
+		public decimal? drcPercent { get; set; }
+		public decimal? finishedProductKg { get; set; }
+		public decimal? centrifugeProductKg { get; set; }
 	}
 
 	// ========================================
@@ -52,7 +56,9 @@ namespace TAS.DTOs
 		public string? farmerName { get; set; }
 		public decimal? rubberKg { get; set; }
 		public decimal? tscPercent { get; set; }
+		public decimal? drcPercent { get; set; }
 		public decimal? finishedProductKg { get; set; }
+		public decimal? centrifugeProductKg { get; set; }
 		public int? status { get; set; }
 	}
 
@@ -67,7 +73,9 @@ namespace TAS.DTOs
 		public string? farmerName { get; set; }
 		public decimal rubberKg { get; set; }
 		public decimal? tscPercent { get; set; }
-		public decimal finishedProductKg { get; set; }
+		public decimal? drcPercent { get; set; }
+		public decimal? finishedProductKg { get; set; }
+		public decimal? centrifugeProductKg { get; set; }
 		public int status { get; set; }
 		public string? statusText { get; set; }
 		public string? timeDate_Person { get; set; }

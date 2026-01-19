@@ -46,7 +46,7 @@ namespace TAS.ViewModels
 
 				var sql = @"
                     SELECT 
-                        rowNo = ROW_NUMBER() OVER(ORDER BY i.RegisterDate DESC, i.IntakeId DESC),
+                        rowNo = ROW_NUMBER() OVER(ORDER BY i.RegisterDate ASC, i.IntakeId ASC),
                         intakeId = i.IntakeId,
                         intakeCode = i.IntakeCode,
                         agentCode = a.AgentCode,
@@ -55,7 +55,9 @@ namespace TAS.ViewModels
                         farmerName = i.FarmerName,
                         rubberKg = i.RubberKg,
                         tscPercent = i.TSCPercent,
+                        drcPercent = i.DRCPercent,
                         finishedProductKg = i.FinishedProductKg,
+                        centrifugeProductKg = i.CentrifugeProductKg,
                         status = i.Status,
                         statusText = CASE i.Status
                             WHEN 0 THEN N'Chưa duyệt'
@@ -107,7 +109,9 @@ namespace TAS.ViewModels
                         farmerName = i.FarmerName,
                         rubberKg = i.RubberKg,
                         tscPercent = i.TSCPercent,
+                        drcPercent = i.DRCPercent,
                         finishedProductKg = i.FinishedProductKg,
+                        centrifugeProductKg = i.CentrifugeProductKg,
                         status = i.Status,
                         registerDate = i.RegisterDate
                     FROM RubberIntake i
@@ -149,7 +153,9 @@ namespace TAS.ViewModels
                             FarmerName = @FarmerName,
                             RubberKg = @RubberKg,
                             TSCPercent = @TSCPercent,
+                            DRCPercent = @DRCPercent,
                             FinishedProductKg = @FinishedProductKg,
+							CentrifugeProductKg = @CentrifugeProductKg,
                             Status = @Status,
                             UpdateDate = SYSDATETIME(),
                             UpdatePerson = @UpdatePerson
@@ -161,12 +167,12 @@ namespace TAS.ViewModels
                     BEGIN
                         -- Insert
                         INSERT INTO RubberIntake (
-                            IntakeCode, FarmCode, FarmerName, RubberKg, TSCPercent,
-                            FinishedProductKg, Status, RegisterDate, RegisterPerson
+                            IntakeCode, FarmCode, FarmerName, RubberKg, TSCPercent, DRCPercent,
+                            FinishedProductKg, CentrifugeProductKg, Status, RegisterDate, RegisterPerson
                         )
                         VALUES (
-                            @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent,
-                            @FinishedProductKg, @Status, SYSDATETIME(), @RegisterPerson
+                            @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
+                            @FinishedProductKg, @CentrifugeProductKg, @Status, SYSDATETIME(), @RegisterPerson
                         );
                         
                         SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
@@ -186,7 +192,9 @@ namespace TAS.ViewModels
 					FarmerName = request.farmerName,
 					RubberKg = request.rubberKg ?? 0m,
 					TSCPercent = request.tscPercent ?? 0m,
+					DRCPercent = request.drcPercent ?? 0m,
 					FinishedProductKg = request.finishedProductKg ?? 0m,
+					CentrifugeProductKg = request.centrifugeProductKg ?? 0m,
 					Status = request.status ?? 0,
 					UpdatePerson = _userManage.Name,
 					RegisterPerson = _userManage.Name
@@ -214,7 +222,9 @@ namespace TAS.ViewModels
                         FarmerName = @FarmerName,
                         RubberKg = @RubberKg,
                         TSCPercent = @TSCPercent,
+                        DRCPercent = @DRCPercent,
                         FinishedProductKg = @FinishedProductKg,
+						CentrifugeProductKg = @CentrifugeProductKg,
                         Status = @Status,
                         UpdateDate = SYSDATETIME(),
                         UpdatePerson = @UpdatePerson
@@ -229,7 +239,9 @@ namespace TAS.ViewModels
 						FarmerName = x.farmerName,
 						RubberKg = x.rubberKg ?? 0m,
 						TSCPercent = x.tscPercent ?? 0m,
+						DRCPercent = x.drcPercent ?? 0m,
 						FinishedProductKg = x.finishedProductKg ?? 0m,
+						CentrifugeProductKg = x.centrifugeProductKg ?? 0m,
 						Status = x.status ?? 0,
 						UpdatePerson = _userManage.Name
 					})
@@ -302,12 +314,12 @@ namespace TAS.ViewModels
 			{
 				var sql = @"
                     INSERT INTO RubberIntake (
-                        IntakeCode, FarmCode, FarmerName, RubberKg, TSCPercent,
-                        FinishedProductKg, Status, RegisterDate, RegisterPerson
+                        IntakeCode, FarmCode, FarmerName, RubberKg, TSCPercent, DRCPercent,
+                        FinishedProductKg, CentrifugeProductKg, Status, RegisterDate, RegisterPerson
                     )
                     VALUES (
-                        @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent,
-                        @FinishedProductKg, 0, SYSDATETIME(), @RegisterPerson
+                        @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
+                        @FinishedProductKg, @CentrifugeProductKg, 0, SYSDATETIME(), @RegisterPerson
                     );
                 ";
 
@@ -320,7 +332,9 @@ namespace TAS.ViewModels
 						FarmerName = x.farmerName,
 						RubberKg = x.rubberKg ?? 0m,
 						TSCPercent = x.tscPercent ?? 0m,
+						DRCPercent = x.drcPercent ?? 0m,
 						FinishedProductKg = x.finishedProductKg ?? 0m,
+						CentrifugeProductKg = x.centrifugeProductKg ?? 0m,
 						RegisterPerson = _userManage.Name
 					})
 				);

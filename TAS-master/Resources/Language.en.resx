@@ -215,7 +215,7 @@
     <value>Create new order</value>
   </data>
   <data name="key_loainguyenlieu" xml:space="preserve">
-    <value>Ingredient type</value>
+    <value>Material type</value>
   </data>
   <data name="key_hoso" xml:space="preserve">
     <value>Profile</value>

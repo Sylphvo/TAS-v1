@@ -39,7 +39,15 @@
                                     <option value="3">Hoàn thành</option>
                                 </select>
                             </div>
-
+                            <div class="divboxOrder">
+                                <label>@Language.key_loainguyenlieu</label>
+                                <select id="CboType" class="form-select cboSelect2NoSearch">
+                                    <option value="">Vui lòng chọn</option>
+                                    <option value="1">Mủ Nước</option>
+                                    <option value="2">Mủ Đông</option>
+                                    <option value="3">Mủ Ly Tâm</option>
+                                </select>
+                            </div>
                             <div class="divboxOrder">                       
                                 <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="clearFilter()">
                                     <i class="fas fa-eraser"></i> Xóa lọc
@@ -127,6 +135,10 @@
 
             $('#cboAgent,#cboFarm,#cboOrder,#cboStatus').change(function (e) {
                 loadData();
+            });
+            $('#CboType').change(function (e) {
+                let dataType = $(this).val();
+                FilterType(dataType);
             });
         });
     </script>

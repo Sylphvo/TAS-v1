@@ -33,6 +33,13 @@ namespace TAS.Models
 		[Column(TypeName = "decimal(10,2)")]
 		public decimal FinishedProductKg { get; set; }
 
+		[Column(TypeName = "decimal(5,2)")]
+		public decimal? DRCPercent { get; set; }
+
+		[Required]
+		[Column(TypeName = "decimal(10,2)")]
+		public decimal CentrifugeProductKg { get; set; }
+
 		/// <summary>
 		/// 1: Chưa xử lý, 2: Đã vào hồ, 3: Hoàn thành
 		/// </summary>
