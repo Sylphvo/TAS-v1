@@ -20,7 +20,7 @@ namespace TAS.Controllers
 		// ========================================
 		// VIEW: Trang chính
 		// ========================================
-		[Breadcrumb(nameof(Language.key_capnhatsolieu), "#")]
+		[Breadcrumb(nameof(Language.key_capnhatsolieu), "#", false)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = Language.key_capnhatsolieu;

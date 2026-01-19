@@ -193,12 +193,13 @@ const gridOptions = {
                 // CHỈ hiện nút lưu khi chưa lưu
                 if (params.data.intakeId === 0) {
                     html += `
-                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Duyệt"><i class="fas fa-save f-16"></i> </a>
+                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>
+                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>
                     `;
                 }
-                html += `
-                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="fas fa-trash f-16"></i> </a>
-                    `;
+                else {
+                    html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+                }
                 return html;
                     
             },

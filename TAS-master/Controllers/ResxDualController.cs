@@ -17,7 +17,7 @@ namespace TAS.Controllers
 			_viPath = Path.Combine(root, fileName + ".vi.resx");
 			_enPath = Path.Combine(root, fileName + ".en.resx");
 			_defaultPath = Path.Combine(root, fileName + ".resx");
-			_msgViewPath = Path.Combine(env.ContentRootPath, fileName + ".cshtml");
+			_msgViewPath = Path.Combine(env.ContentRootPath, "Views", "Shared", "_Msg.cshtml");
 			_common = commonModels;
 		}
 		[Breadcrumb("key_ngonngu")]
@@ -131,7 +131,7 @@ namespace TAS.Controllers
 			sb.AppendLine("var arrMsg = {");
 			foreach (var key in keys)
 			{
-				sb.AppendLine($"	{key}: ''@Html.Raw(@Language.\"{key}\")'");
+				sb.AppendLine($"	{key}: '@Html.Raw(@Language.{key})',");
 			}
 			sb.AppendLine("};");
 			sb.AppendLine("</script>");

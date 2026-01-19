@@ -1,7 +1,4 @@
-﻿@using Microsoft.Extensions.Localization
-@using TAS.Resources
-@inject Microsoft.Extensions.Localization.IStringLocalizer<TAS.Resources.Language> localizerShared
-@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+﻿@using TAS.Resources
 
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
@@ -116,7 +113,12 @@
                         </li>
                         <li class="pc-item">
                             <a class="pc-link" asp-controller="ResxDual" asp-action="LanguageManage">
-                                <span class="pc-mtext" >@Language.key_ngonngu</span>
+                                <span class="pc-mtext">@Language.key_ngonngu</span>
+                            </a>
+                        </li>
+                        <li class="pc-item">
+                            <a class="pc-link" asp-controller="Home" asp-action="Icon">
+                                <span class="pc-mtext" >@Language.key_icon</span>
                             </a>
                         </li>
 

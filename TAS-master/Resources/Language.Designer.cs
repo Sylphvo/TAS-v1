@@ -241,6 +241,15 @@ namespace TAS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Icon.
+        /// </summary>
+        public static string key_icon {
+            get {
+                return ResourceManager.GetString("key_icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nhập Excel.
         /// </summary>
         public static string key_importexcel {

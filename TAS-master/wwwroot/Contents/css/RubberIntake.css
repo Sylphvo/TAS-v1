@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    RUBBER INTAKE - CUSTOM STYLES
 ======================================== */
 
@@ -99,9 +99,17 @@ div.ag-cell[col-id="farmerName"],
 div.ag-cell[col-id="rubberKg"],
 div.ag-cell[col-id="tscPercent"],
 div.ag-cell[col-id="finishedProductKg"] {
-    background-color: #fff3cd !important;
+    /*background-color: #fff3cd !important;*/
 }
 
+/* ========= ẩn sao chép =========*/
+div[col-id="rowNo"] .ag-fill-handle,
+div[col-id="agentName"] .ag-fill-handle,
+div[col-id="action"] .ag-fill-handle,
+div[col-id="statusText"] .ag-fill-handle,
+div[col-id="farmerName"] .ag-fill-handle {
+    display: none;
+}
 /* Status badges */
 .badge {
     padding: 4px 8px;

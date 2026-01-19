@@ -1,4 +1,5 @@
-﻿@{
+﻿@using TAS.Resources
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @section Style {
@@ -24,7 +25,7 @@
                         <div class="col-md-3">
                             <div class="row align-items-center">
                                 <div class="col-md-3">
-                                    <label data-i18n="key_tukhoa"></label>
+                                    <label>@Language.key_tukhoa</label>
                                 </div>
                                 <div class="col-md-9">
                                     <input id="txtKey" class="form-control text_control" placeholder="Key" />
@@ -35,7 +36,7 @@
                         <div class="col-md-3">
                             <div class="row align-items-center">
                                 <div class="col-md-3">
-                                    <label data-i18n="key_tiengviet"></label>
+                                    <label>@Language.key_tiengviet</label>
                                 </div>
                                 <div class="col-md-9">
                                     <input id="txtVi" class="form-control text_control" placeholder="Tiếng Việt" />
@@ -45,7 +46,7 @@
                         <div class="col-md-3">
                             <div class="row align-items-center">
                                 <div class="col-md-3">
-                                    <label data-i18n="key_tienganh"></label>
+                                    <label>@Language.key_tienganh</label>
                                 </div>
                                 <div class="col-md-9">
                                     <input id="txtEn" class="form-control text_control" placeholder="English" />
@@ -53,7 +54,7 @@
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <button id="btnAdd" class="btn btn-custom-tas-action w-100 justify-content-center" data-i18n="key_them"></button>
+                            <button id="btnAdd" class="btn btn-custom-tas-action w-100 justify-content-center">@Language.key_them</button>
                         </div>
                     </div>
 
@@ -62,10 +63,10 @@
                     <table class="table table-bordered p-5 w-100" id="tblData">
                         <thead>
                             <tr>
-                                <th data-i18n="key_tukhoa"></th>
-                                <th data-i18n="key_tiengviet"></th>
-                                <th data-i18n="key_tienganh"></th>
-                                <th data-i18n="key_action"></th>
+                                <th>@Language.key_tukhoa</th>
+                                <th>@Language.key_tiengviet</th>
+                                <th>@Language.key_tienganh</th>
+                                <th>@Language.key_action</th>
                             </tr>
                         </thead>
                         <tbody></tbody>

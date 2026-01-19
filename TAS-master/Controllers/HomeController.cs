@@ -38,10 +38,16 @@ namespace TAS.Controllers
 		{
 			return View();
 		}
-		[Breadcrumb("key_map")]
+		[Breadcrumb(nameof(Language.key_map), "#", true)]
 		public IActionResult GeoJson()
 		{
 			ViewData["Title"] = Language.key_map;
+			return View();
+		}
+		[Breadcrumb(nameof(Language.key_icon), "#", true)]
+		public IActionResult Icon()
+		{
+			ViewData["Title"] = Language.key_icon;
 			return View();
 		}
 		//[Breadcrumb("key_menu")]

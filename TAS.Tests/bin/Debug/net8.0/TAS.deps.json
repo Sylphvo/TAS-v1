@@ -29,6 +29,9 @@
         "resources": {
           "en/TAS.resources.dll": {
             "locale": "en"
+          },
+          "vi/TAS.resources.dll": {
+            "locale": "vi"
           }
         }
       },

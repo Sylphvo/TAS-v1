@@ -976,14 +976,6 @@ div[col-id="selected"] span[class="ag-cell-value"]{
 }
 
 /* ========= CUSTOM CHECKBOX =========*/
-/* ========= ẩn sao chép =========*/
-div[col-id="rowNo"] .ag-fill-handle,
-div[col-id="agentName"] .ag-fill-handle,
-div[col-id="farmerName"] .ag-fill-handle
-{
-    display: none;
-}
-/* ========= CUSTOM CHECKBOX =========*/
 .ag-header-group-cell-label, .ag-header-cell-label {
     justify-content: center !important;
 }
