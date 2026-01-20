@@ -6,74 +6,343 @@
     var objectReportIn = listData.Where(x => x.Type == "REPORTIN").ToList().FirstOrDefault();
     var objectReportOut = listData.Where(x => x.Type == "REPORTOUT").ToList().FirstOrDefault();
 }
+
+
 <div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0">@Language.key_tongquan</h5>
-                    <div class="dropdown">
-                        <a class="avtar avtar-s btn-link-secondary dropdown-toggle arrow-none" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="ti ti-dots-vertical f-18"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a class="dropdown-item" href="#">Today</a>
-                            <a class="dropdown-item" href="#">Weekly</a>
-                            <a class="dropdown-item" href="#">Monthly</a>
+    <div class="row">
+        <div class="col-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="my-n4" style="width: 130px">
+                                <div id="total-earning-graph-1"></div>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 mx-2">
+                            <p class="mb-1">@Language.key_nhavuon</p>
+                            <h6 class="mb-0">$45,890</h6>
                         </div>
                     </div>
                 </div>
-                <div id="total-income-graph"></div>
-                <div class="row g-3 mt-3">
-                    <div class="col-sm-6">
-                        <div class="bg-body p-3 rounded">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="flex-shrink-0">
-                                    <span class="p-1 d-block bg-primary rounded-circle">
-                                        <span class="visually-hidden"> New alerts </span>
-                                    </span>
-                                </div>
-                                <div class="flex-grow-1 ms-2">
-                                    <p class="mb-0"><span class="pc-mtext">@Language.key_tongdaily</span></p>
-                                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="my-n4" style="width: 130px">
+                                <div id="total-earning-graph-2"></div>
                             </div>
-                            <h6 class="mb-0">
-                                @objectAgent.Total
-                            </h6>
                         </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="bg-body p-3 rounded">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="flex-shrink-0">
-                                    <span class="p-1 d-block bg-warning rounded-circle">
-                                        <span class="visually-hidden"> New alerts </span>
-                                    </span>
-                                </div>
-                                <div class="flex-grow-1 ms-2">
-                                    <p class="mb-0"><span class="pc-mtext">@Language.key_tongnhavuon</span></p>
-                                </div>
-                            </div>
-                            <h6 class="mb-0">
-                                @objectFarm.Total
-                            </h6>
+                        <div class="flex-grow-1 mx-2">
+                            <p class="mb-1">@Language.key_agent</p>
+                            <h6 class="mb-0">$45,890</h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-6">
-        <div class="card">
+    <div class="col-12">
+        <div class="card table-card">
+            <div class="card-header d-flex align-items-center justify-content-between py-3">
+                <h5 class="mb-0">Thống kê khối lượng bán của nhà vườn</h5>
+                <button class="btn btn-sm btn-link-primary">View All</button>
+            </div>
             <div class="card-body">
-                <h5 class="mb-3">Báo cáo </h5>
-              @*   <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
-                <h3 class="mb-0">$7,650</h3> *@
-                <div id="sales-report-chart"></div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="pc-dt-simple">
+                        <thead>
+                            <tr>
+                                <th>User Name</th>
+                                <th>Category</th>
+                                <th>Date/Time</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <img src="../assets/images/user/avatar-1.jpg" alt="user image"
+                                                    class="img-radius wid-40">
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Airi Satou</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Salary Payment</td>
+                                <td>2023/02/07 <span class="text-muted text-sm d-block">09:05 PM</span></td>
+                                <td>$950.54</td>
+                                <td><span class="badge text-bg-success">Completed</span></td>
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-eye f-20"></i>
+                                    </a><a href="#"
+                                            class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-edit f-20"></i>
+                                    </a>
+                                    <a href="#" class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-trash f-20"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <img src="../assets/images/user/avatar-2.jpg" alt="user image"
+                                                    class="img-radius wid-40">
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Ashton Cox</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Project Payment</td>
+                                <td>2023/02/01 <span class="text-muted text-sm d-block">02:14 PM</span></td>
+                                <td>$520.30</td>
+                                <td><span class="badge text-bg-success">Completed</span></td>
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-eye f-20"></i>
+                                    </a><a href="#"
+                                            class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-edit f-20"></i>
+                                    </a>
+                                    <a href="#" class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-trash f-20"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <img src="../assets/images/user/avatar-3.jpg" alt="user image"
+                                                    class="img-radius wid-40">
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Bradley Greer</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>You Tube Subscribe</td>
+                                <td>2023/01/22 <span class="text-muted text-sm d-block">10:32 AM</span></td>
+                                <td>$100.00</td>
+                                <td><span class="badge text-bg-warning">Pending</span></td>
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-eye f-20"></i>
+                                    </a><a href="#"
+                                            class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-edit f-20"></i>
+                                    </a>
+                                    <a href="#" class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-trash f-20"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <img src="../assets/images/user/avatar-4.jpg" alt="user image"
+                                                    class="img-radius wid-40">
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Brielle Williamson</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Slary Payment</td>
+                                <td>2023/02/07 <span class="text-muted text-sm d-block">09:05 PM</span></td>
+                                <td>$760.25</td>
+                                <td><span class="badge text-bg-primary">In Progress</span></td>
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-eye f-20"></i>
+                                    </a><a href="#"
+                                            class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-edit f-20"></i>
+                                    </a>
+                                    <a href="#" class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-trash f-20"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <img src="../assets/images/user/avatar-5.jpg" alt="user image"
+                                                    class="img-radius wid-40">
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Airi Satou</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Spotify Subscribe</td>
+                                <td>2023/02/07 <span class="text-muted text-sm d-block">09:05 PM</span></td>
+                                <td>$60.05</td>
+                                <td><span class="badge text-bg-danger">Canceled</span></td>
+                                <td class="text-end">
+                                    <a href="#"
+                                        class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-eye f-20"></i>
+                                    </a><a href="#"
+                                            class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-edit f-20"></i>
+                                    </a>
+                                    <a href="#" class="avtar avtar-xs btn-link-secondary">
+                                        <i class="ti ti-trash f-20"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-    
+</div>
+<div class="row">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-header pb-0 pt-2">
+				<ul class="nav nav-tabs analytics-tab" id="myTab" role="tablist">
+					<li class="nav-item" role="presentation"><button class="nav-link active" id="analytics-tab-1" data-bs-toggle="tab" data-bs-target="#analytics-tab-1-pane" type="button" role="tab" aria-controls="analytics-tab-1-pane" aria-selected="true">Overview</button></li>
+					<li class="nav-item" role="presentation"><button class="nav-link" id="analytics-tab-2" data-bs-toggle="tab" data-bs-target="#analytics-tab-2-pane" type="button" role="tab" aria-controls="analytics-tab-2-pane" aria-selected="false">Marketing</button></li>
+					<li class="nav-item" role="presentation"><button class="nav-link" id="analytics-tab-3" data-bs-toggle="tab" data-bs-target="#analytics-tab-3-pane" type="button" role="tab" aria-controls="analytics-tab-3-pane" aria-selected="false">Project</button></li>
+					<li class="nav-item" role="presentation"><button class="nav-link" id="analytics-tab-4" data-bs-toggle="tab" data-bs-target="#analytics-tab-4-pane" type="button" role="tab" aria-controls="analytics-tab-4-pane" aria-selected="false">Order</button></li>
+				</ul>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-lg-7 col-xl-8">
+						<ul class="list-inline mb-3 d-flex align-items-center justify-content-end">
+							<li class="list-inline-item">
+								<div class="d-flex"><button type="button" class="btn btn-sm me-1 btn-secondary">This week</button> <button type="button" class="btn btn-sm me-1 btn-light">Last week</button></div>
+							</li>
+							<li class="list-inline-item"><a href="#" class="avtar avtar-s btn-link-secondary border border-secondary"><i class="ti ti-external-link f-18"></i></a></li>
+							<li class="list-inline-item"><a href="#" class="avtar avtar-s btn-link-secondary border border-secondary"><i class="ti ti-arrows-diagonal f-18"></i></a></li>
+							<li class="list-inline-item">
+								<div class="dropdown">
+									<a href="#" class="avtar avtar-s btn-link-secondary border border-secondary dropdown-toggle arrow-none" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ti ti-dots f-18"></i></a>
+									<div class="dropdown-menu dropdown-menu-end"><a class="dropdown-item" href="#">Name</a> <a class="dropdown-item" href="#">Date</a> <a class="dropdown-item" href="#">Ratting</a> <a class="dropdown-item" href="#">Unread</a></div>
+								</div>
+							</li>
+						</ul>
+						<div class="tab-content" id="myTabContent">
+							<div class="tab-pane fade show active" id="analytics-tab-1-pane" role="tabpanel" aria-labelledby="analytics-tab-1" tabindex="0">
+								<div id="overview-chart-1"></div>
+							</div>
+							<div class="tab-pane fade" id="analytics-tab-2-pane" role="tabpanel" aria-labelledby="analytics-tab-2" tabindex="0">
+								<div id="overview-chart-2"></div>
+							</div>
+							<div class="tab-pane fade" id="analytics-tab-3-pane" role="tabpanel" aria-labelledby="analytics-tab-3" tabindex="0">
+								<div id="overview-chart-3"></div>
+							</div>
+							<div class="tab-pane fade" id="analytics-tab-4-pane" role="tabpanel" aria-labelledby="analytics-tab-4" tabindex="0">
+								<div id="overview-chart-4"></div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-5 col-xl-4">
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item">
+								<div class="d-flex align-items-center">
+									<div class="flex-shrink-0">
+										<div class="avtar avtar-s bg-light-secondary"><i class="ti ti-chart-bar f-20"></i></div>
+									</div>
+									<div class="flex-grow-1 ms-3">
+										<div class="row g-1">
+											<div class="col-6">
+												<p class="text-muted mb-1">Total Sales</p>
+												<h6 class="mb-0">1,800</h6>
+											</div>
+											<div class="col-6 text-end">
+												<h6 class="mb-1">- 245</h6>
+												<p class="text-danger mb-0"><i class="ti ti-arrow-down-left"></i> 30.6%</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</li>
+							<li class="list-group-item">
+								<div class="d-flex align-items-center">
+									<div class="flex-shrink-0">
+										<div class="avtar avtar-s bg-light-secondary"><i class="ti ti-chart-arrows-vertical f-20"></i></div>
+									</div>
+									<div class="flex-grow-1 ms-3">
+										<div class="row g-1">
+											<div class="col-6">
+												<p class="text-muted mb-1">Revenue</p>
+												<h6 class="mb-0">$5667</h6>
+											</div>
+											<div class="col-6 text-end">
+												<h6 class="mb-1">+$2100</h6>
+												<p class="text-success mb-0"><i class="ti ti-arrow-up-right"></i> 30.6%</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</li>
+							<li class="list-group-item">
+								<div class="d-flex align-items-center">
+									<div class="flex-shrink-0">
+										<div class="avtar avtar-s bg-light-secondary"><i class="ti ti-shopping-cart f-20"></i></div>
+									</div>
+									<div class="flex-grow-1 ms-3">
+										<div class="row g-1">
+											<div class="col-6">
+												<p class="text-muted mb-1">Abandon Cart</p>
+												<h6 class="mb-0">128</h6>
+											</div>
+											<div class="col-6 text-end">
+												<h6 class="mb-1">-26</h6>
+												<p class="text-warning mb-0"><i class="ti ti-arrows-left-right"></i> 5%</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</li>
+							<li class="list-group-item">
+								<div class="d-flex align-items-center">
+									<div class="flex-shrink-0">
+										<div class="avtar avtar-s bg-light-secondary"><i class="ti ti-ad f-20"></i></div>
+									</div>
+									<div class="flex-grow-1 ms-3">
+										<div class="row g-1">
+											<div class="col-6">
+												<p class="text-muted mb-1">Ads Spent</p>
+												<h6 class="mb-0">$2500</h6>
+											</div>
+											<div class="col-6 text-end">
+												<h6 class="mb-1">$200</h6>
+												<p class="text-success mb-0"><i class="ti ti-arrow-up-right"></i> 10.6%</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <!-- [ Main Content ] end -->
@@ -85,7 +354,8 @@
     var objectReportIn = @Json.Serialize(objectReportIn);
     var objectReportOut = @Json.Serialize(objectReportOut);
     setTimeout(function () {
-        loadChartOverview('total-income-graph', 'overview');
+        loadChartOverview('total-earning-graph-1', 'Farm');
+        loadChartOverview('total-earning-graph-2', 'Agent');
         loadChartOverview('sales-report-chart', 'sale');
     }, 500);
 </script>

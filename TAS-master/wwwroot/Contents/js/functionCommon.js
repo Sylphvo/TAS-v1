@@ -4284,7 +4284,104 @@ function loadChartOverview(idElement, type) {
             }
         };
     }
-    
+    else if (type == 'Farm') {
+        objectChart = {
+            series: [objectFarm.total],
+            chart: {
+                height: 150,
+                type: 'radialBar'
+            },
+            plotOptions: {
+                radialBar: {
+                    hollow: {
+                        margin: 0,
+                        size: '60%',
+                        background: 'transparent',
+                        imageOffsetX: 0,
+                        imageOffsetY: 0,
+                        position: 'front'
+                    },
+                    track: {
+                        background: objectFarm.color,
+                        strokeWidth: '50%'
+                    },
+
+                    dataLabels: {
+                        show: true,
+                        name: {
+                            show: false
+                        },
+                        value: {
+                            formatter: function (val) {
+                                return parseInt(val);
+                            },
+                            offsetY: 7,
+                            color: objectFarm.color,
+                            fontSize: '20px',
+                            fontWeight: '700',
+                            show: true
+                        }
+                    }
+                }
+            },
+            colors: [objectFarm.color],
+            fill: {
+                type: 'solid'
+            },
+            stroke: {
+                lineCap: 'round'
+            }
+        };
+    }
+    else if (type == 'Agent') {
+        objectChart = {
+            series: [objectAgent.total],
+            chart: {
+                height: 150,
+                type: 'radialBar'
+            },
+            plotOptions: {
+                radialBar: {
+                    hollow: {
+                        margin: 0,
+                        size: '60%',
+                        background: 'transparent',
+                        imageOffsetX: 0,
+                        imageOffsetY: 0,
+                        position: 'front'
+                    },
+                    track: {
+                        background: objectAgent.color,
+                        strokeWidth: '50%'
+                    },
+
+                    dataLabels: {
+                        show: true,
+                        name: {
+                            show: false
+                        },
+                        value: {
+                            formatter: function (val) {
+                                return parseInt(val);
+                            },
+                            offsetY: 7,
+                            color: objectAgent.color,
+                            fontSize: '20px',
+                            fontWeight: '700',
+                            show: true
+                        }
+                    }
+                }
+            },
+            colors: [objectAgent.color],
+            fill: {
+                type: 'solid'
+            },
+            stroke: {
+                lineCap: 'round'
+            }
+        };
+    }
     var chart = new ApexCharts(document.querySelector('#' + idElement), objectChart);
     chart.render();
 }

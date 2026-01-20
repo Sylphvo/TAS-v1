@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -123,20 +124,19 @@ builder.Services.ConfigureApplicationCookie(opt =>
 {
 	opt.LoginPath = "/Account/Login";
 	opt.LogoutPath = "/Account/Logout";
-	opt.AccessDeniedPath = "/Account/AccessDenied";
 
-	opt.Cookie.Name = "tas_auth";
 	opt.Cookie.HttpOnly = true;
+	opt.Cookie.SecurePolicy = CookieSecurePolicy.None; // 🔥 QUAN TRỌNG
 	opt.Cookie.SameSite = SameSiteMode.Lax;
-	opt.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // prod: Always
 
 	opt.SlidingExpiration = true;
 	opt.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
 builder.Services.AddAuthorization();
 
-
-
+builder.Services.AddDataProtection()
+	.PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")))
+	.SetApplicationName("TAS");
 // ========================================
 // BUILD APP
 // ========================================

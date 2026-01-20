@@ -96,7 +96,7 @@ namespace TAS.ViewModels
 				return new LoginResult
 				{
 					Success = false,
-					Message = "Đã xảy ra lỗi. Vui lòng thử lại."
+					Message = ex.Message
 				};
 			}
 		}
