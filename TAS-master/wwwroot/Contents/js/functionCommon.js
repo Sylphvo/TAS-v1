@@ -4382,6 +4382,66 @@ function loadChartOverview(idElement, type) {
             }
         };
     }
+    else if (type == 'Report') {
+        objectChart = {
+            chart: {
+                height: 250,
+                type: 'bar',
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                    borderRadiusApplication: 'end'
+                }
+            },
+            legend: {
+                show: true,
+                position: 'top',
+                horizontalAlign: 'left'
+            },
+            dataLabels: {
+                enabled: false
+            },
+            colors: ['#4680FF', '#4680FF'],
+            stroke: {
+                show: true,
+                width: 3,
+                colors: ['transparent']
+            },
+            fill: {
+                colors: ['#4680FF', '#4680FF'],
+                opacity: [1, 0.5]
+            },
+            grid: {
+                strokeDashArray: 4
+            },
+            series: [
+                {
+                    name: arrMsg.key_tongsoluongnguyenlieudamua,
+                    data: [76, 85, 101, 98, 87, 105, 91]
+                },
+                {
+                    name: arrMsg.key_tongthanhphamdavanchuyen,
+                    data: [44, 55, 57, 56, 61, 58, 63]
+                }
+            ],
+            xaxis: {
+                categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return '$ ' + val + ' thousands';
+                    }
+                }
+            }
+        };
+    }
     var chart = new ApexCharts(document.querySelector('#' + idElement), objectChart);
     chart.render();
 }
