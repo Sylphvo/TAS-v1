@@ -4447,6 +4447,6 @@ function loadChartOverview(idElement, type) {
 }
 
 function setTheme() {
-    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-' + PFN_readCookie('theme'));
+    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-quartz-' + PFN_readCookie('theme'));
     /*localStorage.setItem('theme', theme);*/
 }
