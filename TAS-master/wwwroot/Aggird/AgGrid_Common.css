@@ -42,7 +42,7 @@
 }*/
 
 .ag-cell, .ag-header-cell-text, .ag-header-group-text {
-    user-select: text !important;
+    user-select: none !important;
     -webkit-user-select: text !important;
     cursor: text !important;
     text-wrap: wrap !important;

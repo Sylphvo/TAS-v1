@@ -23,18 +23,7 @@ builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 builder.Services.AddHttpClient();
 
 
-// ========================================
-// SESSION CONFIGURATION
-// ========================================
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-	options.IdleTimeout = TimeSpan.FromMinutes(30);
-	options.Cookie.HttpOnly = true;
-	options.Cookie.IsEssential = true;
-});
 
-builder.Services.AddHttpContextAccessor();
 
 // ========================================
 // SERVICE REGISTRATION
@@ -109,7 +98,7 @@ builder.Services
 
 		options.Lockout.AllowedForNewUsers = true;
 		options.Lockout.MaxFailedAccessAttempts = 5;
-		options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(200);
+		options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
 
 		options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier;
 		options.ClaimsIdentity.UserNameClaimType = ClaimTypes.Name;
@@ -118,7 +107,16 @@ builder.Services
 	})
 	.AddEntityFrameworkStores<AppDbContext>()
 	.AddDefaultTokenProviders();
-
+// ========================================
+// SESSION CONFIGURATION
+// ========================================
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+	options.IdleTimeout = TimeSpan.FromDays(1);
+	options.Cookie.HttpOnly = true;
+	options.Cookie.IsEssential = true;
+});
 // Set cookie của Identity (thay vì AddAuthentication().AddCookie())
 builder.Services.ConfigureApplicationCookie(opt =>
 {
@@ -130,13 +128,14 @@ builder.Services.ConfigureApplicationCookie(opt =>
 	opt.Cookie.SameSite = SameSiteMode.Lax;
 
 	opt.SlidingExpiration = true;
-	opt.ExpireTimeSpan = TimeSpan.FromDays(7);
+	opt.ExpireTimeSpan = TimeSpan.FromDays(1);
 });
 builder.Services.AddAuthorization();
-
 builder.Services.AddDataProtection()
 	.PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")))
 	.SetApplicationName("TAS");
+
+builder.Services.AddHttpContextAccessor();
 // ========================================
 // BUILD APP
 // ========================================

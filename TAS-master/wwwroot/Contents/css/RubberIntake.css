@@ -19,7 +19,7 @@
     align-items: flex-start;
     padding: 15px;
     margin-bottom: 15px;
-    background-color: #f8f9fa;
+    /*background-color: #f8f9fa;*/
     border-radius: 5px;
     flex-wrap: wrap;
     gap: 10px;
@@ -285,7 +285,7 @@ div[col-id="farmerName"] .ag-fill-handle {
     background-color: #17a2b8 !important;
 }
 .ag-header-row input.ag-input-field-input {
-    margin-top: 10px !important;
+    /*margin-top: 10px !important;*/
     padding: 5px !important;
 }
 
@@ -324,3 +324,13 @@ div[col-id="farmerName"] .ag-fill-handle {
 :where(.ag-root-wrapper,.ag-external,.ag-popup,.ag-dnd-ghost,.ag-chart), :where(.ag-root-wrapper,.ag-external,.ag-popup,.ag-dnd-ghost,.ag-chart) :where([class^=ag-]) {
     box-sizing: border-box;
 }*/
+/* Dark mode customizations for AG Grid */
+.ag-theme-quartz-dark {
+    --ag-background-color: #1e1e1e;
+    --ag-header-background-color: #2a2a2a;
+    --ag-odd-row-background-color: #1e1e1e;
+    --ag-row-hover-color: #2a2a2a;
+    --ag-selected-row-background-color: #3b3b3b;
+    --ag-foreground-color: #e0e0e0;
+    --ag-border-color: #3a3a3a;
+}

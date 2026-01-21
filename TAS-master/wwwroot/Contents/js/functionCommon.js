@@ -4038,7 +4038,7 @@ function renderPagination(agPaging, gridApiPaging,listDataPaging, IsOptionAll = 
     `<div class="grid-info">
         <div class="ag-paging-grid">
             <span>${arrMsg.key_rowperpage}</span>:
-            <select class="datatable-selector selector-paging cboSelect2NoSearch" name="per-page" id="selectorPaging">
+            <select class="datatable-selector selector-paging cboSelect2No2Search" name="per-page" id="selectorPaging">
                 <option value="5">5</option>
                 <option value="10" selected>10</option>
                 <option value="20">20</option>
@@ -4444,4 +4444,9 @@ function loadChartOverview(idElement, type) {
     }
     var chart = new ApexCharts(document.querySelector('#' + idElement), objectChart);
     chart.render();
+}
+
+function setTheme() {
+    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-' + PFN_readCookie('theme'));
+    /*localStorage.setItem('theme', theme);*/
 }

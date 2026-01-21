@@ -62,6 +62,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Contents\js\RubberIntaketemp.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Remove="Resources\LanguageLocalizer.en.resx" />
     <EmbeddedResource Remove="Resources\LanguageLocalizer.vi.resx" />
   </ItemGroup>
@@ -772,6 +776,7 @@
     <Folder Include="Log\" />
     <Folder Include="Migrations\" />
     <Folder Include="Publish\" />
+    <Folder Include="wwwroot\Contents\js\jquery\" />
   </ItemGroup>
 
   <ItemGroup>

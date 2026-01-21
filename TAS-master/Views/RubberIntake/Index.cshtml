@@ -84,12 +84,12 @@
                     <!-- ========================================
                          AG-GRID TABLE
                     ======================================== -->
-                    <div id="myGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
+                    <div id="myGrid" theme="aggrid" class="ag-theme-quartz-dark" style="height: 600px; width: 100%;"></div>
                     <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
                     <!-- ========================================
                          HIDDEN FILE INPUT
                     ======================================== -->
-                    <input type="file" id="fileImport" accept=".xlsx,.xls" style="display:none;" onchange="handleFileImport(event)" />
+                    <input type="file" id="fileImport" accept=".xlsx,.xls" style="display:none;" onchange="handleFileImport(this)" />
                 </div>
             </div>
         </div>
@@ -100,39 +100,25 @@
      SCRIPTS
 ======================================== -->
 @section Scripts {
-    <!-- AG Grid -->
-
-    <!-- SheetJS for Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
     <!-- Custom JS -->
     <script src="~/Contents/js/RubberIntake.js"></script>
     <script>
+        var gridApiIntake, gridColumnApi;
         var agPaging = 'ag-paging-footer';
         var IsOptionAll = false;
         // ========================================
         // INITIALIZATION
         // ========================================
         document.addEventListener('DOMContentLoaded', function() {
-            const gridDiv = document.querySelector('#myGrid');
-            gridApiIntake = agGrid.createGrid(gridDiv, gridOptions);
-
-            // Load initial data
-            loadData();
-            // Setup filter change events
-            loadAllCombos();
-            
+            gridApiIntake = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions,);
+            loadData();// Load initial data
+            loadAllCombos();// Setup filter change events
             //đăng ký select trang
             $('#selectorPaging').change(function (e) {
                 let selectPage = $(this).val();
                 IsOptionAll = selectPage == '*';
                 loadData();
             });
-            setTimeout(() => {
-                ApplyCboSelect2();
-                RegisterCheckAll();
-            }, 1000);
-
             $('#cboAgent,#cboFarm,#cboOrder,#cboStatus').change(function (e) {
                 loadData();
             });
@@ -140,6 +126,11 @@
                 let dataType = $(this).val();
                 FilterType(dataType);
             });
+            setTheme();
+            setTimeout(() => {
+                ApplyCboSelect2();
+                RegisterCheckAll();
+            }, 1000);
         });
     </script>
 }

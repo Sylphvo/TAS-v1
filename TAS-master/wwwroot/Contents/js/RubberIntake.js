@@ -1,7 +1,7 @@
 // ========================================
 // GLOBAL VARIABLES
 // ========================================
-let gridApiIntake, gridColumnApi;
+
 var ListDataFull;
 let rowData = [];
 var arrValue = {
@@ -27,6 +27,7 @@ var farmByCode = {};
 // ========================================
 // AG GRID CONFIGURATION
 // ========================================
+
 const gridOptions = {
     // Column Definitions
     columnDefs: [
@@ -35,9 +36,9 @@ const gridOptions = {
             field: 'selected',
             headerCheckboxSelection: true,
             checkboxSelection: true,
-            width: 30,
-            minWidth: 30,
-            maxWidth: 30,
+            width: 50,
+            minWidth: 50,
+            maxWidth: 50,
             pinned: 'left',
             lockPinned: true,
             suppressMovable: true,
@@ -57,70 +58,53 @@ const gridOptions = {
             //headerCheckboxSelection: true,    // checkbox chọn tất cả
             //headerCheckboxSelectionFilteredOnly: true, // chỉ chọn những dòng đang filter
         },
-        {
-            headerName: 'Mã Intake',
-            field: 'intakeCode',
-            width: 170,
-            minWidth: 170,
-            editable: true,
-            filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
-        },
-        {
-            headerName: 'Đại lý',
-            field: 'agentCode',
-            width: 100,
-            editable: true,
-            cellEditor: 'agSelectCellEditor',
-            filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual,
-            cellEditorParams: () => ({
-                values: arrValue.comboAgent.map(f => f.value),
-                allowTyping: true,
-                searchType: 'matchAny',
-                cellRenderer: (p) => {
-                    const f = agentByCode[p.value];
-                    return f ? `${f.value} - ${f.text}` : p.value;
-                }
-            }),
-        },
+        //{
+        //    headerName: 'Mã Intake',
+        //    field: 'intakeCode',
+        //    width: 170,
+        //    minWidth: 170,
+        //    editable: true,
+        //    filter: 'agTextColumnFilter',
+        //    cellStyle: cellStyle_Col_Model_EventActual
+        //},
         {
             headerName: 'Tên đại lý',
-            field: 'agentName',
-            width: 180,
-            editable: false,
-            filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
-        },
-        {
-            headerName: 'Mã Nhà vườn',
-            field: 'farmCode',
-            width: 150,
-            editable: true,
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: []  // Will be populated from ComboFarmCode
-            },
-            filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual,
-            cellEditorParams: () => ({
-                values: arrValue.comboFarmCode.map(f => f.value),
-                allowTyping: true,
-                searchType: 'matchAny',
-                cellRenderer: (p) => {
-                    const f = farmByCode[p.value];
-                    return f ? `${f.value} - ${f.text}` : p.value;
-                }
-            }),
-        },
-        {
-            headerName: 'Tên Nhà vườn',
-            field: 'farmerName',
+            field: 'agentCode',
             width: 200,
             editable: true,
+            cellEditor: 'agSelectCellEditor',
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellStyle: cellStyle_Col_Model_EventActual,
+            cellEditorParams: CellEditorParams,            
+            cellRenderer: CellRenderSelectNameByCode
         },
+        //{
+        //    headerName: 'Tên đại lý',
+        //    field: 'agentName',
+        //    width: 180,
+        //    editable: false,
+        //    filter: 'agTextColumnFilter',
+        //    cellStyle: cellStyle_Col_Model_EventActual
+        //},
+        {
+            headerName: 'Tên nhà vườn',
+            field: 'farmCode',
+            width: 200,
+            editable: true,
+            cellEditor: 'agSelectCellEditor',
+            filter: 'agTextColumnFilter',
+            cellStyle: cellStyle_Col_Model_EventActual,
+            cellEditorParams: CellEditorParams,
+            cellRenderer: CellRenderSelectNameByCode
+        },
+        //{
+        //    headerName: 'Tên Nhà vườn',
+        //    field: 'farmerName',
+        //    width: 200,
+        //    editable: true,
+        //    filter: 'agTextColumnFilter',
+        //    cellStyle: cellStyle_Col_Model_EventActual
+        //},
         {
             headerName: 'KL Mủ (kg)',
             field: 'rubberKg',
@@ -212,7 +196,7 @@ const gridOptions = {
                 if (params.data.intakeId === 0) {
                     html += `
                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>
-                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>
+                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>
                     `;
                 }
                 else {
@@ -227,7 +211,7 @@ const gridOptions = {
             filter: false
         }
     ],
-
+    //sideBar: true,
     // Default Column Definition
     rowSelection: 'multiple',
     defaultColDef: {
@@ -236,21 +220,7 @@ const gridOptions = {
         resizable: true,
         floatingFilter: true,
         suppressMenu: false,
-
     },
-
-    // Grid Options
-    //rowSelection: {
-    //    mode: "multiRow",
-    //    checkboxes: true,
-    //    headerCheckbox: true,
-    //    enableClickSelection: true,
-    //    selectionColumnDef: {
-    //        pinned: 'left',
-    //        width: 50,
-    //        headerCheckboxSelection: true
-    //    }
-    //},
     rowDragManaged: true,
     rowDragEntireRow: true,
     animateRows: true,
@@ -265,6 +235,8 @@ const gridOptions = {
     paginationPageSizeSelector: [20, 50, 100, 200],
     rowHeight: 45,
     headerHeight: 45,
+    suppressRowClickSelection: true,
+
     
     // Events
     onGridReady: onGridReady,
@@ -323,6 +295,7 @@ async function loadData() {
         }
 		// Render pagination
         renderPagination(agPaging, gridApiIntake, rowData, IsOptionAll);
+        RegisterCheckAll();
     } catch (error) {
         console.error('Error loading data:', error);
         //NotificationToast('error', 'Lỗi kết nối server');
@@ -376,7 +349,36 @@ function addNewRow() {
     
     NotificationToast('info', 'Đã thêm dòng mới. Hãy nhập thông tin và lưu.');
 }
+function cancelRow() {
+    const newRow = {
+        intakeId: 0,
+        intakeCode: generateIntakeCode(),
+        agentCode: '',
+        agentName: '',
+        farmCode: '',
+        farmerName: '',
+        rubberKg: 0,
+        tscPercent: 0,
+        drcPercent: 0,
+        finishedProductKg: 0,
+        centrifugeProductKg: 0,
+        status: 0,
+        statusText: 'Chưa duyệt',
+        timeDate_Person: '',
+        timeDate: ''
+    };
 
+    gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
+    rowData.push(newRow);
+    // 👇 BẮT BUỘC
+    gridApiIntake.refreshCells({
+        columns: ['action'], // colId của cột Thao tác
+        force: true
+    });
+    updateRowNumbers();
+
+    NotificationToast('info', 'Đã thêm dòng mới. Hãy nhập thông tin và lưu.');
+}
 // Save Single Row
 async function saveRow(rowIndex) {
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
@@ -906,4 +908,23 @@ function FilterType(dataType) {
         gridApiIntake.setColumnsVisible(['finishedProductKg'], false);
     }
     gridApiIntake.sizeColumnsToFit();
+}
+
+function CellEditorParams(params) {
+    const colfield = params.colDef.field;
+    const objectData = colfield == 'agentCode' ? arrValue.comboAgent : arrValue.comboFarmCode;
+    const cellEditorParams = {
+        values: objectData.map(f => f.text),
+        allowTyping: true,
+        searchType: 'matchAny',
+        cellRenderer: CellRenderSelect(params, colfield)
+    };
+	return cellEditorParams;
+}
+function CellRenderSelect(params, colfield) {
+    return colfield == 'agentCode' ? params.data.agentName : params.data.farmerName;
+}
+
+function CellRenderSelectNameByCode(params) {
+    return params.colDef.field == 'agentCode' ? params.data.agentName : params.data.farmerName;
 }
