@@ -58,7 +58,7 @@ function layout_change(e) {
             , updateLogo(".auth-main.v1 .auth-sidefooter img", "../Logo/LogoBlack.png")
             , updateLogo(".footer-top .footer-logo", "../Logo/LogoBlack.png")
             , updateActiveButton('.theme-layout .btn[data-value="true"]'))
-    setTheme();
+    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-quartz-' + PFN_readCookie('theme'));
 }
 
 function updateLogo(e, t) {

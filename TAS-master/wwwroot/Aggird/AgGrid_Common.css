@@ -29,7 +29,7 @@
 
 .ag-row-selected .ag-cell-value,
 .ag-row-selected::before {
-    background: #fbec88 url(../css/images/ui-bg_flat_55_fbec88_40x100.png) 50% 50% repeat-x !important;
+    background: var(--ag-selected-row-background-color) url(../css/images/ui-bg_flat_55_fbec88_40x100.png) 50% 50% repeat-x !important;
 }
 
 .ag-row-deleted .ag-cell-value,

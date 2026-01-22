@@ -24106,7 +24106,7 @@ pre[class*=language-] {
     2. Custom css end
 ==========================  **/
 .pc-sidebar {
-	background: var(--pc-sidebar-background);
+	background: var(--bs-body-bg);
 	width: 280px;
 	position: fixed;
 	top: 0;

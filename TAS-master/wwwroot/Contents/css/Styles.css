@@ -155,7 +155,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 5px 15px !important;
+    padding: 10px 15px 0px 15px !important;
 }
 .grid-paging {
     display: flex;
@@ -231,7 +231,7 @@ div.ag-cell-value:not(div[col-id="ag-Grid-AutoColumn"]) {
     /*color: white;*/
 }
 .ag-popup-child {
-    background-color: aliceblue !important;
+    background-color: var(--bs-body-bg) !important;
     border-radius: 5px !important;
 }
 .ag-menu-option-icon{
@@ -1000,3 +1000,49 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
 .ag-theme-quartz-dark .ag-cell-range-single-cell, .ag-theme-quartz .ag-cell-range-single-cell {
     background-color: transparent !important;
 }
+
+/* ========= POPUP SELECT =========*/
+/*CSS popup (khung ngoài)*/
+.ag-rich-select {
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border: 1px solid #d0d7de;
+    background: #000;
+}
+/*CSS danh sách item*/
+.ag-rich-select-list {
+    padding: 0;
+}
+/*CSS từng item (row)*/
+.ag-rich-select-row {
+   padding: 10px 5px;
+    font-size: 14px;
+    cursor: pointer;
+    display:block;
+}
+
+
+   
+
+/*Nếu muốn bo góc + animation nhẹ*/
+
+.ag-rich-select-virtual-list-item {
+    top: 0px;
+    padding: 0 !important;
+    display: block !important;
+    position: unset !important;
+    /*margin: 5px 0;*/
+    height: 30px !important;
+}
+.ag-virtual-list-item {
+    height: 30px !important;
+    margin: 10px 0;
+}
+    .ag-virtual-list-container {
+        height: 100% !important;
+    }
+.ag-tab-guard.ag-tab-guard-top, .ag-tab-guard.ag-tab-guard-bottom {
+    display: none !important;
+}
+/* ========= POPUP SELECT =========*/
+

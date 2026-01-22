@@ -4445,8 +4445,3 @@ function loadChartOverview(idElement, type) {
     var chart = new ApexCharts(document.querySelector('#' + idElement), objectChart);
     chart.render();
 }
-
-function setTheme() {
-    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-quartz-' + PFN_readCookie('theme'));
-    /*localStorage.setItem('theme', theme);*/
-}
