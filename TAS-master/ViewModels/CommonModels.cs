@@ -31,7 +31,7 @@ namespace TAS.ViewModels
 		// ========================================
 		// ComboBox Agent (Đại lý)
 		// ========================================
-		public List<SelectListItem> ComboAgent()
+		public List<CboxCommonSystem> ComboAgent()
 		{
 			try
 			{
@@ -44,25 +44,26 @@ namespace TAS.ViewModels
                     ORDER BY AgentCode
                 ";
 
-				var result = _dbHelper.Query<SelectListItem>(sql);
-				return result ?? new List<SelectListItem>();
+				var result = _dbHelper.Query<CboxCommonSystem>(sql);
+				return result ?? new List<CboxCommonSystem>();
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error in ComboAgent: {ex.Message}");
-				return new List<SelectListItem>();
+				return new List<CboxCommonSystem>();
 			}
 		}
 
 		// ========================================
 		// ComboBox Farm (Nhà vườn)
 		// ========================================
-		public List<SelectListItem> ComboFarmCode()
+		public List<CboxCommonSystem> ComboFarmCode()
 		{
 			try
 			{
 				var sql = @"
                     SELECT 
+                        AgentCode AS [group],
                         FarmCode AS [Value],
                         FarmerName AS [Text]
                     FROM RubberFarm
@@ -70,20 +71,20 @@ namespace TAS.ViewModels
                     ORDER BY FarmCode
                 ";
 
-				var result = _dbHelper.Query<SelectListItem>(sql);
-				return result ?? new List<SelectListItem>();
+				var result = _dbHelper.Query<CboxCommonSystem>(sql);
+				return result ?? new List<CboxCommonSystem>();
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error in ComboFarmCode: {ex.Message}");
-				return new List<SelectListItem>();
+				return new List<CboxCommonSystem>();
 			}
 		}
 
 		// ========================================
 		// ComboBox Farm by Agent
 		// ========================================
-		public List<SelectListItem> ComboFarmCodeByAgent(string agentCode)
+		public List<CboxCommonSystem> ComboFarmCodeByAgent(string agentCode)
 		{
 			try
 			{
@@ -97,20 +98,20 @@ namespace TAS.ViewModels
                     ORDER BY FarmCode
                 ";
 
-				var result = _dbHelper.Query<SelectListItem>(sql, new { AgentCode = agentCode });
-				return result ?? new List<SelectListItem>();
+				var result = _dbHelper.Query<CboxCommonSystem>(sql, new { AgentCode = agentCode });
+				return result ?? new List<CboxCommonSystem>();
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error in ComboFarmCodeByAgent: {ex.Message}");
-				return new List<SelectListItem>();
+				return new List<CboxCommonSystem>();
 			}
 		}
 
 		// ========================================
 		// ComboBox Order (Đơn hàng)
 		// ========================================
-		public List<SelectListItem> ComboOrderCode()
+		public List<CboxCommonSystem> ComboOrderCode()
 		{
 			try
 			{
@@ -123,20 +124,20 @@ namespace TAS.ViewModels
                     ORDER BY OrderDate DESC, OrderCode DESC
                 ";
 
-				var result = _dbHelper.Query<SelectListItem>(sql);
-				return result ?? new List<SelectListItem>();
+				var result = _dbHelper.Query<CboxCommonSystem>(sql);
+				return result ?? new List<CboxCommonSystem>();
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error in ComboOrderCode: {ex.Message}");
-				return new List<SelectListItem>();
+				return new List<CboxCommonSystem>();
 			}
 		}
 
 		// ========================================
 		// ComboBox Pond (Hồ)
 		// ========================================
-		public List<SelectListItem> ComboPondCode()
+		public List<CboxCommonSystem> ComboPondCode()
 		{
 			try
 			{
@@ -149,27 +150,27 @@ namespace TAS.ViewModels
                     ORDER BY PondCode
                 ";
 
-				var result = _dbHelper.Query<SelectListItem>(sql);
-				return result ?? new List<SelectListItem>();
+				var result = _dbHelper.Query<CboxCommonSystem>(sql);
+				return result ?? new List<CboxCommonSystem>();
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error in ComboPondCode: {ex.Message}");
-				return new List<SelectListItem>();
+				return new List<CboxCommonSystem>();
 			}
 		}
 
 		// ========================================
 		// ComboBox Status
 		// ========================================
-		public List<SelectListItem> ComboStatus()
+		public List<CboxCommonSystem> ComboStatus()
 		{
-			return new List<SelectListItem>
+			return new List<CboxCommonSystem>
 			{
-				new SelectListItem { Value = "0", Text = "Chưa duyệt" },
-				new SelectListItem { Value = "1", Text = "Chờ xử lý" },
-				new SelectListItem { Value = "2", Text = "Đã vào hồ" },
-				new SelectListItem { Value = "3", Text = "Hoàn thành" }
+				new CboxCommonSystem { Value = "0", Text = "Chưa duyệt" },
+				new CboxCommonSystem { Value = "1", Text = "Chờ xử lý" },
+				new CboxCommonSystem { Value = "2", Text = "Đã vào hồ" },
+				new CboxCommonSystem { Value = "3", Text = "Hoàn thành" }
 			};
 		}
 

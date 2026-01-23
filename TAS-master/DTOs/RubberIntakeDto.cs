@@ -13,6 +13,8 @@ namespace TAS.DTOs
 	{
 		public long intakeId { get; set; }
 		public string? intakeCode { get; set; }
+		public string? agentCode { get; set; }
+		public string? agentName { get; set; }
 		public string farmCode { get; set; } = string.Empty;
 		public string farmerName { get; set; } = string.Empty;
 		public decimal rubberKg { get; set; }
@@ -36,6 +38,8 @@ namespace TAS.DTOs
 
 	public class CreateRubberIntakeDto
 	{
+		public string? agentCode { get; set; }
+		public string? agentName { get; set; }
 		public string farmCode { get; set; } = string.Empty;
 		public string farmerName { get; set; } = string.Empty;
 		public decimal rubberKg { get; set; }
@@ -52,6 +56,8 @@ namespace TAS.DTOs
 	{
 		public long intakeId { get; set; }
 		public string? intakeCode { get; set; }
+		public string? agentCode { get; set; }
+		public string? agentName { get; set; }
 		public string? farmCode { get; set; }
 		public string? farmerName { get; set; }
 		public decimal? rubberKg { get; set; }

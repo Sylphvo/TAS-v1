@@ -4105,7 +4105,8 @@ function ApplyCboSelect2() {
     });
     $('.cboSelect2NoSearch').select2({
         placeholder: 'Vui lòng chọn',
-        minimumResultsForSearch: Infinity
+        minimumResultsForSearch: Infinity,
+        allowClear: true
     });
     $('.cboSelect2NoSearch').on('click', function (e) {
         let idElemnt = $(this).attr('id');
@@ -4116,7 +4117,9 @@ function ApplyCboSelect2() {
     ========================================= */
     $('.cboSelect2Search').css("width", 200);
     $('.cboSelect2Search').select2({
-        placeholder: 'Vui lòng chọn'
+        placeholder: 'Vui lòng chọn',
+        allowClear: true
+
     });
 }
 function RenderComboBox(arrlstData, idElemnt, selectFirst) {

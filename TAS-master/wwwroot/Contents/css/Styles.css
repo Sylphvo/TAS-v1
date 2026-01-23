@@ -257,7 +257,7 @@ div.ag-cell-value:not(div[col-id="ag-Grid-AutoColumn"]) {
 }
 .ag-cell .ag-cell-value {
     height: 105%;
-    margin-right: -2px;
+    margin-right: 0px;
 }
 .ag-cell-wrapper, .ag-header-cell {
     justify-content: center;
@@ -1046,3 +1046,66 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
 }
 /* ========= POPUP SELECT =========*/
 
+
+.ag-center-cols-container .select2-container .select2-selection--single {
+    height: 100%;
+}
+
+.ag-center-cols-container .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 35px;
+}
+
+.ag-center-cols-container .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 35px;
+}
+
+.ag-cell-wrapper .select2-container--open .select2-dropdown--below {
+    width: 250px !important;
+}
+
+.ag-cell-range-selected .select2-container--open .select2-dropdown {
+    left: -2px !important;
+}
+.select2-dropdown {
+    background: var(--bs-body-bg) !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--bs-body-color) !important;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid #aaa;
+    background-color: var(--pc-sidebar-background);
+    color: var(--bs-body-color) !important;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--bg-custom-button) !important;
+    color: var(--bg-custom-text) !important;
+}
+.select2-container--default .select2-selection--single {
+    background: var(--bs-body-bg) !important;
+}
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: var(--pc-sidebar-user-background);
+}
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: var(--bg-custom-button) !important;
+    color: var(--bg-custom-text) !important;
+}
+/* Thêm vào CSS */
+.ag-theme-alpine {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Hoặc chỉ áp dụng cho cells */
+.ag-cell {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+    /* Tắt highlight khi drag */
+    .ag-cell::selection {
+        background: transparent;
+    }

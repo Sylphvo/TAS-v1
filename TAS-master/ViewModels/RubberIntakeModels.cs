@@ -149,6 +149,7 @@ namespace TAS.ViewModels
                     BEGIN
                         -- Update
                         UPDATE RubberIntake SET
+                            agentCode = @AgentCode,
                             FarmCode = @FarmCode,
                             FarmerName = @FarmerName,
                             RubberKg = @RubberKg,
@@ -167,11 +168,11 @@ namespace TAS.ViewModels
                     BEGIN
                         -- Insert
                         INSERT INTO RubberIntake (
-                            IntakeCode, FarmCode, FarmerName, RubberKg, TSCPercent, DRCPercent,
+                            IntakeCode, AgentCode, FarmCode, FarmerName, RubberKg, TSCPercent, DRCPercent,
                             FinishedProductKg, CentrifugeProductKg, Status, RegisterDate, RegisterPerson
                         )
                         VALUES (
-                            @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
+                            @IntakeCode, @AgentCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
                             @FinishedProductKg, @CentrifugeProductKg, @Status, SYSDATETIME(), @RegisterPerson
                         );
                         
@@ -189,6 +190,7 @@ namespace TAS.ViewModels
 					IntakeId = request.intakeId,
 					IntakeCode = intakeCode,
 					FarmCode = request.farmCode,
+					AgentCode = request.agentCode,
 					FarmerName = request.farmerName,
 					RubberKg = request.rubberKg ?? 0m,
 					TSCPercent = request.tscPercent ?? 0m,

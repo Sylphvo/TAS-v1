@@ -25,45 +25,7 @@ var agentByCode = {};
 var farmByCode = {};
 
 
-class SelectEditorWithTextDisplay {
-    init(params) {
-        this.params = params;
 
-        // Tạo select
-        this.eSelect = document.createElement('select');
-        this.eSelect.className = 'ag-cell-edit-input';
-        this.eSelect.style.width = '100%';
-        this.eSelect.style.height = '100%';
-
-        // Lấy value hiện tại
-        const currentValue = params.value;
-
-        // Add options với text nhưng value là code
-        arrValue.comboFarmCode.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.value; // FR001, FR002...
-            option.text = item.text;   // Vườn Cao Su...
-
-            if (item.value === currentValue) {
-                option.selected = true;
-            }
-
-            this.eSelect.appendChild(option);
-        });
-    }
-
-    getGui() {
-        return this.eSelect;
-    }
-
-    getValue() {
-        return this.eSelect.value; // Trả về value (FR001...)
-    }
-
-    afterGuiAttached() {
-        this.eSelect.focus();
-    }
-}
 // ========================================
 // AG GRID CONFIGURATION
 // ========================================
@@ -112,9 +74,13 @@ const gridOptions = {
             field: 'agentCode',
             width: 200,
             editable: true,
-            cellEditor: 'agSelectCellEditor',
+            cellEditor: SelectEditorWithTextDisplay,
             filter: 'agTextColumnFilter',
             cellStyle: cellStyle_Col_Model_EventActual,
+            valueFormatter: (params) => {
+                if (!params.value) return '';
+                return params.data.agentName;
+            }
         },
         //{
         //    headerName: 'Tên đại lý',
@@ -129,11 +95,11 @@ const gridOptions = {
             field: 'farmCode',
             cellEditor: SelectEditorWithTextDisplay,
             editable: true,
-
+            filter: 'agTextColumnFilter',
+            cellStyle: cellStyle_Col_Model_EventActual,
             valueFormatter: (params) => {
                 if (!params.value) return '';
-                const found = arrValue.comboFarmCode.find(x => x.value === params.value);
-                return found ? found.text : params.value;
+                return params.data.farmerName;
             }
         },
         //{
@@ -263,12 +229,16 @@ const gridOptions = {
     rowDragManaged: true,
     rowDragEntireRow: true,
     animateRows: true,
-    enableRangeSelection: true,
     enableCellTextSelection: true,
-    suppressMultiRangeSelection: false,
     enableClipboard: true,
+
+    suppressMultiRangeSelection: true,
+    suppressCellFocus: true,
+    enableRangeHandle: true,
+    enableRangeSelection: true,
     enableFillHandle: true, // Enterprise
     fillHandleDirection: 'y', // CHỈ kéo dọc
+
     //pagination: true,
     paginationPageSize: 50,
     paginationPageSizeSelector: [20, 50, 100, 200],
@@ -283,8 +253,7 @@ const gridOptions = {
     onRowDragEnd: onRowDragEnd,
 
 
-    stopEditingWhenCellsLoseFocus: true,
-    singleClickEdit: true // hoặc true tùy nhu cầu
+    singleClickEdit: false // hoặc true tùy nhu cầu
 
 };
 
@@ -658,7 +627,7 @@ function importExcel() {
 }
 
 async function handleFileImport(event) {
-    const file = event.target.files[0];
+    const file = event.files[0];
     if (!file) return;
     
     
@@ -701,14 +670,12 @@ async function handleFileImport(event) {
         NotificationToast('error', 'Lỗi khi đọc file Excel');
     } finally {
         
-        event.target.value = '';  // Reset file input
+        event.value = '';  // Reset file input
     }
 }
 
 // Export Excel
 async function exportExcel() {
-    
-    
     const agentCode = $('#cboAgent').val();
     const farmCode = $('#cboFarm').val();
     const orderCode = $('#cboOrder').val();
@@ -804,12 +771,16 @@ function updateRowNumbers() {
 function onCellValueChanged(event) {
     if (event.colDef.field == "agentCode" || event.colDef.field == "farmCode") {
         if (event.colDef.field == "agentCode") {
-            let objData = arrValue.comboAgent.filter(x => x.value == event.newValue)
-            event.data.agentName = objData[objData.length - 1].text;
+            let objData = arrValue.comboAgent.filter(x => x.value == event.newValue);
+            if (objData.length > 0) {
+                event.data.agentName = objData[objData.length - 1].text;
+            }
         }
         else if (event.colDef.field == "farmCode") {
-            let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue)
-            event.data.farmerName = objData[objData.length - 1].text;
+            let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue);
+            if (objData.length > 0) {
+                event.data.farmerName = objData[objData.length - 1].text;
+            }
         }
         gridApiIntake.applyTransaction({ update: [event.data] });
         saveRow(event.rowIndex);

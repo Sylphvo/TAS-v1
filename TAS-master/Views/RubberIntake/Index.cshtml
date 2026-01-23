@@ -84,7 +84,7 @@
                     <!-- ========================================
                          AG-GRID TABLE
                     ======================================== -->
-                    <div id="myGrid" theme="aggrid" class="ag-theme-quartz-dark" style="height: 600px; width: 100%;"></div>
+                    <div id="RubberIntake" theme="aggrid" class="ag-theme-quartz-dark" style="height: 600px; width: 100%;"></div>
                     <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
                     <!-- ========================================
                          HIDDEN FILE INPUT
@@ -100,6 +100,7 @@
      SCRIPTS
 ======================================== -->
 @section Scripts {
+    @* <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script> *@
     <!-- Custom JS -->
     <script src="~/Contents/js/RubberIntake.js"></script>
     <script>
@@ -110,7 +111,7 @@
         // INITIALIZATION
         // ========================================
         document.addEventListener('DOMContentLoaded', function() {
-            gridApiIntake = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions,);
+            gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
             loadData();// Load initial data
             loadAllCombos();// Setup filter change events
             //đăng ký select trang

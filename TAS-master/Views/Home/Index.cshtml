@@ -10,90 +10,94 @@
 
 <div class="row">
     <div class="row">
-        <div class="col-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="my-n4" style="width: 130px">
-                                <div id="total-earning-graph-1"></div>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 mx-2">
-                            <p class="mb-1">@Language.key_nhavuon</p>
-							<h6 class="mb-0">@objectFarm.Total</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="my-n4" style="width: 130px">
-                                <div id="total-earning-graph-2"></div>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 mx-2">
-                            <p class="mb-1">@Language.key_agent</p>
-							<h6 class="mb-0">@objectAgent.Total</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12">
-        <div class="card table-card">
-            <div class="card-header d-flex align-items-center justify-content-between py-3">
-                <h5 class="mb-0">Thống kê khối lượng bán của nhà vườn</h5>
-                <button class="btn btn-sm btn-link-primary">View All</button>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="pc-dt-simple">
-                        <thead>
-                            <tr>
-                                <th>Tên nhà vườn</th>
-                                <th>Khối lượng</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Salary Payment</td>
-                                <td>$950.54</td>
-                                <td><span class="badge text-bg-success">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>Project Payment</td>
-                                <td>$520.30</td>
-                                <td><span class="badge text-bg-success">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>You Tube Subscribe</td>
-                                <td>$100.00</td>
-                                <td><span class="badge text-bg-warning">Pending</span></td>
-                                
-                            </tr>
-                            <tr>
-                                <td>Slary Payment</td>
-                                <td>$760.25</td>
-                                <td><span class="badge text-bg-primary">In Progress</span></td>
-                            </tr>
-                            <tr>
-                                
-                                <td>Spotify Subscribe</td>
-                                <td>$60.05</td>
-                                <td><span class="badge text-bg-danger">Canceled</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+		<div class="col-6">
+			<div class="card table-card">
+				<div class="card-header d-flex align-items-center justify-content-between py-3">
+					<h5 class="mb-0">Thống kê khối lượng bán của nhà vườn</h5>
+					@* <button class="btn btn-sm btn-link-primary">View All</button> *@
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-hover" id="pc-dt-simple">
+							<thead>
+								<tr>
+									<th>Tên nhà vườn</th>
+									<th>Khối lượng</th>
+									<th>Trạng thái</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Salary Payment</td>
+									<td>$950.54</td>
+									<td><span class="badge text-bg-success">Completed</span></td>
+								</tr>
+								<tr>
+									<td>Project Payment</td>
+									<td>$520.30</td>
+									<td><span class="badge text-bg-success">Completed</span></td>
+								</tr>
+								<tr>
+									<td>You Tube Subscribe</td>
+									<td>$100.00</td>
+									<td><span class="badge text-bg-warning">Pending</span></td>
+
+								</tr>
+								<tr>
+									<td>Slary Payment</td>
+									<td>$760.25</td>
+									<td><span class="badge text-bg-primary">In Progress</span></td>
+								</tr>
+								<tr>
+
+									<td>Spotify Subscribe</td>
+									<td>$60.05</td>
+									<td><span class="badge text-bg-danger">Canceled</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6">
+			<div class="row">
+				<div class="col-6">
+					<div class="card">
+						<div class="card-body">
+							<div class="d-flex align-items-center">
+								<div class="flex-shrink-0">
+									<div class="my-n4" style="width: 130px">
+										<div id="total-earning-graph-1"></div>
+									</div>
+								</div>
+								<div class="flex-grow-1 mx-2">
+									<p class="mb-1">@Language.key_nhavuon</p>
+									<h6 class="mb-0">@objectFarm.Total</h6>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="card">
+						<div class="card-body">
+							<div class="d-flex align-items-center">
+								<div class="flex-shrink-0">
+									<div class="my-n4" style="width: 130px">
+										<div id="total-earning-graph-2"></div>
+									</div>
+								</div>
+								<div class="flex-grow-1 mx-2">
+									<p class="mb-1">@Language.key_agent</p>
+									<h6 class="mb-0">@objectAgent.Total</h6>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
     </div>
 </div>
 <div class="row">

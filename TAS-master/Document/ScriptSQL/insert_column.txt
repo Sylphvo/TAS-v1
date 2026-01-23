@@ -2,3 +2,8 @@ ALTER TABLE RubberIntake
 ADD
     DRCPercent DECIMAL(5,2) NULL,
     CentrifugeProductKg DECIMAL(10,2) NOT NULL DEFAULT 0;
+	
+	
+ALTER TABLE RubberIntake
+ADD
+    AgentCode NVARCHAR(50) NOT NULL DEFAULT '';
