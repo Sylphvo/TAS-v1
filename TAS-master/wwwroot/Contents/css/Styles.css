@@ -1109,3 +1109,6 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
     .ag-cell::selection {
         background: transparent;
     }
+.ag-menu-option, .ag-menu-separator {
+    display: block !important;
+}

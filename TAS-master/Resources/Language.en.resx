@@ -340,4 +340,10 @@
   <data name="key_icon">
     <value>Icon</value>
   </data>
+  <data name="key_chuaduyet">
+    <value>Unapproved</value>
+  </data>
+  <data name="key_hoanthanh">
+    <value>Finish</value>
+  </data>
 </root>

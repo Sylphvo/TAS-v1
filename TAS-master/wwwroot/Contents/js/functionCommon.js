@@ -3974,71 +3974,71 @@ function SetLanguage(langCurrent) {
 //
 
 
-function ShowOrHideRowChildren(id_list, selector, funcSetValueArrParentIds, sortOrder) {
-    var selectorCell = $(selector).parent().parent().parent();
-    var selectorRow = $(selectorCell).parent();
-    var itemParent = ListDataFull.find(x => x.sortIdList == id_list);
-    var row_index = parseInt($(selectorRow).attr('row-index')) + 1;
-    var listChild;
-    if (sortOrder == 1) {
-        listChild = ListRowChild.filter(function (item) {
-            return id_list == id_list.substring(0, item.sortIdList.lastIndexOf('__'));
-        });
-    }
-    else if (sortOrder == 2) {
-        listChild = ListRowChild.filter(function (item) {
-            return item.sortIdList.includes(id_list) && item.sortOrder == sortOrder + 1;
-        });
-    }
+//function ShowOrHideRowChildren(id_list, selector, funcSetValueArrParentIds, sortOrder) {
+//    var selectorCell = $(selector).parent().parent().parent();
+//    var selectorRow = $(selectorCell).parent();
+//    var itemParent = ListDataFull.find(x => x.sortIdList == id_list);
+//    var row_index = parseInt($(selectorRow).attr('row-index')) + 1;
+//    var listChild;
+//    if (sortOrder == 1) {
+//        listChild = ListRowChild.filter(function (item) {
+//            return id_list == id_list.substring(0, item.sortIdList.lastIndexOf('__'));
+//        });
+//    }
+//    else if (sortOrder == 2) {
+//        listChild = ListRowChild.filter(function (item) {
+//            return item.sortIdList.includes(id_list) && item.sortOrder == sortOrder + 1;
+//        });
+//    }
 
-    if (itemParent.isOpenChild) {
-        //Close Row
-        $(selector).attr('class', 'ag-icon ag-icon-tree-closed');
-        itemParent.isOpenChild = false;
-        gridApi.applyTransaction({ remove: listChild });
-        listChild.forEach(function (item) {
-            item.isOpenChild = false;
-        });
+//    if (itemParent.isOpenChild) {
+//        //Close Row
+//        $(selector).attr('class', 'ag-icon ag-icon-tree-closed');
+//        itemParent.isOpenChild = false;
+//        gridApi.applyTransaction({ remove: listChild });
+//        listChild.forEach(function (item) {
+//            item.isOpenChild = false;
+//        });
 
-        if (typeof funcSetValueArrParentIds === 'function') {
-            let arrParentIds = [...listChild.map(x => x.sortIdList)];
-            funcSetValueArrParentIds(arrParentIds, false);
-        }
-    } else {
-        if (sortOrder == 1) {
-            if (arrConstant.isCheckAll) {
-                listChild = ListDataFull.filter(function (item) {
-                    return item.sortOrder > sortOrder;
-                });
-                ListDataFull.filter(x => x.isOpenChild = arrConstant.isCheckAll);
-            }
-            else {
-                listChild = listChild.filter(function (item) {
-                    return item.sortOrder == sortOrder + 1;
-                });
-            }
-        }
-        //Open Row
-        $(selector).attr('class', 'ag-icon ag-icon-tree-open');
-        itemParent.isOpenChild = true;
-        gridApi.applyTransaction({
-            add: listChild,
-            addIndex: row_index,
-        });
+//        if (typeof funcSetValueArrParentIds === 'function') {
+//            let arrParentIds = [...listChild.map(x => x.sortIdList)];
+//            funcSetValueArrParentIds(arrParentIds, false);
+//        }
+//    } else {
+//        if (sortOrder == 1) {
+//            if (arrConstant.isCheckAll) {
+//                listChild = ListDataFull.filter(function (item) {
+//                    return item.sortOrder > sortOrder;
+//                });
+//                ListDataFull.filter(x => x.isOpenChild = arrConstant.isCheckAll);
+//            }
+//            else {
+//                listChild = listChild.filter(function (item) {
+//                    return item.sortOrder == sortOrder + 1;
+//                });
+//            }
+//        }
+//        //Open Row
+//        $(selector).attr('class', 'ag-icon ag-icon-tree-open');
+//        itemParent.isOpenChild = true;
+//        gridApi.applyTransaction({
+//            add: listChild,
+//            addIndex: row_index,
+//        });
 
-        if (typeof funcSetValueArrParentIds === 'function') {
-            let arrParentIds = [...listChild.map(x => x.sortIdList)];
-            funcSetValueArrParentIds(arrParentIds, true);
-        }
-    }
-}
+//        if (typeof funcSetValueArrParentIds === 'function') {
+//            let arrParentIds = [...listChild.map(x => x.sortIdList)];
+//            funcSetValueArrParentIds(arrParentIds, true);
+//        }
+//    }
+//}
 function renderPagination(agPaging, gridApiPaging,listDataPaging, IsOptionAll = false) {
     let idListPaging = 'ListPaging',idPaging = 'Paging',startCell = 'start-entries',lastCell = 'last-entries',totalCell = 'total-entries';
     let element =
     `<div class="grid-info">
         <div class="ag-paging-grid">
             <span>${arrMsg.key_rowperpage}</span>:
-            <select class="datatable-selector selector-paging cboSelect2No2Search" name="per-page" id="selectorPaging">
+            <select class="datatable-selector selector-paging cboSelect2SearchPage" name="per-page" id="selectorPaging">
                 <option value="5">5</option>
                 <option value="10" selected>10</option>
                 <option value="20">20</option>
@@ -4062,7 +4062,11 @@ function renderPagination(agPaging, gridApiPaging,listDataPaging, IsOptionAll = 
         arrConstant.isLoadFirst = false;
         $('#' + agPaging).append(element);
     }
-
+    $('.cboSelect2SearchPage').css("width", 50);
+    $('.cboSelect2SearchPage').select2({
+        placeholder: 'Vui lòng chọn',
+        minimumResultsForSearch: Infinity
+    });
     pagerApi = makePaginator({
         data: listDataPaging,
         listEl: '#' + idPaging,
@@ -4071,7 +4075,7 @@ function renderPagination(agPaging, gridApiPaging,listDataPaging, IsOptionAll = 
         pageSize: $('.selector-paging').val(),
         renderItem: x => ``,
         onChange: s => {
-            gridApiPaging.setGridOption("rowData", (IsOptionAll ? listDataPaging.slice(1, s.total) : listDataPaging.slice(s.start, s.last)));
+            gridApiPaging.setGridOption("rowData", (IsOptionAll ? listDataPaging.slice(1, s.total) : listDataPaging.slice(s.start, s.end)));
             OnChangePaging(s);
         }
     });

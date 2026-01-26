@@ -151,6 +151,15 @@ namespace TAS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unapproved.
+        /// </summary>
+        public static string key_chuaduyet {
+            get {
+                return ResourceManager.GetString("key_chuaduyet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Đóng.
         /// </summary>
         public static string key_close {
@@ -219,6 +228,15 @@ namespace TAS.Resources {
         public static string key_duyetdong {
             get {
                 return ResourceManager.GetString("key_duyetdong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finish.
+        /// </summary>
+        public static string key_hoanthanh {
+            get {
+                return ResourceManager.GetString("key_hoanthanh", resourceCulture);
             }
         }
         

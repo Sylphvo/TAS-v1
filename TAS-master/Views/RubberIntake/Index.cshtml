@@ -32,17 +32,13 @@
                             <div class="divboxOrder">
                                 <label>@Language.key_trangthai</label>
                                 <select id="cboStatus" class="form-control form-control-sm cboSelect2NoSearch" style="width: 150px">
-                                    <option value="">Vui lòng chọn</option>
-                                    <option value="0">Chưa duyệt</option>
-                                    <option value="1">Chờ xử lý</option>
-                                    <option value="2">Đã vào hồ</option>
-                                    <option value="3">Hoàn thành</option>
+                                    <option value="0">@Language.key_chuaduyet</option>
+                                    <option value="1">@Language.key_hoanthanh</option>
                                 </select>
                             </div>
                             <div class="divboxOrder">
                                 <label>@Language.key_loainguyenlieu</label>
                                 <select id="CboType" class="form-select cboSelect2NoSearch">
-                                    <option value="">Vui lòng chọn</option>
                                     <option value="1">Mủ Nước</option>
                                     <option value="2">Mủ Đông</option>
                                     <option value="3">Mủ Ly Tâm</option>
@@ -100,7 +96,6 @@
      SCRIPTS
 ======================================== -->
 @section Scripts {
-    @* <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script> *@
     <!-- Custom JS -->
     <script src="~/Contents/js/RubberIntake.js"></script>
     <script>
@@ -114,23 +109,8 @@
             gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
             loadData();// Load initial data
             loadAllCombos();// Setup filter change events
-            //đăng ký select trang
-            $('#selectorPaging').change(function (e) {
-                let selectPage = $(this).val();
-                IsOptionAll = selectPage == '*';
-                loadData();
-            });
-            $('#cboAgent,#cboFarm,#cboOrder,#cboStatus').change(function (e) {
-                loadData();
-            });
-            $('#CboType').change(function (e) {
-                let dataType = $(this).val();
-                FilterType(dataType);
-            });
-            setTimeout(() => {
-                ApplyCboSelect2();
-                RegisterCheckAll();
-            }, 1000);
+            RegisterAllEvent();
+            ApplyCboSelect2();
         });
     </script>
 }

@@ -5,12 +5,10 @@
 var ListDataFull;
 let rowData = [];
 var arrValue = {
-    statusInProgress: 0, // Đang xử lý
-    //statusHandle: 1,// Đã Xử lý
-    statusConfirmOrder: 1, // Đã tạo đơn hàng
-    contentInProgress: 'Đang xử lý',
-    //contentHandle: 'Đã Xử lý',
-    contentConfirmOrder: 'Đã tạo đơn hàng',
+    IdProgress: 0, // Đang xử lý
+    MsgProgress: arrMsg.key_chuaduyet, // Đã tạo đơn hàng
+    IdFinish: 1, // Đang xử lý
+    MsgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
 
     typeExcel: 1, // Xuất Excel Data
     typeSampleExcel: 2, // Xuất Excel Mẫu
@@ -18,8 +16,8 @@ var arrValue = {
     comboAgent: [], // combo đại lý
     comboFarmCode: [], // combo thông tin nhà vườn
     comboOrderCode: [], // combo đơn hàng
-    selectFirst: true
-
+    selectFirst: true,
+	loadFirst: false
 };
 var agentByCode = {};
 var farmByCode = {};
@@ -76,20 +74,16 @@ const gridOptions = {
             editable: true,
             cellEditor: SelectEditorWithTextDisplay,
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual,
-            valueFormatter: (params) => {
-                if (!params.value) return '';
-                return params.data.agentName;
-            }
+            cellStyle: cellStyle_Col_Model_EventActual
         },
-        //{
-        //    headerName: 'Tên đại lý',
-        //    field: 'agentName',
-        //    width: 180,
-        //    editable: false,
-        //    filter: 'agTextColumnFilter',
-        //    cellStyle: cellStyle_Col_Model_EventActual
-        //},
+        {
+            headerName: 'Tên đại lý',
+            field: 'agentName',
+            width: 180,
+            editable: false,
+            filter: 'agTextColumnFilter',
+            cellStyle: cellStyle_Col_Model_EventActual
+        },
         {
             headerName: 'Tên Nhà Vườn',
             field: 'farmCode',
@@ -166,9 +160,7 @@ const gridOptions = {
                 
                 switch (status) {
                     case 0: badgeClass = 'badge-warning'; break;
-                    case 1: badgeClass = 'badge-info'; break;
-                    case 2: badgeClass = 'badge-primary'; break;
-                    case 3: badgeClass = 'badge-success'; break;
+                    case 1: badgeClass = 'badge-success'; break;
                 }
                 
                 return `<span class="badge ${badgeClass}">${params.value}</span>`;
@@ -197,6 +189,7 @@ const gridOptions = {
             pinned: 'right',
             cellRenderer: params => {
                 let html = '';
+                const status = params.data.status;
                 // CHỈ hiện nút lưu khi chưa lưu
                 if (params.data.intakeId === 0) {
                     html += `
@@ -205,7 +198,12 @@ const gridOptions = {
                     `;
                 }
                 else {
-                    html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+                    if (status == arrValue.IdFinish) {
+                        html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
+                    }
+                    else {
+                        html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+                    }
                 }
                 return html;
                     
@@ -253,12 +251,11 @@ const gridOptions = {
     onRowDragEnd: onRowDragEnd,
 
 
-    singleClickEdit: false // hoặc true tùy nhu cầu
-
+    singleClickEdit: false
 };
 
 
-function RegisterCheckAll() {
+function RegisterAllEvent() {
     $('.ag-header-select-all:not(.ag-hidden)').on('click', function (e) {
         let IsChecked = $(this).find('.ag-input-field-input');
         if (IsChecked.prop('checked')) {
@@ -267,13 +264,26 @@ function RegisterCheckAll() {
             gridApiIntake.selectAll(); // chọn tất cả
         }
     });
+    //đăng ký select trang
+    $('#selectorPaging').change(function (e) {
+        let selectPage = $(this).val();
+        IsOptionAll = selectPage == '*';
+        loadData();
+    });
+    $('#cboAgent,#cboFarm,#cboOrder,#cboStatus').change(function (e) {
+        loadData();
+    });
+    $('#CboType').change(function (e) {
+        let dataType = $(this).val();
+        FilterType(dataType);
+    });
 }
 function onGridReady(params) {
     gridApiIntake = params.api;
     gridColumnApi = params.columnApi;
     
     // Auto size columns
-    gridApiIntake.sizeColumnsToFit();
+    gridApiIntake.sizeColumnsToFit();    
 }
 
 // ========================================
@@ -295,21 +305,23 @@ async function loadData() {
         if (response.success) {
             rowData = response.data;
             gridApiIntake.setGridOption('rowData', rowData);
-            
-            // Update row numbers
-            updateRowNumbers();
-            
-            //NotificationToast('success', 'Tải dữ liệu thành công');
+            updateRowNumbers(); // Update row numbers
+            renderPagination(agPaging, gridApiIntake, rowData, IsOptionAll);  // Render pagination
+            if (!arrValue.loadFirst) {
+                arrValue.loadFirst = true;
+                RegisterAllEvent();
+            }
         } else {
             //NotificationToast('error', response.message || 'Lỗi khi tải dữ liệu');
         }
-		// Render pagination
-        renderPagination(agPaging, gridApiIntake, rowData, IsOptionAll);
-        RegisterCheckAll();
+		
+        
+
     } catch (error) {
         console.error('Error loading data:', error);
         //NotificationToast('error', 'Lỗi kết nối server');
     } finally {
+
     }
 }
 
@@ -342,7 +354,7 @@ function addNewRow() {
         finishedProductKg: 0,
         centrifugeProductKg: 0,
         status: 0,
-        statusText: 'Chưa duyệt',
+        statusText: arrValue.MsgProgress,
         timeDate_Person: '',
         timeDate: ''
     };
@@ -387,6 +399,7 @@ async function saveRow(rowIndex) {
             data: JSON.stringify({
                 intakeId: data.intakeId || 0,
                 intakeCode: data.intakeCode,
+                agentCode: data.agentCode,
                 farmCode: data.farmCode,
                 farmerName: data.farmerName,
                 rubberKg: data.rubberKg,
@@ -407,7 +420,6 @@ async function saveRow(rowIndex) {
             // Reload row
             gridApiIntake.applyTransaction({ update: [data] });
             gridApiIntake.refreshCells({ rowNodes: [rowNode], force: true });
-            loadData();
         } else {
             NotificationToast('error', response.message || 'Lưu thất bại');
         }
@@ -573,7 +585,7 @@ async function approveRow(rowIndex) {
         
         if (response.success) {
             data.status = 1;
-            data.statusText = 'Chờ xử lý';
+            data.statusText = arrValue.MsgProgress;
             gridApiIntake.applyTransaction({ update: [data] });
             NotificationToast('success', 'Duyệt thành công');
         } else {
@@ -774,12 +786,14 @@ function onCellValueChanged(event) {
             let objData = arrValue.comboAgent.filter(x => x.value == event.newValue);
             if (objData.length > 0) {
                 event.data.agentName = objData[objData.length - 1].text;
+                event.data.agentCode = objData[objData.length - 1].value;
             }
         }
         else if (event.colDef.field == "farmCode") {
             let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue);
             if (objData.length > 0) {
                 event.data.farmerName = objData[objData.length - 1].text;
+                event.data.farmCode = objData[objData.length - 1].value;
             }
         }
         gridApiIntake.applyTransaction({ update: [event.data] });
@@ -847,13 +861,15 @@ function clearFilter() {
     $('#cboAgent').val('');
     $('#cboFarm').val('');
     $('#cboOrder').val('');
-    $('#cboStatus').val('');
+    $('#cboStatus').val('').trigger('change');
+    $('#CboType').val('').trigger('change');
     loadData();
 }
 
 function reloadPage() {
     NotificationToast('success', 'Tải dữ liệu thành công');
     loadData();
+    RegisterAllEvent();
 }
 
 function showLoading(show) {
@@ -896,9 +912,6 @@ function FilterType(dataType) {
     }
     gridApiIntake.sizeColumnsToFit();
 }
-
-
-
 function CellRenderSelectNameByCode(params) {
     return params.colDef.field == 'agentCode' ? params.data.agentName : params.data.farmerName;
 }

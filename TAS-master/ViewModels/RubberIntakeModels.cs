@@ -2,6 +2,7 @@
 using System.Data;
 using TAS.DTOs;
 using TAS.Repository;
+using TAS.Resources;
 using TAS.TagHelpers;
 
 namespace TAS.ViewModels
@@ -60,10 +61,8 @@ namespace TAS.ViewModels
                         centrifugeProductKg = i.CentrifugeProductKg,
                         status = i.Status,
                         statusText = CASE i.Status
-                            WHEN 0 THEN N'Chưa duyệt'
-                            WHEN 1 THEN N'Chờ xử lý'
-                            WHEN 2 THEN N'Đã vào hồ'
-                            WHEN 3 THEN N'Hoàn thành'
+                            WHEN 0 THEN N'"+ Language.key_chuaduyet + @"'
+                            WHEN 1 THEN N'"+ Language.key_hoanthanh + @"'
                             ELSE N'Không xác định'
                         END,
                         timeDate_Person = ISNULL(i.UpdatePerson, i.RegisterPerson),
@@ -158,7 +157,7 @@ namespace TAS.ViewModels
                             FinishedProductKg = @FinishedProductKg,
 							CentrifugeProductKg = @CentrifugeProductKg,
                             Status = @Status,
-                            UpdateDate = SYSDATETIME(),
+                            UpdateDate = GETDATE(),
                             UpdatePerson = @UpdatePerson
                         WHERE IntakeId = @IntakeId;
                         
@@ -173,7 +172,7 @@ namespace TAS.ViewModels
                         )
                         VALUES (
                             @IntakeCode, @AgentCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
-                            @FinishedProductKg, @CentrifugeProductKg, @Status, SYSDATETIME(), @RegisterPerson
+                            @FinishedProductKg, @CentrifugeProductKg, @Status, GETDATE(), @RegisterPerson
                         );
                         
                         SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
@@ -228,7 +227,7 @@ namespace TAS.ViewModels
                         FinishedProductKg = @FinishedProductKg,
 						CentrifugeProductKg = @CentrifugeProductKg,
                         Status = @Status,
-                        UpdateDate = SYSDATETIME(),
+                        UpdateDate = GETDATE(),
                         UpdatePerson = @UpdatePerson
                     WHERE IntakeId = @IntakeId;
                 ";
@@ -321,7 +320,7 @@ namespace TAS.ViewModels
                     )
                     VALUES (
                         @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
-                        @FinishedProductKg, @CentrifugeProductKg, 0, SYSDATETIME(), @RegisterPerson
+                        @FinishedProductKg, @CentrifugeProductKg, 0, GETDATE(), @RegisterPerson
                     );
                 ";
 
@@ -360,7 +359,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     UPDATE RubberIntake 
                     SET Status = @Status,
-                        UpdateDate = SYSDATETIME(),
+                        UpdateDate = GETDATE(),
                         UpdatePerson = @UpdatePerson
                     WHERE IntakeId = @IntakeId
                 ";
@@ -389,7 +388,7 @@ namespace TAS.ViewModels
 				var sql = @"
                     UPDATE RubberIntake 
                     SET Status = @Status,
-                        UpdateDate = SYSDATETIME(),
+                        UpdateDate = GETDATE(),
                         UpdatePerson = @UpdatePerson
                     WHERE Status = 0
                 ";
@@ -421,14 +420,14 @@ namespace TAS.ViewModels
                     -- Generate OrderCode: ORD__YYYYMMDD__AG001__001
                     SELECT @OrderCode =
                         'ORD__' 
-                        + FORMAT(SYSDATETIME(), 'yyyyMMdd')
+                        + FORMAT(GETDATE(), 'yyyyMMdd')
                         + '__' + @AgentCode + '__'
                         + FORMAT(
                             ISNULL(
                                 (
                                     SELECT MAX(CAST(RIGHT(OrderCode, 3) AS INT))
                                     FROM RubberOrder
-                                    WHERE OrderCode LIKE 'ORD__' + FORMAT(SYSDATETIME(), 'yyyyMMdd') + '%'
+                                    WHERE OrderCode LIKE 'ORD__' + FORMAT(GETDATE(), 'yyyyMMdd') + '%'
                                 )
                             , 0) + 1
                         , '000');
@@ -438,8 +437,8 @@ namespace TAS.ViewModels
                         Status, RegisterDate, RegisterPerson
                     )
                     VALUES (
-                        @OrderCode, @AgentCode, @OrderName, CAST(SYSDATETIME() AS DATE),
-                        1, SYSDATETIME(), @RegisterPerson
+                        @OrderCode, @AgentCode, @OrderName, CAST(GETDATE() AS DATE),
+                        1, GETDATE(), @RegisterPerson
                     );
                 ";
 

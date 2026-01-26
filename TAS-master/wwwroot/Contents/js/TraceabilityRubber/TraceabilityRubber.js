@@ -174,8 +174,6 @@ function CreateRowDataTraceability() {
                 // Only show Level 1 initially
                 //var listDataToShow = ListDataFull.filter(x => x.sortOrder === 1);
                 ListRowChild = ListDataFull.filter(x => x.sortOrder !== 1);
-                //gridApiTraceability.setGridOption("rowData", listDataToShow);
-
                 setTimeout(function () {
                     if (typeof renderPagination !== 'undefined') {
                         renderPagination(agPaging, gridApiTraceability, ListDataFull, IsOptionAll);
@@ -186,6 +184,7 @@ function CreateRowDataTraceability() {
                     if (typeof updateLastUpdateTime !== 'undefined') {
                         updateLastUpdateTime();
                     }
+                    gridApiTraceability.setGridOption("rowData", ListDataFull.filter(x => x.sortOrder == 1));
                 }, 100);                
             } else {
                 console.error('❌ API error:', response.message);

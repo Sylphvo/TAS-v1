@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TAS.Resources;
 using TAS.ViewModels;
 
 namespace TAS.Controllers
@@ -21,10 +22,10 @@ namespace TAS.Controllers
 		// ========================================
 		// GET: /Traceability/Index
 		// ========================================
-		[Breadcrumb("key_truyxuatnguongoc")]
+		[Breadcrumb(nameof(Language.key_truyxuatnguongoc), "#", false)]
 		public IActionResult Index()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_truyxuatnguongoc");
+			ViewData["Title"] = Language.key_truyxuatnguongoc;
 			return View();
 		}
 		//// ========================================
