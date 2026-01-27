@@ -346,4 +346,19 @@
   <data name="key_hoanthanh">
     <value>Finish</value>
   </data>
+  <data name="key_thongbaoxacnhanxoa">
+    <value>Are you sure you want to delete it?</value>
+  </data>
+  <data name="key_xoadachon">
+    <value>Delete selected</value>
+  </data>
+  <data name="key_duyettatca">
+    <value>Apply All</value>
+  </data>
+  <data name="key_congcuthaotac">
+    <value>Manipulation tools</value>
+  </data>
+  <data name="key_congcutimkiem">
+    <value>Search tools</value>
+  </data>
 </root>

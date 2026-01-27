@@ -58,13 +58,7 @@
 
 /* Actions */
 .datatable-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.datatable-actions .btn {
-    white-space: nowrap;
+    display: block;
 }
 
 /* AG Grid Customization */
@@ -348,4 +342,17 @@ div[col-id="farmerName"] .ag-fill-handle {
 }
 .ag-cell-range-selected .select2-container--open .select2-dropdown {
     left: -2px !important;
+}
+
+section.box_search {
+    display: flex;
+}
+    section.box_search > div {
+        margin: 0 5px;
+    }
+.box_action{
+    display: block;
+}
+.button_filter_search > label, .box_action > label{
+    margin-bottom: 10px;
 }

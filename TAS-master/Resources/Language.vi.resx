@@ -346,4 +346,19 @@
   <data name="key_hoanthanh">
     <value>Hoàn thành</value>
   </data>
+  <data name="key_thongbaoxacnhanxoa">
+    <value>Bạn có chắc chắn muốn xóa nó không?</value>
+  </data>
+  <data name="key_xoadachon">
+    <value>Xóa đã chọn</value>
+  </data>
+  <data name="key_duyettatca">
+    <value>Duyệt tất cả</value>
+  </data>
+  <data name="key_congcuthaotac">
+    <value>Công cụ thao tác</value>
+  </data>
+  <data name="key_congcutimkiem">
+    <value>Công cụ tìm kiếm</value>
+  </data>
 </root>

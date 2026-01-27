@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TAS.Models;
+using TAS.Resources;
 using TAS.ViewModels;
 
 namespace TAS.Controllers
@@ -16,7 +17,7 @@ namespace TAS.Controllers
 			_logger = logger;
 		}
 
-		
+
 		//public IActionResult InformationGarden()
 		//{
 		//	ViewBag.ComboAgent = _common.ComboAgent();
@@ -25,7 +26,7 @@ namespace TAS.Controllers
 		// ========================================
 		// VIEW - Farm Management Page
 		// ========================================
-		[Breadcrumb("key_thongtinnhavuon")]
+		[Breadcrumb(nameof(Language.key_thongtinnhavuon), "#", nameof(Language.key_management_info), true)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = _common.GetValueByKey("key_thongtinnhavuon");

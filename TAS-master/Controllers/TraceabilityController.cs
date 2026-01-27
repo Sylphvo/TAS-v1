@@ -22,7 +22,7 @@ namespace TAS.Controllers
 		// ========================================
 		// GET: /Traceability/Index
 		// ========================================
-		[Breadcrumb(nameof(Language.key_truyxuatnguongoc), "#", false)]
+		[Breadcrumb(nameof(Language.key_truyxuatnguongoc), "#", "", false)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = Language.key_truyxuatnguongoc;

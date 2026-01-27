@@ -5,7 +5,7 @@
 @{
     var crumbs = ActionAccessor.ActionContext != null
         ? breadcrumb.GetBreadcrumb(ActionAccessor.ActionContext)
-        : new List<(string title, string url, bool isparent)>();
+        : new List<(string title, string url, string titleParent, bool isparent)>();
 }
 <div class="page-header">
     <div class="page-block">

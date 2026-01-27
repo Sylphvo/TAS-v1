@@ -15,7 +15,7 @@ namespace TAS.Controllers
 			_common = common;
 		}
 		// GET: Products
-		[Breadcrumb(nameof(Language.key_tongquan), "#", false)]
+		[Breadcrumb(nameof(Language.key_tongquan), "#", "", false)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = Language.key_tongquan;
@@ -38,13 +38,13 @@ namespace TAS.Controllers
 		{
 			return View();
 		}
-		[Breadcrumb(nameof(Language.key_map), "#", true)]
+		[Breadcrumb(nameof(Language.key_map), "#", nameof(Language.key_setting), true)]
 		public IActionResult GeoJson()
 		{
 			ViewData["Title"] = Language.key_map;
 			return View();
 		}
-		[Breadcrumb(nameof(Language.key_icon), "#", true)]
+		[Breadcrumb(nameof(Language.key_icon), "#", nameof(Language.key_setting), true)]
 		public IActionResult Icon()
 		{
 			ViewData["Title"] = Language.key_icon;

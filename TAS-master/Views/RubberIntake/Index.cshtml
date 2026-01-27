@@ -13,46 +13,54 @@
                     ======================================== -->
                     <div class="datatable-top">
                         <!-- Left side: Filters -->
-                        <div class="button_filter">
-                            <div class="divboxOrder">
-                                <label>@Language.key_agent</label>
-                                <select id="cboAgent" class="form-control form-control-sm cboSelect2Search"></select>
-                            </div>
+                        
+                        <div class="button_filter_search">
+                            <label>@Language.key_congcutimkiem</label>
+                            <section class="box_search">
+                                <div class="divboxOrder">
+                                    <label>@Language.key_agent</label>
+                                    <select id="cboAgent" class="form-control form-control-sm cboSelect2Search"></select>
+                                </div>
 
-                            <div class="divboxOrder">
-                                <label>@Language.key_nhavuon</label>
-                                <select id="cboFarm" class="form-control form-control-sm cboSelect2Search"></select>
-                            </div>
+                                <div class="divboxOrder">
+                                    <label>@Language.key_nhavuon</label>
+                                    <select id="cboFarm" class="form-control form-control-sm cboSelect2Search"></select>
+                                </div>
 
-                            <div class="divboxOrder">
-                                <label>@Language.key_donhang</label>
-                                <select id="cboOrder" class="form-control form-control-sm cboSelect2Search"></select>
-                            </div>
+                                <div class="divboxOrder">
+                                    <label>@Language.key_donhang</label>
+                                    <select id="cboOrder" class="form-control form-control-sm cboSelect2Search"></select>
+                                </div>
 
-                            <div class="divboxOrder">
-                                <label>@Language.key_trangthai</label>
-                                <select id="cboStatus" class="form-control form-control-sm cboSelect2NoSearch" style="width: 150px">
-                                    <option value="0">@Language.key_chuaduyet</option>
-                                    <option value="1">@Language.key_hoanthanh</option>
-                                </select>
-                            </div>
-                            <div class="divboxOrder">
-                                <label>@Language.key_loainguyenlieu</label>
-                                <select id="CboType" class="form-select cboSelect2NoSearch">
-                                    <option value="1">Mủ Nước</option>
-                                    <option value="2">Mủ Đông</option>
-                                    <option value="3">Mủ Ly Tâm</option>
-                                </select>
-                            </div>
-                            <div class="divboxOrder">                       
-                                <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="clearFilter()">
-                                    <i class="fas fa-eraser"></i> Xóa lọc
-                                </button>
-                            </div>
+                                <div class="divboxOrder">
+                                    <label>@Language.key_trangthai</label>
+                                    <select id="cboStatus" class="form-control form-control-sm cboSelect2NoSearch" style="width: 150px">
+                                        <option value="0">@Language.key_chuaduyet</option>
+                                        <option value="1">@Language.key_hoanthanh</option>
+                                    </select>
+                                </div>
+                                <div class="divboxOrder">
+                                    <label>@Language.key_loainguyenlieu</label>
+                                    <select id="CboType" class="form-select cboSelect2NoSearch">
+                                        <option value="1">Mủ Nước</option>
+                                        <option value="2">Mủ Đông</option>
+                                        <option value="3">Mủ Ly Tâm</option>
+                                    </select>
+                                </div>
+                                <div class="divboxOrder">                       
+                                    <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="clearFilter()">
+                                        <i class="fas fa-eraser"></i> Xóa lọc
+                                    </button>
+                                </div>
+                            </section>
                         </div>
-
+                        
+                       
                         <!-- Right side: Actions -->
                         <div class="datatable-actions">
+                            <div class="box_action">
+                                <label>@Language.key_congcuthaotac</label>
+                            </div>
                             <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="addNewRow()">
                                 <i class="fas fa-plus"></i> <span>@Language.key_themmoi</span>
                             </button>
@@ -60,10 +68,10 @@
                                 <i class="fas fa-save"></i> Lưu tất cả
                             </button> *@
                             <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="approveAll()">
-                                <i class="ti ti-check"></i> Duyệt tất cả
+                                <i class="ti ti-check"></i> <span>@Language.key_duyettatca</span>
                             </button>
                             <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="deleteSelected()">
-                                <i class="ti ti-trash"></i> Xóa đã chọn
+                                <i class="ti ti-trash"></i> <span>@Language.key_xoadachon</span>
                             </button>
                             <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="importExcel()">
                                 <i class="ti ti-file-import"></i> <span>@Language.key_importexcel</span>
@@ -72,7 +80,7 @@
                                 <i class="ti ti-file-export"></i> <span>@Language.key_xuatexcel</span>
                             </button>
                             <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="reloadPage()">
-                                <i class="ti ti-refresh"></i> Reload
+                                <i class="ti ti-refresh"></i><span>@Language.key_reload</span> 
                             </button>
                         </div>
                     </div>

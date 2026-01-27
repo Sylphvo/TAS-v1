@@ -169,6 +169,24 @@ namespace TAS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manipulation tools.
+        /// </summary>
+        public static string key_congcuthaotac {
+            get {
+                return ResourceManager.GetString("key_congcuthaotac", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search tools.
+        /// </summary>
+        public static string key_congcutimkiem {
+            get {
+                return ResourceManager.GetString("key_congcutimkiem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Đăng ký tài khoản.
         /// </summary>
         public static string key_dangkytaikhoan {
@@ -228,6 +246,15 @@ namespace TAS.Resources {
         public static string key_duyetdong {
             get {
                 return ResourceManager.GetString("key_duyetdong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply All.
+        /// </summary>
+        public static string key_duyettatca {
+            get {
+                return ResourceManager.GetString("key_duyettatca", resourceCulture);
             }
         }
         
@@ -592,6 +619,15 @@ namespace TAS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete it?.
+        /// </summary>
+        public static string key_thongbaoxacnhanxoa {
+            get {
+                return ResourceManager.GetString("key_thongbaoxacnhanxoa", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Xuất Excel thành công.
         /// </summary>
         public static string key_thongbaoxuatexcel {
@@ -759,6 +795,15 @@ namespace TAS.Resources {
         public static string key_xoa {
             get {
                 return ResourceManager.GetString("key_xoa", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete selected.
+        /// </summary>
+        public static string key_xoadachon {
+            get {
+                return ResourceManager.GetString("key_xoadachon", resourceCulture);
             }
         }
         

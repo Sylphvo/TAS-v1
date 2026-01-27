@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAS.DTOs;
+using TAS.Resources;
 using TAS.ViewModels;
 using static Azure.Core.HttpHeader;
 
@@ -28,7 +29,7 @@ namespace TAS.Controllers
 		/// </summary>
 		/// 
 		[HttpGet]
-		[Breadcrumb("key_quanlynguoidung")]
+		[Breadcrumb(nameof(Language.key_quanlynguoidung), "#", nameof(Language.key_setting), true)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = _common.GetValueByKey("key_quanlynguoidung");

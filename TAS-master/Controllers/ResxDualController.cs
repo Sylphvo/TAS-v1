@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
 using TAS.Data;
+using TAS.Resources;
 using TAS.TagHelpers;
 using TAS.ViewModels;
 
@@ -20,7 +21,7 @@ namespace TAS.Controllers
 			_msgViewPath = Path.Combine(env.ContentRootPath, "Views", "Shared", "_Msg.cshtml");
 			_common = commonModels;
 		}
-		[Breadcrumb("key_ngonngu")]
+		[Breadcrumb(nameof(Language.key_ngonngu), "#", nameof(Language.key_setting), true)]
 		public IActionResult LanguageManage()
 		{
 			ViewData["Title"] = _common.GetValueByKey("key_ngonngu");

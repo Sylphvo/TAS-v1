@@ -870,7 +870,16 @@ div[col-id="orderId"]{
         background-color: #066fd1;
         color: #fff;
     }
-.btn-link-secondary:hover {
+    .btn-custom-tas-action:active {
+        background-color: #066fd1 !important;
+        color: #fff !important;
+        opacity: 0.7;
+    }
+.btn-link-secondary:not(:disabled):not(.disabled).active, .btn-link-secondary:not(:disabled):not(.disabled):active, .show > .btn-link-secondary.dropdown-toggle{
+    background: transparent !important;
+}
+.btn-link-secondary:hover, .btn-link-secondary.focus, .btn-link-secondary:focus {
+    background: transparent !important;
     opacity: 0.7;
 }
 .select2-container--default .select2-selection--single {

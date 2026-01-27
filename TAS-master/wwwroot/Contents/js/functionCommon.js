@@ -4452,3 +4452,13 @@ function loadChartOverview(idElement, type) {
     var chart = new ApexCharts(document.querySelector('#' + idElement), objectChart);
     chart.render();
 }
+async function IsToastConfirmDelete(numRow) {
+    var message = arrMsg.key_msgconfirmdelete.replace("__0__", numRow);
+    let isConfirm = await ToastConfirm(message);
+    return isConfirm;
+}
+async function IsToastConfirmDeleteNoLength() {
+    var message = arrMsg.key_thongbaoxacnhanxoa;
+    let isConfirm = await ToastConfirm(message);
+    return isConfirm;
+}

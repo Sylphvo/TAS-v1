@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TAS.DTOs;
+using TAS.Resources;
 using TAS.ViewModels;
 using static Azure.Core.HttpHeader;
 
@@ -24,7 +25,7 @@ namespace TAS.Controllers
 		// ========================================
 		// GET: /Order/Index
 		// ========================================
-		[Breadcrumb("key_Order")]
+		[Breadcrumb(nameof(Language.key_Order), "#", nameof(Language.key_management_info), true)]
 		public IActionResult Index()
 		{
 			ViewData["Title"] = _common.GetValueByKey("key_Order");

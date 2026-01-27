@@ -4,7 +4,7 @@ using System;
 using TAS.Resources;
 public interface IBreadcrumbService
 {
-	List<(string title, string url, bool isparent)> GetBreadcrumb(ActionContext ctx);
+	List<(string title, string url, string titleParent, bool isparent)> GetBreadcrumb(ActionContext ctx);
 }
 public class BreadcrumbService : IBreadcrumbService
 {
@@ -15,19 +15,29 @@ public class BreadcrumbService : IBreadcrumbService
 		_localizer = localizer;
 	}
 
-	public List<(string title, string url, bool isparent)> GetBreadcrumb(ActionContext ctx)
+	public List<(string title, string url, string titleParent, bool isparent)> GetBreadcrumb(ActionContext ctx)
 	{
 		var action = ctx.ActionDescriptor;
 		var attr = action.EndpointMetadata.OfType<BreadcrumbAttribute>().FirstOrDefault();
-		var list = new List<(string, string, bool)>();
+		var list = new List<(string, string, string, bool)>();
 
 		if (attr != null && attr.IsParent)
-			list.Add(("key_home", "/", true));
+		{
+			if (attr.TitleParent != "")
+			{
+				list.Add((attr.TitleParent, "/", "", true));
+			}
+			else
+			{
+				list.Add(("key_home", "/", "", true));
+			}
+		}	
+		
 		if (attr != null)
 		{
 			if (!string.IsNullOrEmpty(attr.Url))
 			{
-				list.Add((attr.Title, attr.Url, true));
+				list.Add((attr.Title, attr.Url, "", true));
 			}
 		}
 		return list;

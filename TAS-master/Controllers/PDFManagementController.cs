@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TAS.Models;
 using TAS.Repository;
+using TAS.Resources;
+using TAS.ViewModels;
+using static Azure.Core.HttpHeader;
 
 namespace TAS.Controllers
 {
@@ -8,14 +11,17 @@ namespace TAS.Controllers
 
 	{
 		private readonly IPdfService _pdfService;
+		private readonly CommonModels _common;
 
-		public PDFManagementController(IPdfService pdfService)
+		public PDFManagementController(IPdfService pdfService, CommonModels common)
 		{
 			_pdfService = pdfService;
+			_common = common;
 		}
-		[Breadcrumb("key_templatepdf")]
+		[Breadcrumb(nameof(Language.key_templatepdf), "#", nameof(Language.key_setting), true)]
 		public IActionResult PDFReview()
 		{
+			ViewData["Title"] = _common.GetValueByKey("key_templatepdf");
 			return View();
 		}
 		[HttpPost]

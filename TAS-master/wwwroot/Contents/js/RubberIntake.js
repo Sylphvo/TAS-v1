@@ -17,10 +17,11 @@ var arrValue = {
     comboFarmCode: [], // combo thông tin nhà vườn
     comboOrderCode: [], // combo đơn hàng
     selectFirst: true,
-	loadFirst: false
+    loadFirst: false
 };
 var agentByCode = {};
 var farmByCode = {};
+var RangeCopy = {};
 
 
 
@@ -67,22 +68,34 @@ const gridOptions = {
         //    filter: 'agTextColumnFilter',
         //    cellStyle: cellStyle_Col_Model_EventActual
         //},
+        //{
+        //    headerName: 'Mã đại lý',
+        //    field: 'agentCode',
+        //    width: 200,
+        //    editable: true,
+        //    cellEditor: SelectEditorWithTextDisplay,
+        //    filter: 'agTextColumnFilter',
+        //    cellStyle: cellStyle_Col_Model_EventActual
+        //},
+        //{
+        //    headerName: 'Tên đại lý',
+        //    field: 'agentName',
+        //    width: 180,
+        //    editable: false,
+        //    filter: 'agTextColumnFilter',
+        //    cellStyle: cellStyle_Col_Model_EventActual
+        //},
         {
             headerName: 'Tên đại lý',
             field: 'agentCode',
-            width: 200,
-            editable: true,
             cellEditor: SelectEditorWithTextDisplay,
+            editable: true,
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
-        },
-        {
-            headerName: 'Tên đại lý',
-            field: 'agentName',
-            width: 180,
-            editable: false,
-            filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellStyle: cellStyle_Col_Model_EventActual,
+            valueFormatter: (params) => {
+                if (!params.value) return '';
+                return params.data.agentName;
+            }
         },
         {
             headerName: 'Tên Nhà Vườn',
@@ -199,7 +212,7 @@ const gridOptions = {
                 }
                 else {
                     if (status == arrValue.IdFinish) {
-                        html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
+                        html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex},${arrValue.IdProgress})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
                     }
                     else {
                         html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
@@ -251,7 +264,17 @@ const gridOptions = {
     onRowDragEnd: onRowDragEnd,
 
 
-    singleClickEdit: false
+    singleClickEdit: false,
+    onFillStart: (params) => {
+        //console.log('Fill operation started');
+        //console.log('Initial range:', params.initialRange);
+        //console.log('Column state:', params.columnState);
+    },
+
+    onFillEnd: (params) => {
+        RangeCopy.onFillStart = params.finalRange.startRow;
+        RangeCopy.onFillEnd = params.finalRange.endRow;
+    },
 };
 
 
@@ -361,11 +384,8 @@ function addNewRow() {
     
     gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
     rowData.push(newRow);
-    // 👇 BẮT BUỘC
-    gridApiIntake.refreshCells({
-        columns: ['action'], // colId của cột Thao tác
-        force: true
-    });
+    //BẮT BUỘC
+    RefeshSingleColumn('action');
     updateRowNumbers();
     
     //NotificationToast('info', 'Đã thêm dòng mới. Hãy nhập thông tin và lưu.');
@@ -482,7 +502,7 @@ async function saveAll() {
 // Delete Single Row
 async function deleteRow(rowIndex) {
 
-    if (!await IsToastConfirmDelete(rowIndex)) return;
+    if (!await IsToastConfirmDeleteNoLength()) return;
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
     const data = rowNode.data;
     
@@ -564,8 +584,9 @@ async function deleteSelected() {
     }
 }
 
+
 // Approve Row
-async function approveRow(rowIndex) {
+async function approveRow(rowIndex, status) {
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
     const data = rowNode.data;
     
@@ -574,25 +595,24 @@ async function approveRow(rowIndex) {
         return;
     }
     
-    
-    
     try {
         const response = await $.ajax({
             url: '/RubberIntake/Approve',
             type: 'POST',
-            data: { intakeId: data.intakeId, status: 1 }
+            data: { intakeId: data.intakeId, status: status }
         });
         
         if (response.success) {
-            data.status = 1;
+            data.status = status;
             data.statusText = arrValue.MsgProgress;
             gridApiIntake.applyTransaction({ update: [data] });
+            RefeshSingleColumn('action');
             NotificationToast('success', 'Duyệt thành công');
         } else {
             NotificationToast('error', response.message || 'Duyệt thất bại');
         }
     } catch (error) {
-        console.error('Error approving row:', error);
+        //console.error('Error approving row:', error);
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
         
@@ -781,7 +801,8 @@ function updateRowNumbers() {
 }
 
 function onCellValueChanged(event) {
-    if (event.colDef.field == "agentCode" || event.colDef.field == "farmCode") {
+    if (event.source == "rangeSvc") {
+
         if (event.colDef.field == "agentCode") {
             let objData = arrValue.comboAgent.filter(x => x.value == event.newValue);
             if (objData.length > 0) {
@@ -789,7 +810,26 @@ function onCellValueChanged(event) {
                 event.data.agentCode = objData[objData.length - 1].value;
             }
         }
-        else if (event.colDef.field == "farmCode") {
+        if (event.colDef.field == "farmCode") {
+            let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue);
+            if (objData.length > 0) {
+                event.data.farmerName = objData[objData.length - 1].text;
+                event.data.farmCode = objData[objData.length - 1].value;
+            }
+        }
+
+        //gridApiIntake.applyTransaction({ update: [event.data] });
+        //saveRow(event.rowIndex);
+    }
+    else if (event.source == "edit") {
+        if (event.colDef.field == "agentCode") {
+            let objData = arrValue.comboAgent.filter(x => x.value == event.newValue);
+            if (objData.length > 0) {
+                event.data.agentName = objData[objData.length - 1].text;
+                event.data.agentCode = objData[objData.length - 1].value;
+            }
+        }
+        if (event.colDef.field == "farmCode") {
             let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue);
             if (objData.length > 0) {
                 event.data.farmerName = objData[objData.length - 1].text;
@@ -799,6 +839,7 @@ function onCellValueChanged(event) {
         gridApiIntake.applyTransaction({ update: [event.data] });
         saveRow(event.rowIndex);
     }
+    
     
     // Auto calculate finishedProductKg if rubberKg or tscPercent changed
     if (event.colDef.field === 'rubberKg' || event.colDef.field === 'tscPercent') {
@@ -887,11 +928,7 @@ function cellStyle_Col_Model_EventActual(params) {
     cellAttr['text-align'] = 'center';
     return cellAttr;
 }
-async function IsToastConfirmDelete(numRow) {
-    var message = arrMsg.key_msgconfirmdelete.replace("__0__", numRow);
-    let isConfirm = await ToastConfirm(message);
-    return isConfirm;
-}
+
 function FilterType(dataType) {
     if (dataType == '1') {
         gridApiIntake.setColumnsVisible(['tscPercent'], true);
@@ -914,4 +951,8 @@ function FilterType(dataType) {
 }
 function CellRenderSelectNameByCode(params) {
     return params.colDef.field == 'agentCode' ? params.data.agentName : params.data.farmerName;
+}
+
+function RefeshSingleColumn(fieldName) {
+    gridApiIntake.refreshCells({ force: true, columns: [fieldName] });
 }

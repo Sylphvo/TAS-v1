@@ -50,7 +50,7 @@ namespace TAS.ViewModels
                         rowNo = ROW_NUMBER() OVER(ORDER BY i.RegisterDate ASC, i.IntakeId ASC),
                         intakeId = i.IntakeId,
                         intakeCode = i.IntakeCode,
-                        agentCode = a.AgentCode,
+                        agentCode = i.AgentCode,
                         agentName = a.AgentName,
                         farmCode = i.FarmCode,
                         farmerName = i.FarmerName,
@@ -70,7 +70,7 @@ namespace TAS.ViewModels
                         timeDate = FORMAT(ISNULL(i.UpdateDate, i.RegisterDate), 'dd/MM/yyyy HH:mm')
                     FROM RubberIntake i
                     INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
-                    INNER JOIN RubberAgent a ON a.AgentCode = f.AgentCode
+                    INNER JOIN RubberAgent a ON a.AgentCode = i.AgentCode
                     WHERE 1=1
                         " + strQuery + @"
 
