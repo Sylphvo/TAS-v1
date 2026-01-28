@@ -361,4 +361,7 @@
   <data name="key_congcutimkiem">
     <value>Search tools</value>
   </data>
+  <data name="key_xoaloc">
+    <value>Clear Filter</value>
+  </data>
 </root>

@@ -95,14 +95,14 @@ namespace TAS.Controllers
 		// API: Lưu nhiều records (Bulk Update)
 		// ========================================
 		[HttpPost]
-		public IActionResult SaveAll([FromBody] List<RubberIntakeRequest> lstIntakes)
+		public IActionResult saveBatchRecords([FromBody] List<RubberIntakeRequest> lstIntakes)
 		{
 			try
 			{
 				if (lstIntakes == null || !lstIntakes.Any())
 					return Json(new { success = false, message = "Không có dữ liệu để lưu" });
 
-				var result = _models.SaveAllIntakes(lstIntakes);
+				var result = _models.SaveBatchRecords(lstIntakes);
 				if (result > 0)
 					return Json(new { success = true, message = $"Đã lưu {result} bản ghi" });
 

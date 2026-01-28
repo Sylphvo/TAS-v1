@@ -39,7 +39,7 @@ namespace TAS.Controllers
 			return View();
 		}
 		[Breadcrumb(nameof(Language.key_map), "#", nameof(Language.key_setting), true)]
-		public IActionResult GeoJson()
+		public IActionResult Map()
 		{
 			ViewData["Title"] = Language.key_map;
 			return View();

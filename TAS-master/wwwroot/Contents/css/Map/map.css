@@ -49,6 +49,7 @@
 .toolbar {
 	display: flex;
 	gap: 0.5rem;
+	margin-bottom: 0px;
 }
 
 .btn {
@@ -250,3 +251,7 @@
 	.leaflet-draw-toolbar a:hover {
 		background-color: #334155 !important;
 	}
+
+.title_map{
+	margin-bottom: 0px !important;
+}

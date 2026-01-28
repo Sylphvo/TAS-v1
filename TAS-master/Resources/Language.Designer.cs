@@ -817,6 +817,15 @@ namespace TAS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clear Filter.
+        /// </summary>
+        public static string key_xoaloc {
+            get {
+                return ResourceManager.GetString("key_xoaloc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Xóa thành công.
         /// </summary>
         public static string key_xoathanhcong {

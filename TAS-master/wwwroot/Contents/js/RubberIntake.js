@@ -4,6 +4,7 @@
 
 var ListDataFull;
 let rowData = [];
+let fillHandleBatch = [];
 var arrValue = {
     IdProgress: 0, // Đang xử lý
     MsgProgress: arrMsg.key_chuaduyet, // Đã tạo đơn hàng
@@ -21,7 +22,6 @@ var arrValue = {
 };
 var agentByCode = {};
 var farmByCode = {};
-var RangeCopy = {};
 
 
 
@@ -229,52 +229,49 @@ const gridOptions = {
     ],
     //sideBar: true,
     // Default Column Definition
-    rowSelection: 'multiple',
-    defaultColDef: {
-        sortable: true,
-        filter: true,
-        resizable: true,
-        floatingFilter: true,
-        suppressMenu: false,
+	rowSelection: 'multiple',// Chọn nhiều dòng
+	defaultColDef: {// Áp dụng cho tất cả các cột
+		sortable: true,// Cho phép sắp xếp cột
+		filter: true,// Cho phép lọc cột
+		resizable: true,// Cho phép thay đổi kích thước cột
+		floatingFilter: true,// Hiện ô lọc bên dưới header
+		suppressMenu: false,// Hiện menu lọc
     },
-    rowDragManaged: true,
-    rowDragEntireRow: true,
-    animateRows: true,
-    enableCellTextSelection: true,
-    enableClipboard: true,
+	rowDragManaged: true,// Kéo thả dòng được quản lý
+	rowDragEntireRow: true,// Kéo thả cả dòng
+	animateRows: true,// Hiệu ứng khi sắp xếp lại dòng
+	enableCellTextSelection: true,// Bật tính năng chọn text trong cell
+	enableClipboard: true,// Bật tính năng copy paste
 
-    suppressMultiRangeSelection: true,
-    suppressCellFocus: true,
-    enableRangeHandle: true,
-    enableRangeSelection: true,
-    enableFillHandle: true, // Enterprise
+	suppressMultiRangeSelection: true,// chỉ chọn 1 range
+	suppressCellFocus: true,// tránh bôi đen cell khi click
+	enableRangeHandle: true,// Bật Range Handle
+	enableRangeSelection: true,// Bật Range Selection
+	enableFillHandle: true, // Bật Fill Handle
     fillHandleDirection: 'y', // CHỈ kéo dọc
+	cellSelection: {// Fill Handle configuration
+		handle: {// Fill Handle configuration
+			mode: 'fill',// Enable Fill Handle
+            direction: 'y', // Fill Handle can only be dragged horizontally
+        }
+    },
 
     //pagination: true,
-    paginationPageSize: 50,
-    paginationPageSizeSelector: [20, 50, 100, 200],
-    rowHeight: 45,
-    headerHeight: 45,
-    suppressRowClickSelection: true,
+	paginationPageSize: 50,// Kích thước trang mặc định
+	paginationPageSizeSelector: [20, 50, 100, 200],// Các lựa chọn kích thước trang
+	rowHeight: 45,// Độ cao dòng
+	headerHeight: 45,// Độ cao header
+	suppressRowClickSelection: true,// Click row không chọn
 
     
     // Events
-    onGridReady: onGridReady,
-    onCellValueChanged: onCellValueChanged,
-    onRowDragEnd: onRowDragEnd,
+	onGridReady: onGridReady,// Load Data
+	onCellValueChanged: onCellValueChanged,// Edit Cell
+	onRowDragEnd: onRowDragEnd,// Drag and Drop
 
-
-    singleClickEdit: false,
-    onFillStart: (params) => {
-        //console.log('Fill operation started');
-        //console.log('Initial range:', params.initialRange);
-        //console.log('Column state:', params.columnState);
-    },
-
-    onFillEnd: (params) => {
-        RangeCopy.onFillStart = params.finalRange.startRow;
-        RangeCopy.onFillEnd = params.finalRange.endRow;
-    },
+	singleClickEdit: false,// Double click to edit
+    onFillEnd: onFillEnd // Fill Handle
+    
 };
 
 
@@ -451,53 +448,7 @@ async function saveRow(rowIndex) {
     }
 }
 
-// Save All
-async function saveAll() {
-    const allData = [];
-    gridApiIntake.forEachNode(node => {
-        if (node.data.intakeId > 0) {  // Only update existing rows
-            allData.push(node.data);
-        }
-    });
-    
-    if (allData.length === 0) {
-        NotificationToast('warning', 'Không có dữ liệu để lưu');
-        return;
-    }
-    if (!await IsToastConfirmDelete(allData.length)) return;
-    
-    
-    try {
-        const response = await $.ajax({
-            url: '/RubberIntake/SaveAll',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(allData.map(item => ({
-                intakeId: item.intakeId,
-                farmCode: item.farmCode,
-                farmerName: item.farmerName,
-                rubberKg: item.rubberKg,
-                tscPercent: data.tscPercent,
-                drcPercent: data.drcPercent,
-                finishedProductKg: data.finishedProductKg,
-                centrifugeProductKg: data.centrifugeProductKg,
-                status: item.status
-            })))
-        });
-        
-        if (response.success) {
-            NotificationToast('success', response.message);
-            loadData();
-        } else {
-            NotificationToast('error', response.message || 'Lưu thất bại');
-        }
-    } catch (error) {
-        console.error('Error saving all:', error);
-        NotificationToast('error', 'Lỗi kết nối server');
-    } finally {
-        
-    }
-}
+
 
 // Delete Single Row
 async function deleteRow(rowIndex) {
@@ -792,56 +743,67 @@ function formatNumber(value, decimals = 0) {
         maximumFractionDigits: decimals
     }).format(value);
 }
-
+// Update Row Numbers
 function updateRowNumbers() {
-    let counter = 1;
+    //let counter = 1;
     //gridApiIntake.forEachNodeAfterFilterAndSort(node => {
     //    node.setDataValue('rowNo', counter++);
     //});
 }
-
+// Fill Handle
 function onCellValueChanged(event) {
-    if (event.source == "rangeSvc") {
-
-        if (event.colDef.field == "agentCode") {
-            let objData = arrValue.comboAgent.filter(x => x.value == event.newValue);
-            if (objData.length > 0) {
-                event.data.agentName = objData[objData.length - 1].text;
-                event.data.agentCode = objData[objData.length - 1].value;
+    let rowIndex = event.node.rowIndex;
+    let colDef = event.colDef.field;
+    let isObjAgent = colDef == "agentCode";
+    let isObjFarm = colDef == "farmCode";
+    let objDataAgentOrFarm = isObjAgent ? arrValue.comboAgent : arrValue.comboFarmCode;
+    // Kiểm tra nguồn thay đổi
+    // kéo thả 
+    if (event.source == "rangeSvc" || event.source === 'fillHandle') {
+        // A. Nếu là kéo Fill: CHỈ LƯU, KHÔNG XỬ LÝ NGAY
+        // Lưu thông tin cần thiết (ID, giá trị mới, tên cột...)
+        if (isObjAgent || isObjFarm) {
+            if (fillHandleBatch.length > 0) {
+                if (isObjAgent) {
+                    event.data.agentCode = fillHandleBatch[fillHandleBatch.length - fillHandleBatch.length].data.agentCode;
+                }
+                else if (isObjFarm) {
+                    event.data.farmCode = fillHandleBatch[fillHandleBatch.length - fillHandleBatch.length].data.farmCode;
+                }
+            }
+            else {
+                if (isObjAgent) {
+                    event.data.agentCode = objDataAgentOrFarm.find(x => x.text == event.newValue).value;
+                }
+                else if (isObjFarm) {
+                    event.data.farmCode = objDataAgentOrFarm.find(x => x.text == event.newValue).value;
+                }
             }
         }
-        if (event.colDef.field == "farmCode") {
-            let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue);
-            if (objData.length > 0) {
-                event.data.farmerName = objData[objData.length - 1].text;
-                event.data.farmCode = objData[objData.length - 1].value;
-            }
-        }
-
-        //gridApiIntake.applyTransaction({ update: [event.data] });
-        //saveRow(event.rowIndex);
+        fillHandleBatch.push({
+            rowIndex: rowIndex,
+            colId: event.column.getId(),
+            newValue: event.newValue,
+            data: event.data // Dữ liệu của cả dòng
+        });
+        
     }
-    else if (event.source == "edit") {
+	else if (event.source == "edit") {// B. Nếu là edit trực tiếp: XỬ LÝ NGAY
         if (event.colDef.field == "agentCode") {
-            let objData = arrValue.comboAgent.filter(x => x.value == event.newValue);
-            if (objData.length > 0) {
-                event.data.agentName = objData[objData.length - 1].text;
-                event.data.agentCode = objData[objData.length - 1].value;
-            }
+            event.data.agentName = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].text;
+            event.data.agentCode = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].value;
+           
         }
         if (event.colDef.field == "farmCode") {
-            let objData = arrValue.comboFarmCode.filter(x => x.value == event.newValue);
-            if (objData.length > 0) {
-                event.data.farmerName = objData[objData.length - 1].text;
-                event.data.farmCode = objData[objData.length - 1].value;
-            }
+            event.data.farmerName = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].text;
+            event.data.farmCode = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].value;
         }
         gridApiIntake.applyTransaction({ update: [event.data] });
         saveRow(event.rowIndex);
     }
     
-    
-    // Auto calculate finishedProductKg if rubberKg or tscPercent changed
+    //edit từng dòng
+	// Cập nhật các trường liên quan
     if (event.colDef.field === 'rubberKg' || event.colDef.field === 'tscPercent') {
         const rubberKg = event.data.rubberKg || 0;
         const tscPercent = event.data.tscPercent || 0;
@@ -866,6 +828,56 @@ function onCellValueChanged(event) {
         event.api.refreshCells({ rowNodes: [event.node], columns: ['finishedProductKg'], force: true });
         event.api.refreshCells({ rowNodes: [event.node], columns: ['centrifugeProductKg'], force: true });
         saveRow(event.rowIndex);
+    }
+}
+function onFillEnd(params) {
+    // Kiểm tra xem có hàng đợi nào không
+    if (fillHandleBatch.length > 0) {
+        console.log(`Kéo xong! Đang xử lý 1 lần cho ${fillHandleBatch.length} dòng...`);
+
+        // --- XỬ LÝ 1 LẦN TẠI ĐÂY ---
+        // Ví dụ: Gọi API saveBatch(fillHandleBatch)
+        saveBatchRecords(fillHandleBatch);
+
+        // Cực kỳ quan trọng: Reset mảng sau khi xử lý xong
+        fillHandleBatch = [];
+    }
+}
+// Save All
+async function saveBatchRecords(fillHandleBatch) {
+    if (fillHandleBatch.length === 0) {
+        NotificationToast('warning', 'Không có dữ liệu để lưu');
+        return;
+    }
+    let dataSaveBatch = fillHandleBatch.map(x => x.data);
+    try {   
+        const response = await $.ajax({
+            url: '/RubberIntake/saveBatchRecords',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(dataSaveBatch.map(item => ({
+                intakeId: item.intakeId,
+                agentCode: item.agentCode,
+                farmCode: item.farmCode,
+                farmerName: item.farmerName,
+                rubberKg: item.rubberKg,
+                tscPercent: item.tscPercent,
+                drcPercent: item.drcPercent,
+                finishedProductKg: item.finishedProductKg,
+                centrifugeProductKg: item.centrifugeProductKg,
+                status: item.status
+            })))
+        });
+
+        if (response.success) {
+            NotificationToast('success', response.message);
+            loadData();
+        } else {
+            NotificationToast('error', response.message || 'Lưu thất bại');
+        }
+    } catch (error) {
+        console.error('Error saving all:', error);
+        NotificationToast('error', 'Lỗi kết nối server');
     }
 }
 // Chuyển chuỗi sang số

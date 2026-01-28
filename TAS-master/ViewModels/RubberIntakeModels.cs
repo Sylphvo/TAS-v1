@@ -53,7 +53,7 @@ namespace TAS.ViewModels
                         agentCode = i.AgentCode,
                         agentName = a.AgentName,
                         farmCode = i.FarmCode,
-                        farmerName = i.FarmerName,
+                        farmerName = f.FarmerName,
                         rubberKg = i.RubberKg,
                         tscPercent = i.TSCPercent,
                         drcPercent = i.DRCPercent,
@@ -148,7 +148,7 @@ namespace TAS.ViewModels
                     BEGIN
                         -- Update
                         UPDATE RubberIntake SET
-                            agentCode = @AgentCode,
+                            AgentCode = @AgentCode,
                             FarmCode = @FarmCode,
                             FarmerName = @FarmerName,
                             RubberKg = @RubberKg,
@@ -213,14 +213,14 @@ namespace TAS.ViewModels
 		// ========================================
 		// Lưu nhiều records (Bulk Update)
 		// ========================================
-		public int SaveAllIntakes(List<RubberIntakeRequest> lstIntakes)
+		public int SaveBatchRecords(List<RubberIntakeRequest> lstIntakes)
 		{
 			try
 			{
 				var sql = @"
                     UPDATE RubberIntake SET
+						AgentCode = @AgentCode,
                         FarmCode = @FarmCode,
-                        FarmerName = @FarmerName,
                         RubberKg = @RubberKg,
                         TSCPercent = @TSCPercent,
                         DRCPercent = @DRCPercent,
@@ -236,8 +236,8 @@ namespace TAS.ViewModels
 					lstIntakes.Select(x => new
 					{
 						IntakeId = x.intakeId,
+						AgentCode = x.agentCode,
 						FarmCode = x.farmCode,
-						FarmerName = x.farmerName,
 						RubberKg = x.rubberKg ?? 0m,
 						TSCPercent = x.tscPercent ?? 0m,
 						DRCPercent = x.drcPercent ?? 0m,
@@ -252,7 +252,7 @@ namespace TAS.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in SaveAllIntakes");
+				_logger.LogError(ex, "Error in SaveBatchRecords");
 				throw;
 			}
 		}
