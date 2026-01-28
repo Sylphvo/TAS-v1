@@ -771,7 +771,7 @@ function onCellValueChanged(event) {
                     event.data.farmCode = fillHandleBatch[fillHandleBatch.length - fillHandleBatch.length].data.farmCode;
                 }
             }
-            else {
+            else {//lần đầu thêm vào mảng
                 if (isObjAgent) {
                     event.data.agentCode = objDataAgentOrFarm.find(x => x.text == event.newValue).value;
                 }

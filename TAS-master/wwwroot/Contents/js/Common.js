@@ -8,8 +8,7 @@ class SelectEditorWithTextDisplay {
         this.eSelect.style.height = '100%';
 
         const currentValue = params.value;
-        const objectFarmByAgent = arrValue.comboFarmCode.filter(x => x.group == params.data.agentCode);
-        const objectData = params.colDef.field == 'agentCode' ? arrValue.comboAgent : objectFarmByAgent;
+        const objectData = params.colDef.field == 'agentCode' ? arrValue.comboAgent : arrValue.comboFarmCode;
         objectData.forEach(item => {
             const option = document.createElement('option');
             option.value = item.value; // FR001

@@ -315,11 +315,11 @@ namespace TAS.ViewModels
 			{
 				var sql = @"
                     INSERT INTO RubberIntake (
-                        IntakeCode, FarmCode, FarmerName, RubberKg, TSCPercent, DRCPercent,
+                        IntakeCode, AgentCode, FarmCode, RubberKg, TSCPercent, DRCPercent,
                         FinishedProductKg, CentrifugeProductKg, Status, RegisterDate, RegisterPerson
                     )
                     VALUES (
-                        @IntakeCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
+                        @IntakeCode, @AgentCode, @FarmCode, @FarmerName, @RubberKg, @TSCPercent, @DRCPercent,
                         @FinishedProductKg, @CentrifugeProductKg, 0, GETDATE(), @RegisterPerson
                     );
                 ";
@@ -329,8 +329,8 @@ namespace TAS.ViewModels
 					lstImport.Select(x => new
 					{
 						IntakeCode = $"INT_{DateTime.Now:yyyyMMdd}_IMP{counter++:D4}",
+						AgentCode = x.agentCode,
 						FarmCode = x.farmCode,
-						FarmerName = x.farmerName,
 						RubberKg = x.rubberKg ?? 0m,
 						TSCPercent = x.tscPercent ?? 0m,
 						DRCPercent = x.drcPercent ?? 0m,
