@@ -8,8 +8,7 @@ let gridColumnApi;
 // ========================================
 // INITIALIZE PAGE
 // ========================================
-function initOrderPage() {
-    console.log('Initializing Order page...');
+function initPage() {
     
     // Setup AG Grid
     setupGrid();
@@ -31,13 +30,12 @@ function initOrderPage() {
 // SETUP AG GRID
 // ========================================
 function setupGrid() {
-    const gridDiv = document.querySelector('#orderGrid');
-
     const gridOptions = {
         // Column Definitions
         columnDefs: [
             {
                 headerName: '',
+                field: 'selected',
                 checkboxSelection: true,
                 headerCheckboxSelection: true,
                 minWidth: 50,
@@ -65,56 +63,15 @@ function setupGrid() {
                 }
             },
             {
-                headerName: 'Đại lý',
+                headerName: 'Tên đại lý',
                 field: 'agentName',
                 width: 180
-            },
-            {
-                headerName: 'Người mua',
-                field: 'buyerName',
-                width: 150
             },
             {
                 headerName: 'Công ty',
                 field: 'buyerCompany',
                 width: 180
             },
-            {
-                headerName: 'Ngày đặt',
-                field: 'orderDate',
-                width: 120,
-                valueFormatter: params => {
-                    if (!params.value) return '';
-                    const date = new Date(params.value);
-                    return date.toLocaleDateString('vi-VN');
-                }
-            },
-            //{
-            //    headerName: 'Ngày dự kiến xuất',
-            //    field: 'expectedShipDate',
-            //    width: 150,
-            //    valueFormatter: params => {
-            //        if (!params.value) return '';
-            //        const date = new Date(params.value);
-            //        return date.toLocaleDateString('vi-VN');
-            //    }
-            //},
-            //{
-            //    headerName: 'Ngày xuất thực tế',
-            //    field: 'shippedAt',
-            //    width: 160,
-            //    valueFormatter: params => {
-            //        if (!params.value) return '';
-            //        const date = new Date(params.value);
-            //        return date.toLocaleString('vi-VN');
-            //    },
-            //    cellStyle: params => {
-            //        if (params.value) {
-            //            return { backgroundColor: '#e8f5e9', fontWeight: 'bold' };
-            //        }
-            //        return null;
-            //    }
-            //},
             {
                 headerName: 'Loại SP',
                 field: 'productType',
@@ -143,43 +100,11 @@ function setupGrid() {
                 }
             },
             {
-                headerName: 'Ghi chú',
-                field: 'note',
-                width: 200,
-                tooltipField: 'note'
-            },
-            {
-                headerName: 'Người tạo',
-                field: 'registerPerson',
-                width: 120
-            },
-            {
-                headerName: 'Ngày tạo',
-                field: 'registerDate',
-                width: 150,
-                valueFormatter: params => {
-                    if (!params.value) return '';
-                    const date = new Date(params.value);
-                    return date.toLocaleString('vi-VN');
-                }
-            },
-            {
                 headerName: 'Thao tác',
-                field: 'orderId',
+                field: 'action',
                 width: 200,
                 pinned: 'right',
-                cellRenderer: params => {
-                    const hasShipped = params.data.shippedAt != null;
-                    const shipBtn = !hasShipped ?
-                        `<a href="#" class=" avtar-xs btn-link-secondary" onclick="markShipped(${params.value})" title="Đánh dấu đã xuất hàng">
-                        <i class="ti ti-package f-20"></i> </a>` : '';
-                    return `
-                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="editOrder(${params.value})" title="Sửa"><i class="ti ti-edit f-20"></i> </a>
-                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value}, , ${params.data.status})" title="Cập nhật trạng thái"><i class="ti ti-eye f-20"></i> </a>
-                        ${shipBtn}
-                        <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.value})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
-                    `;
-                },
+                cellRenderer: CellRenderAction,
                 filter: false,
                 sortable: false
             }
@@ -207,8 +132,7 @@ function setupGrid() {
             params.api.sizeColumnsToFit();
         }
     };
-
-    new agGrid.Grid(gridDiv, gridOptions);
+    gridApiOrder = agGrid.createGrid(document.querySelector("#orderGrid"), gridOptions);
 }
 
 
@@ -640,4 +564,23 @@ function showLoading() {
 function hideLoading() {
     // TODO: Hide loading spinner
     console.log('Loading complete');
+}
+// Render Action Column
+function CellRenderAction(params) {
+	// Define action buttons
+    let markShipped = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="markShipped(${params.value})" title="Lưu"><i class="ti ti-package f-20"></i></a>`;
+    let editOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="editOrder(${params.value})" title="Bỏ"><i class="ti ti-edit f-20"></i></a>`;
+    let updateStatus = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value},${params.data.status})" title="${arrMsg.key_delete}"><i class="ti ti-eye f-20"></i></a>`;
+    let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.value})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+
+	// Check if the order has been shipped
+    const hasShipped = params.data.shippedAt != null;
+
+    const shipBtn = !hasShipped ? markShipped : '';
+    return `
+        ${editOrder}
+        ${updateStatus}
+        ${shipBtn}
+        ${deleteOrder}
+    `;
 }

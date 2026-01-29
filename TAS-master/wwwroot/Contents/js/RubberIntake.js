@@ -24,7 +24,15 @@ var agentByCode = {};
 var farmByCode = {};
 
 
-
+function initPage() {
+    document.addEventListener('DOMContentLoaded', function () {
+        gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
+        loadData();// Load initial data
+        loadAllCombos();// Setup filter change events
+        RegisterAllEvent();
+        ApplyCboSelect2();
+    });
+}
 // ========================================
 // AG GRID CONFIGURATION
 // ========================================
@@ -52,46 +60,20 @@ const gridOptions = {
             width: 50,
             pinned: 'left',
             //suppressMenu: true,
-            cellStyle: cellStyle_Col_Model_EventActual,
+            cellStyle: CellStyle_Col_Model,
             rowDrag: true,
             filter: false,
             //checkboxSelection: true,          // checkbox từng dòng
             //headerCheckboxSelection: true,    // checkbox chọn tất cả
             //headerCheckboxSelectionFilteredOnly: true, // chỉ chọn những dòng đang filter
         },
-        //{
-        //    headerName: 'Mã Intake',
-        //    field: 'intakeCode',
-        //    width: 170,
-        //    minWidth: 170,
-        //    editable: true,
-        //    filter: 'agTextColumnFilter',
-        //    cellStyle: cellStyle_Col_Model_EventActual
-        //},
-        //{
-        //    headerName: 'Mã đại lý',
-        //    field: 'agentCode',
-        //    width: 200,
-        //    editable: true,
-        //    cellEditor: SelectEditorWithTextDisplay,
-        //    filter: 'agTextColumnFilter',
-        //    cellStyle: cellStyle_Col_Model_EventActual
-        //},
-        //{
-        //    headerName: 'Tên đại lý',
-        //    field: 'agentName',
-        //    width: 180,
-        //    editable: false,
-        //    filter: 'agTextColumnFilter',
-        //    cellStyle: cellStyle_Col_Model_EventActual
-        //},
         {
             headerName: 'Tên đại lý',
             field: 'agentCode',
             cellEditor: SelectEditorWithTextDisplay,
             editable: true,
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual,
+            cellStyle: CellStyle_Col_Model,
             valueFormatter: (params) => {
                 if (!params.value) return '';
                 return params.data.agentName;
@@ -103,20 +85,12 @@ const gridOptions = {
             cellEditor: SelectEditorWithTextDisplay,
             editable: true,
             filter: 'agTextColumnFilter',
-            cellStyle: cellStyle_Col_Model_EventActual,
+            
             valueFormatter: (params) => {
                 if (!params.value) return '';
                 return params.data.farmerName;
             }
         },
-        //{
-        //    headerName: 'Tên Nhà vườn',
-        //    field: 'farmerName',
-        //    width: 200,
-        //    editable: true,
-        //    filter: 'agTextColumnFilter',
-        //    cellStyle: cellStyle_Col_Model_EventActual
-        //},
         {
             headerName: 'KL Mủ (kg)',
             field: 'rubberKg',
@@ -124,7 +98,7 @@ const gridOptions = {
             editable: true,
             type: 'numericColumn',
             valueFormatter: params => formatNumber(params.value),
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellStyle: CellStyle_Col_Model
         },
         {
             headerName: 'TSC',
@@ -132,8 +106,7 @@ const gridOptions = {
             width: 100,
             editable: true,
             type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value, 2),
-            cellStyle: cellStyle_Col_Model_EventActual
+            valueFormatter: params => formatNumber(params.value, 2)
         },
         {
             headerName: 'DRC',
@@ -141,8 +114,7 @@ const gridOptions = {
             width: 100,
             editable: true,
             type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value, 2),
-            cellStyle: cellStyle_Col_Model_EventActual
+            valueFormatter: params => formatNumber(params.value, 2)
         },
         {
             headerName: 'Thành phẩm',
@@ -150,8 +122,7 @@ const gridOptions = {
             width: 150,
             editable: true,
             type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value),
-            cellStyle: cellStyle_Col_Model_EventActual
+            valueFormatter: params => formatNumber(params.value)
         },
         {
             headerName: 'Thành Phẩm Ly Tâm',
@@ -159,33 +130,20 @@ const gridOptions = {
             width: 170,
             editable: true,
             type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value),
-            cellStyle: cellStyle_Col_Model_EventActual
+            valueFormatter: params => formatNumber(params.value)
         },
         {
             headerName: 'Trạng thái',
             field: 'statusText',
             width: 120,
             editable: false,
-            cellRenderer: params => {
-                const status = params.data.status;
-                let badgeClass = 'badge-secondary';
-                
-                switch (status) {
-                    case 0: badgeClass = 'badge-warning'; break;
-                    case 1: badgeClass = 'badge-success'; break;
-                }
-                
-                return `<span class="badge ${badgeClass}">${params.value}</span>`;
-            },
-            cellStyle: cellStyle_Col_Model_EventActual
+            cellRenderer: CellRenderStatus
         },
         {
             headerName: 'Người cập nhật',
             field: 'timeDate_Person',
             width: 130,
             editable: false,
-            cellStyle: cellStyle_Col_Model_EventActual,
 			hide: true
         },
         {
@@ -193,37 +151,15 @@ const gridOptions = {
             field: 'timeDate',
             width: 150,
             editable: false,
-            cellStyle: cellStyle_Col_Model_EventActual
         },
         {
             headerName: 'Thao tác',
             field: 'action',
             width: 150,
             pinned: 'right',
-            cellRenderer: params => {
-                let html = '';
-                const status = params.data.status;
-                // CHỈ hiện nút lưu khi chưa lưu
-                if (params.data.intakeId === 0) {
-                    html += `
-                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>
-                       <a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>
-                    `;
-                }
-                else {
-                    if (status == arrValue.IdFinish) {
-                        html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex},${arrValue.IdProgress})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
-                    }
-                    else {
-                        html += `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
-                    }
-                }
-                return html;
-                    
-            },
+            cellRenderer: CellRenderAction,            
             suppressMenu: true,
             suppressMovable: true,
-            cellStyle: cellStyle_Col_Model_EventActual,
             filter: false
         }
     ],
@@ -235,7 +171,8 @@ const gridOptions = {
 		filter: true,// Cho phép lọc cột
 		resizable: true,// Cho phép thay đổi kích thước cột
 		floatingFilter: true,// Hiện ô lọc bên dưới header
-		suppressMenu: false,// Hiện menu lọc
+        suppressMenu: false,// Hiện menu lọc
+        cellStyle: CellStyle_Col_Model
     },
 	rowDragManaged: true,// Kéo thả dòng được quản lý
 	rowDragEntireRow: true,// Kéo thả cả dòng
@@ -935,11 +872,7 @@ function showLoading(show) {
     }
 }
 
-function cellStyle_Col_Model_EventActual(params) {
-    let cellAttr = {};
-    cellAttr['text-align'] = 'center';
-    return cellAttr;
-}
+
 
 function FilterType(dataType) {
     if (dataType == '1') {
@@ -967,4 +900,37 @@ function CellRenderSelectNameByCode(params) {
 
 function RefeshSingleColumn(fieldName) {
     gridApiIntake.refreshCells({ force: true, columns: [fieldName] });
+}
+
+// Render Action Column
+function CellRenderAction(params) {
+    let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let strApprove = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex},${arrValue.IdProgress})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
+    let strDelete = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+    const status = params.data.status == arrValue.IdFinish;
+
+    // CHỈ hiện nút lưu khi chưa lưu
+    if (params.data.intakeId === 0) {
+        return strSave + strCancel;
+    }
+    else {
+        if (status) {
+            return strApprove;
+        }
+        else {
+            return strDelete;
+        }
+    }
+}
+// Render Status Column
+function CellRenderStatus(params) {
+    let statusClass = '';
+    if (params.data.status == arrValue.IdProgress) {
+        statusClass = 'badge badge-warning';
+    }
+    else if (params.data.status == arrValue.IdFinish) {
+        statusClass = 'badge badge-success';
+    }
+    return `<span class="${statusClass}">${params.data.statusText}</span>`;
 }

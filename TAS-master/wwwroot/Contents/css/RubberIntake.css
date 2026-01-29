@@ -353,6 +353,3 @@ section.box_search {
 .box_action{
     display: block;
 }
-.button_filter_search > label, .box_action > label{
-    margin-bottom: 10px;
-}

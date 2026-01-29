@@ -80,7 +80,7 @@
                                 <i class="ti ti-file-export"></i> <span>@Language.key_xuatexcel</span>
                             </button>
                             <button type="button" class="btn btn-custom-tas-action btn-sm" onclick="reloadPage()">
-                                <i class="ti ti-refresh"></i><span>@Language.key_reload</span> 
+                                <i class="ti ti-refresh"></i><span>@Language.key_reload</span>
                             </button>
                         </div>
                     </div>
@@ -113,13 +113,7 @@
         // ========================================
         // INITIALIZATION
         // ========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
-            loadData();// Load initial data
-            loadAllCombos();// Setup filter change events
-            RegisterAllEvent();
-            ApplyCboSelect2();
-        });
+        initPage();
     </script>
 }
 

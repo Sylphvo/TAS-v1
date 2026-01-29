@@ -1121,3 +1121,10 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
 .ag-menu-option, .ag-menu-separator {
     display: block !important;
 }
+.datatable-actions {
+	float: left;
+}
+
+.button_filter_search > label, .box_action > label {
+    margin-bottom: 10px;
+}

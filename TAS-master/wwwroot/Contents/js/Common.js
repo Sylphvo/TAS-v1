@@ -49,3 +49,9 @@ class SelectEditorWithTextDisplay {
         }
     }
 }
+
+function CellStyle_Col_Model(params) {
+    let cellAttr = {};
+    cellAttr['text-align'] = 'center';
+    return cellAttr;
+}
