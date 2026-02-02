@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using Dapper;
 using System.Data;
+using System.Data.Common;
 using TAS.DTOs;
 using TAS.Models.DTOs;
 using TAS.Repository;
@@ -22,508 +23,255 @@ namespace TAS.ViewModels
 		// ========================================
 		// GET ALL ORDERS
 		// ========================================
-		public async Task<List<RubberOrderResponse>> GetAllOrdersAsync()
+		public async Task<PagedResult<RubberOrderResponse>> GetOrdersWithFilterAsync(OrderFilterRequest filter)
 		{
 			try
 			{
-				var sql = @"
-                    SELECT 
-						rowNo = ROW_NUMBER() OVER(ORDER BY o.RegisterDate DESC, o.OrderId DESC),
-                        o.OrderId,
-                        o.OrderCode,
-                        o.AgentCode,
-                        a.AgentName,
-                        o.BuyerName,
-                        o.BuyerCompany,
-                        o.OrderDate,
-                        o.ExpectedShipDate,
-                        o.ShippedAt,
-                        o.ProductType,
-                        o.TotalNetKg,
-                        o.Status,
-                        o.Note,
-                        o.RegisterDate,
-                        o.RegisterPerson,
-                        o.UpdateDate,
-                        o.UpdatePerson
-                    FROM RubberOrder o
-                    INNER JOIN RubberAgent a ON a.AgentCode = o.AgentCode
-                    ORDER BY o.OrderDate DESC, o.OrderId DESC
-                ";
+				// Khởi tạo params cho Dapper
+				var parameters = new DynamicParameters();
 
-				var orders = await _dbHelper.QueryAsync<RubberOrderResponse>(sql);
-				return orders.ToList();
+				// --- BƯỚC 1: Xây dựng câu WHERE động ---
+				var whereConditions = new List<string>();
+
+				// Luôn đúng để dễ nối chuỗi (hoặc xử lý logic IsDeleted nếu có)
+				whereConditions.Add("1=1");
+
+				// 1. Tìm kiếm theo Keyword (Mã đơn, Tên đơn, Tên đại lý, Booking)
+				if (!string.IsNullOrEmpty(filter.Keyword))
+				{
+					whereConditions.Add(@"(
+						o.OrderCode LIKE @Keyword OR 
+						o.OrderName LIKE @Keyword OR 
+						a.AgentName LIKE @Keyword OR 
+						o.BookingRef LIKE @Keyword
+					)");
+					parameters.Add("@Keyword", $"%{filter.Keyword}%");
+				}
+
+				// 2. Lọc theo Trạng thái
+				if (filter.Status.HasValue)
+				{
+					whereConditions.Add("o.Status = @Status");
+					parameters.Add("@Status", filter.Status.Value);
+				}
+
+				// 3. Lọc theo Ngày (Ví dụ lọc theo OrderDate)
+				if (filter.FromDate.HasValue)
+				{
+					whereConditions.Add("o.OrderDate >= @FromDate");
+					parameters.Add("@FromDate", filter.FromDate.Value);
+				}
+				if (filter.ToDate.HasValue)
+				{
+					// Cộng thêm 1 ngày để lấy trọn vẹn ngày cuối
+					whereConditions.Add("o.OrderDate < @ToDate");
+					parameters.Add("@ToDate", filter.ToDate.Value.AddDays(1));
+				}
+
+				string whereSql = string.Join(" AND ", whereConditions);
+
+				// --- BƯỚC 2: Câu lệnh đếm tổng số dòng (Total Count) ---
+				// Cần đếm trước để FE biết có bao nhiêu trang tất cả
+				var countSql = $@"
+					SELECT COUNT(1)
+					FROM RubberOrders o
+					INNER JOIN RubberAgent a ON a.AgentCode = o.AgentCode -- Giữ logic JOIN cũ của bạn
+					WHERE {whereSql}";
+
+				var totalRecords = await _dbHelper.ExecuteScalarAsync<int>(countSql, parameters);
+
+				// --- BƯỚC 3: Câu lệnh lấy dữ liệu có Phân trang (Pagination) ---
+				// Sử dụng OFFSET - FETCH (SQL Server 2012+) thay cho ROW_NUMBER() để nhanh hơn
+				var dataSql = $@"
+						SELECT 
+							rowNo = ROW_NUMBER() OVER(ORDER BY o.CreatedDate DESC, o.OrderId DESC),
+							o.OrderId,
+							o.OrderCode,
+							o.OrderName,        -- Mới thêm
+							--o.AgentCode,
+							--a.AgentName,
+							--o.BuyerCompany,     -- Ưu tiên hiển thị Công ty Buyer
+							o.OrderDate,
+							o.ETD,              -- Ngày tàu chạy (quan trọng cho export)
+							o.PortOfDischarge,  -- Cảng đến
+							o.ProductType,
+							o.TotalNetKg,
+							o.Status,
+							o.Note,
+							o.CreatedDate
+						FROM RubberOrders o
+						INNER JOIN RubberAgent a ON a.AgentCode = o.AgentCode
+						WHERE {whereSql}
+						ORDER BY o.OrderId DESC
+						OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
+
+				// Thêm tham số phân trang
+				parameters.Add("@Skip", (filter.PageIndex - 1) * filter.PageSize);
+				parameters.Add("@Take", filter.PageSize);
+
+				var items = await _dbHelper.QueryAsync<RubberOrderResponse>(dataSql, parameters);
+
+				// --- BƯỚC 4: Trả về kết quả ---
+				return new PagedResult<RubberOrderResponse>
+				{
+					Items = items.ToList(),
+					TotalRecords = totalRecords
+				};
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in GetAllOrdersAsync");
+				_logger.LogError(ex, "Error in GetOrdersWithFilterAsync");
 				throw;
 			}
 		}
-
-		// ========================================
-		// GET ORDER BY ID
-		// ========================================
-		public async Task<RubberOrderDto?> GetOrderByIdAsync(long orderId)
+		// ==========================================================
+		// 1. CREATE (THÊM MỚI) - Tối ưu: Trả về ID ngay lập tức
+		// ==========================================================
+		public async Task<RubberOrderResult> CreateOrderAsync(RubberOrderDto dto, string createdBy)
 		{
 			try
 			{
-				var sql = @"
-                    SELECT 
-                        o.OrderId,
-                        o.OrderCode,
-                        o.AgentCode,
-                        a.AgentName,
-                        o.BuyerName,
-                        o.BuyerCompany,
-                        o.OrderDate,
-                        o.ExpectedShipDate,
-                        o.ShippedAt,
-                        o.ProductType,
-                        o.TotalNetKg,
-                        o.Status,
-                        o.Note,
-                        o.RegisterDate,
-                        o.RegisterPerson,
-                        o.UpdateDate,
-                        o.UpdatePerson
-                    FROM RubberOrder o
-                    INNER JOIN RubberAgent a ON a.AgentCode = o.AgentCode
-                    WHERE o.OrderId = @OrderId
-                ";
-
-				return await _dbHelper.QueryFirstOrDefaultAsync<RubberOrderDto>(sql, new { OrderId = orderId });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in GetOrderByIdAsync");
-				throw;
-			}
-		}
-
-		// ========================================
-		// CREATE ORDER
-		// ========================================
-		public async Task<RubberOrderResult> CreateOrderAsync(RubberOrderRequest request, string createdBy)
-		{
-			try
-			{
-				// Generate OrderCode
+				// 1. Sinh mã tự động (VD: EXP-2026-001)
 				var orderCode = await GenerateOrderCodeAsync();
 
 				var sql = @"
-                    INSERT INTO RubberOrder 
-                    (
-                        OrderCode, AgentCode, BuyerName, BuyerCompany,
-                        OrderDate, ExpectedShipDate, ProductType, 
-                        TotalNetKg, Status, Note,
-                        RegisterDate, RegisterPerson
-                    )
-                    VALUES 
-                    (
-                        @OrderCode, @AgentCode, @BuyerName, @BuyerCompany,
-                        @OrderDate, @ExpectedShipDate, @ProductType,
-                        @TotalNetKg, @Status, @Note,
-                        GETDATE(), @RegisterPerson
-                    );
-                    SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
-                ";
+                INSERT INTO RubberOrders 
+                (
+                    OrderCode, OrderName, 
+                    AgentId, BuyerId,
+                    OrderDate, ETD, 
+                    ProductType, PackagingType, TotalNetKg, 
+                    BookingRef, Incoterm, PortOfDischarge,
+                    Status, Note,
+                    CreatedDate, CreatedBy
+                )
+                VALUES 
+                (
+                    @OrderCode, @OrderName, 
+                    @AgentId, @BuyerId,
+                    @OrderDate, @ETD, 
+                    @ProductType, @PackagingType, @TotalNetKg, 
+                    @BookingRef, @Incoterm, @PortOfDischarge,
+                    0, @Note, -- Status mặc định là 0 (Mới)
+                    GETDATE(), @CreatedBy
+                );
+                
+                -- Trả về ID vừa sinh ra ngay lập tức
+                SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
+            ";
 
-				var orderId = await _dbHelper.QueryFirstOrDefaultAsync<long>(sql, new
-				{
-					OrderCode = orderCode,
-					request.AgentCode,
-					request.BuyerName,
-					request.BuyerCompany,
-					request.OrderDate,
-					request.ExpectedShipDate,
-					request.ProductType,
-					TotalNetKg = request.TotalNetKg ?? 0,
-					Status = (byte)1, // 1 = Mới
-					request.Note,
-					RegisterPerson = createdBy
-				});
+				// Dapper tự map các property trùng tên từ 'dto' vào '@Param'
+				// Ta tạo object ẩn danh để bổ sung các tham số không có trong dto (như OrderCode, CreatedBy)
+				var parameters = new DynamicParameters(dto);
+				parameters.Add("OrderCode", orderCode);
+				parameters.Add("CreatedBy", createdBy);
 
-				return new RubberOrderResult
-				{
-					Success = true,
-					Message = "Tạo đơn hàng thành công",
-					OrderId = orderId
-				};
+				var newId = await _dbConnection.QuerySingleAsync<long>(sql, parameters);
+
+				return new RubberOrderResponse { Success = true, Message = "Tạo đơn hàng thành công", OrderId = newId };
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in CreateOrderAsync");
-				return new RubberOrderResult
-				{
-					Success = false,
-					Message = "Lỗi khi tạo đơn hàng: " + ex.Message
-				};
+				_logger.LogError(ex, "CreateOrder Error");
+				return new RubberOrderResponse { Success = false, Message = "Lỗi: " + ex.Message };
 			}
 		}
 
-		// ========================================
-		// UPDATE ORDER
-		// ========================================
-		public async Task<RubberOrderResult> UpdateOrderAsync(RubberOrderRequest request, string updatedBy)
+		// ==========================================================
+		// 2. UPDATE (CẬP NHẬT) - Tối ưu: Chỉ update trường cho phép
+		// ==========================================================
+		public async Task<RubberOrderResult> UpdateOrderAsync(RubberOrderResult dto, string updatedBy)
 		{
 			try
 			{
+				// Không update OrderCode, CreatedDate, CreatedBy để bảo toàn lịch sử
 				var sql = @"
-                    UPDATE RubberOrder
-                    SET 
-                        AgentCode = @AgentCode,
-                        BuyerName = @BuyerName,
-                        BuyerCompany = @BuyerCompany,
-                        OrderDate = @OrderDate,
-                        ExpectedShipDate = @ExpectedShipDate,
-                        ProductType = @ProductType,
-                        TotalNetKg = @TotalNetKg,
-                        Note = @Note,
-                        UpdateDate = GETDATE(),
-                        UpdatePerson = @UpdatePerson
-                    WHERE OrderId = @OrderId
-                ";
+                UPDATE RubberOrders
+                SET 
+                    OrderName       = @OrderName,
+                    AgentId         = @AgentId,
+                    BuyerId         = @BuyerId,
+                    OrderDate       = @OrderDate,
+                    ETD             = @ETD,
+                    PortOfDischarge = @PortOfDischarge,
+                    ProductType     = @ProductType,
+                    PackagingType   = @PackagingType,
+                    TotalNetKg      = @TotalNetKg,
+                    BookingRef      = @BookingRef,
+                    Incoterm        = @Incoterm,
+                    Note            = @Note,
+                    
+                    -- Nếu bạn có cột UpdateInfo thì mở dòng dưới
+                    -- UpdateDate      = GETDATE(),
+                    -- UpdatePerson    = @UpdatedBy
+                WHERE OrderId = @OrderId
+            ";
 
-				var affected = await _dbHelper.ExecuteAsync(sql, new
-				{
-					request.OrderId,
-					request.AgentCode,
-					request.BuyerName,
-					request.BuyerCompany,
-					request.OrderDate,
-					request.ExpectedShipDate,
-					request.ProductType,
-					TotalNetKg = request.TotalNetKg ?? 0,
-					request.Note,
-					UpdatePerson = updatedBy
-				});
+				// Map thêm tham số UpdatedBy vào
+				var parameters = new DynamicParameters(dto);
+				parameters.Add("UpdatedBy", updatedBy);
 
-				if (affected > 0)
-				{
-					return new RubberOrderResult { Success = true, Message = "Cập nhật thành công" };
-				}
+				var affectedRows = await _dbConnection.ExecuteAsync(sql, parameters);
 
-				return new RubberOrderResult { Success = false, Message = "Không tìm thấy đơn hàng" };
+				if (affectedRows > 0)
+					return new RubberOrderResponse { Success = true, Message = "Cập nhật thành công" };
+				else
+					return new RubberOrderResponse { Success = false, Message = "Không tìm thấy đơn hàng để sửa" };
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in UpdateOrderAsync");
-				return new RubberOrderResult
-				{
-					Success = false,
-					Message = "Lỗi khi cập nhật: " + ex.Message
-				};
+				_logger.LogError(ex, "UpdateOrder Error");
+				return new RubberOrderResponse { Success = false, Message = "Lỗi: " + ex.Message };
 			}
 		}
 
-		// ========================================
-		// DELETE ORDER (Physical Delete)
-		// ========================================
-		public async Task<RubberOrderResult> DeleteOrderAsync(long orderId, string deletedBy)
+		// ==========================================================
+		// 3. DELETE (XÓA) - Tối ưu: Validate nghiệp vụ trước khi xóa
+		// ==========================================================
+		public async Task<RubberOrderResult> DeleteOrderAsync(long orderId)
 		{
 			try
 			{
-				// Check if order has pallets
-				var checkSql = "SELECT COUNT(*) FROM RubberPallet WHERE OrderId = @OrderId";
-				var palletCount = await _dbHelper.QueryFirstOrDefaultAsync<int>(checkSql, new { OrderId = orderId });
+				// BƯỚC 1: Kiểm tra trạng thái (Không cho xóa đơn đã xuất đi)
+				// Giả sử Status >= 2 là "Đã lên tàu" hoặc "Hoàn thành"
+				var status = await _dbConnection.QueryFirstOrDefaultAsync<byte?>("SELECT Status FROM RubberOrders WHERE OrderId = @Id", new { Id = orderId });
 
-				if (palletCount > 0)
+				if (status == null) return new RubberOrderResult { Success = false, Message = "Đơn hàng không tồn tại" };
+				if (status >= 2) return new RubberOrderResult { Success = false, Message = "Không thể xóa đơn hàng đã xuất đi (Status >= 2)" };
+
+				// BƯỚC 2: Kiểm tra ràng buộc dữ liệu (Pallet/Container)
+				// Nếu đơn hàng đã lỡ nhập pallet rồi thì không cho xóa ẩu
+				var checkSql = "SELECT COUNT(1) FROM RubberPallet WHERE OrderId = @Id";
+				var count = await _dbConnection.ExecuteScalarAsync<int>(checkSql, new { Id = orderId });
+
+				if (count > 0)
 				{
-					return new RubberOrderResult
-					{
-						Success = false,
-						Message = $"Không thể xóa. Đơn hàng có {palletCount} pallet liên quan."
-					};
+					return new RubberOrderResult { Success = false, Message = $"Đơn hàng đang chứa {count} kiện hàng (Pallet). Vui lòng xóa kiện hàng trước." };
 				}
 
-				// Check if order has OrderPonds
-				var checkPondSql = "SELECT COUNT(*) FROM RubberOrderPond WHERE OrderId = @OrderId";
-				var pondCount = await _dbHelper.QueryFirstOrDefaultAsync<int>(checkPondSql, new { OrderId = orderId });
+				// BƯỚC 3: Xóa thật (Physical Delete)
+				var deleteSql = "DELETE FROM RubberOrders WHERE OrderId = @Id";
+				await _dbConnection.ExecuteAsync(deleteSql, new { Id = orderId });
 
-				if (pondCount > 0)
-				{
-					return new RubberOrderResult
-					{
-						Success = false,
-						Message = $"Không thể xóa. Đơn hàng có {pondCount} hồ phân bổ liên quan."
-					};
-				}
-
-				// Physical delete
-				var sql = "DELETE FROM RubberOrder WHERE OrderId = @OrderId";
-				var affected = await _dbHelper.ExecuteAsync(sql, new { OrderId = orderId });
-
-				if (affected > 0)
-				{
-					return new RubberOrderResult { Success = true, Message = "Xóa thành công" };
-				}
-
-				return new RubberOrderResult { Success = false, Message = "Không tìm thấy đơn hàng" };
+				return new RubberOrderResult { Success = true, Message = "Xóa đơn hàng thành công" };
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in DeleteOrderAsync");
-				return new RubberOrderResult
-				{
-					Success = false,
-					Message = "Lỗi khi xóa: " + ex.Message
-				};
+				_logger.LogError(ex, "DeleteOrder Error");
+				// Bắt lỗi khóa ngoại (Foreign Key) nếu Bước 2 chưa bao phủ hết
+				if (ex.Message.Contains("REFERENCE constraint"))
+					return new RubberOrderResult { Success = false, Message = "Dữ liệu đang được sử dụng ở bảng khác, không thể xóa." };
+
+				return new RubberOrderResult { Success = false, Message = "Lỗi: " + ex.Message };
 			}
 		}
 
-		// ========================================
-		// UPDATE ORDER STATUS
-		// ========================================
-		public async Task<RubberOrderResult> UpdateOrderStatusAsync(long orderId, byte status, string updatedBy)
-		{
-			try
-			{
-				var sql = @"
-                    UPDATE RubberOrder
-                    SET 
-                        Status = @Status,
-                        UpdateDate = GETDATE(),
-                        UpdatePerson = @UpdatePerson
-                    WHERE OrderId = @OrderId
-                ";
-
-				var affected = await _dbHelper.ExecuteAsync(sql, new
-				{
-					OrderId = orderId,
-					Status = status,
-					UpdatePerson = updatedBy
-				});
-
-				if (affected > 0)
-				{
-					return new RubberOrderResult { Success = true, Message = "Cập nhật trạng thái thành công" };
-				}
-
-				return new RubberOrderResult { Success = false, Message = "Không tìm thấy đơn hàng" };
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in UpdateOrderStatusAsync");
-				return new RubberOrderResult
-				{
-					Success = false,
-					Message = "Lỗi khi cập nhật trạng thái: " + ex.Message
-				};
-			}
-		}
-
-		// ========================================
-		// MARK SHIPPED
-		// ========================================
-		public async Task<RubberOrderResult> MarkShippedAsync(long orderId, string updatedBy)
-		{
-			try
-			{
-				var sql = @"
-                    UPDATE RubberOrder
-                    SET 
-                        ShippedAt = GETDATE(),
-                        Status = 3,
-                        UpdateDate = GETDATE(),
-                        UpdatePerson = @UpdatePerson
-                    WHERE OrderId = @OrderId
-                ";
-
-				var affected = await _dbHelper.ExecuteAsync(sql, new
-				{
-					OrderId = orderId,
-					UpdatePerson = updatedBy
-				});
-
-				if (affected > 0)
-				{
-					return new RubberOrderResult { Success = true, Message = "Đánh dấu đã xuất hàng thành công" };
-				}
-
-				return new RubberOrderResult { Success = false, Message = "Không tìm thấy đơn hàng" };
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in MarkShippedAsync");
-				return new RubberOrderResult
-				{
-					Success = false,
-					Message = "Lỗi khi đánh dấu xuất hàng: " + ex.Message
-				};
-			}
-		}
-
-		// ========================================
-		// GET AGENTS
-		// ========================================
-		public async Task<List<RubberAgentDto>> GetAgentsAsync()
-		{
-			try
-			{
-				var sql = @"
-                    SELECT 
-                        AgentId,
-                        AgentCode,
-                        AgentName
-                    FROM RubberAgent
-                    WHERE IsActive = 1
-                    ORDER BY AgentName
-                ";
-
-				var agents = await _dbHelper.QueryAsync<RubberAgentDto>(sql);
-				return agents.ToList();
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in GetAgentsAsync");
-				throw;
-			}
-		}
-
-		// ========================================
-		// GENERATE ORDER CODE
-		// ========================================
+		// Hàm phụ trợ sinh mã
 		private async Task<string> GenerateOrderCodeAsync()
 		{
-			try
-			{
-				var sql = @"
-                    SELECT TOP 1 OrderCode 
-                    FROM RubberOrder 
-                    WHERE OrderCode LIKE 'ORD' + FORMAT(GETDATE(), 'yyyyMM') + '%'
-                    ORDER BY OrderCode DESC
-                ";
-
-				var lastCode = await _dbHelper.QueryFirstOrDefaultAsync<string>(sql);
-
-				if (string.IsNullOrEmpty(lastCode))
-				{
-					return $"ORD{DateTime.Now:yyyyMM}0001";
-				}
-
-				// Extract number from last code
-				var numberPart = lastCode.Substring(9); // ORDyyyyMM0001 -> 0001
-				if (int.TryParse(numberPart, out var number))
-				{
-					return $"ORD{DateTime.Now:yyyyMM}{(number + 1):D4}";
-				}
-
-				return $"ORD{DateTime.Now:yyyyMM}0001";
-			}
-			catch
-			{
-				return $"ORD{DateTime.Now:yyyyMM}0001";
-			}
-		}
-
-		// ========================================
-		// EXPORT TO EXCEL
-		// ========================================
-		public async Task<byte[]> ExportToExcelAsync(List<long> orderIds, string exportedBy)
-		{
-			try
-			{
-				List<RubberOrderResponse> orders;
-
-				if (orderIds != null && orderIds.Any())
-				{
-					// Export selected orders
-					var sql = @"
-                        SELECT 
-                            o.OrderId,
-                            o.OrderCode,
-                            a.AgentName,
-                            o.BuyerName,
-                            o.BuyerCompany,
-                            o.OrderDate,
-                            o.ExpectedShipDate,
-                            o.ShippedAt,
-                            o.ProductType,
-                            o.TotalNetKg,
-                            o.Status,
-                            o.Note
-                        FROM RubberOrder o
-                        INNER JOIN RubberAgent a ON a.AgentCode = o.AgentCode
-                        WHERE o.OrderId IN @OrderIds
-                        ORDER BY o.OrderDate DESC
-                    ";
-
-					orders = (await _dbHelper.QueryAsync<RubberOrderResponse>(sql, new { OrderIds = orderIds })).ToList();
-				}
-				else
-				{
-					// Export all orders
-					orders = await GetAllOrdersAsync();
-				}
-
-				using var workbook = new XLWorkbook();
-				var worksheet = workbook.Worksheets.Add("Orders");
-
-				// Header
-				worksheet.Cell(1, 1).Value = "Mã đơn hàng";
-				worksheet.Cell(1, 2).Value = "Đại lý";
-				worksheet.Cell(1, 3).Value = "Người mua";
-				worksheet.Cell(1, 4).Value = "Công ty";
-				worksheet.Cell(1, 5).Value = "Ngày đặt";
-				worksheet.Cell(1, 6).Value = "Ngày dự kiến xuất";
-				worksheet.Cell(1, 7).Value = "Ngày xuất thực tế";
-				worksheet.Cell(1, 8).Value = "Loại sản phẩm";
-				worksheet.Cell(1, 9).Value = "Tổng Net (kg)";
-				worksheet.Cell(1, 10).Value = "Trạng thái";
-				worksheet.Cell(1, 11).Value = "Ghi chú";
-
-				// Style header
-				var headerRange = worksheet.Range(1, 1, 1, 11);
-				headerRange.Style.Font.Bold = true;
-				headerRange.Style.Fill.BackgroundColor = XLColor.LightBlue;
-				headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-
-				// Data
-				int row = 2;
-				foreach (var order in orders)
-				{
-					worksheet.Cell(row, 1).Value = order.OrderCode;
-					worksheet.Cell(row, 2).Value = order.AgentName;
-					worksheet.Cell(row, 3).Value = order.BuyerName;
-					worksheet.Cell(row, 4).Value = order.BuyerCompany;
-					worksheet.Cell(row, 5).Value = order.OrderDate?.ToString("dd/MM/yyyy") ?? "";
-					worksheet.Cell(row, 6).Value = order.ExpectedShipDate?.ToString("dd/MM/yyyy") ?? "";
-					worksheet.Cell(row, 7).Value = order.ShippedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
-					worksheet.Cell(row, 8).Value = order.ProductType;
-					worksheet.Cell(row, 9).Value = order.TotalNetKg;
-					worksheet.Cell(row, 10).Value = GetStatusText(order.Status);
-					worksheet.Cell(row, 11).Value = order.Note;
-					row++;
-				}
-
-				// Auto-fit columns
-				worksheet.Columns().AdjustToContents();
-
-				using var stream = new MemoryStream();
-				workbook.SaveAs(stream);
-				return stream.ToArray();
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in ExportToExcelAsync");
-				throw;
-			}
-		}
-
-		// ========================================
-		// HELPER: Get Status Text
-		// ========================================
-		private string GetStatusText(byte status)
-		{
-			return status switch
-			{
-				1 => "Mới",
-				2 => "Đang xử lý",
-				3 => "Hoàn thành",
-				4 => "Hủy",
-				_ => "Không xác định"
-			};
+			// Logic sinh mã: EXP-Năm-SốTăngDần (VD: EXP-2026-005)
+			// ... code logic của bạn ...
+			return "EXP-" + DateTime.Now.Year + "-" + Guid.NewGuid().ToString().Substring(0, 4).ToUpper();
 		}
 	}
 }

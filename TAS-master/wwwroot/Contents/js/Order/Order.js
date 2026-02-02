@@ -4,6 +4,9 @@
 
 let gridApiOrder;
 let gridColumnApi;
+let rowData = [];
+var currentPage = 1;
+var pageSize = 20; // Số dòng mỗi trang
 
 // ========================================
 // INITIALIZE PAGE
@@ -50,36 +53,45 @@ function setupGrid() {
                 field: 'rowNo',
                 minWidth: 50,
                 width: 110,
-                cellRenderer: params => {
-                    return `<strong style="color: #2c3e50;">${params.value}</strong>`;
-                }
+                
             },
             {
                 headerName: 'Mã đơn hàng',
                 field: 'orderCode',
+                editable: true,
                 minWidth: 210,
                 cellRenderer: params => {
                     return `<strong style="color: #2c3e50;">${params.value}</strong>`;
                 }
             },
             {
-                headerName: 'Tên đại lý',
-                field: 'agentName',
+                headerName: 'Tên đơn hàng',
+                field: 'orderName',
+                editable: true,
                 width: 180
             },
+            //{
+            //    headerName: 'Tên đại lý',
+            //    field: 'agentName',
+            //    editable: true,
+            //    width: 180
+            //},
             {
                 headerName: 'Công ty',
                 field: 'buyerCompany',
+                editable: true,
                 width: 180
             },
             {
                 headerName: 'Loại SP',
                 field: 'productType',
+                editable: true,
                 width: 120
             },
             {
                 headerName: 'Tổng Net (kg)',
                 field: 'totalNetKg',
+                editable: true,
                 width: 130,
                 type: 'numericColumn',
                 valueFormatter: params => {
@@ -121,8 +133,8 @@ function setupGrid() {
         rowSelection: 'multiple',
         animateRows: true,
         pagination: true,
-        paginationPageSize: 20,
-        paginationPageSizeSelector: [10, 20, 50, 100],
+        paginationPageSize: 10,
+        paginationPageSizeSelector: [5, 10, 20, 100],
 
         // Events
         onSelectionChanged: onSelectionChanged,
@@ -141,16 +153,16 @@ function setupGrid() {
 // ========================================
 function renderStatusBadge(status) {
     const statusMap = {
-        0: { text: 'Mới tạo', class: 'status-new' },
-        1: { text: 'Đang xử lý', class: 'status-processing' },
-        2: { text: 'Đã xuất kho', class: 'status-exported' },
-        3: { text: 'Đã giao hàng', class: 'status-delivered' },
-        4: { text: 'Hoàn thành', class: 'status-completed' },
-        5: { text: 'Đã hủy', class: 'status-cancelled' }
+        0: { text: 'Mới tạo', class: 'badge-primary' },
+        1: { text: 'Đang xử lý', class: 'badge-warning' },
+        2: { text: 'Đã xuất kho', class: 'badge-primary' },
+        3: { text: 'Đã giao hàng', class: 'badge-primary' },
+        4: { text: 'Hoàn thành', class: 'badge-success' },
+        5: { text: 'Đã hủy', class: 'badge-danger' }
     };
     
     const statusInfo = statusMap[status] || { text: 'Không xác định', class: 'status-unknown' };
-    return `<span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>`;
+    return `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>`;
 }
 
 // ========================================
@@ -179,37 +191,71 @@ function setupEventHandlers() {
 // ========================================
 // LOAD ORDERS
 // ========================================
-function loadOrders() {
+function loadOrders(pageIndex) {
     showLoading();
-    
+
+    // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
+    if (pageIndex) {
+        currentPage = pageIndex;
+    } else {
+        currentPage = 1;
+    }
+
+    // 2. Lấy giá trị từ các ô Filter trên màn hình
+    var filterData = {
+        PageIndex: currentPage,
+        PageSize: pageSize,
+        Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
+        Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
+        FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
+        ToDate: $('#dtToDate').val()           // Lấy ngày kết thúc
+    };
+
     $.ajax({
         url: '/Order/GetAllOrders',
         type: 'GET',
-        success: function(response) {
+        data: filterData, // Gửi object filter lên controller
+        success: function (response) {
             if (response.success) {
-                gridApiOrder.setGridOption('rowData', response.data);
-                updateStatusBar(response.data.length);
+                // response.data lúc này là object PagedResult { items: [...], totalRecords: 100 }
+                var pagedResult = response.data;
+                rowData = pagedResult.items;
+
+                // 3. Cập nhật dữ liệu vào Grid
+                // Lưu ý: data trả về nằm trong thuộc tính .items
+                gridApiOrder.setGridOption('rowData', pagedResult.items);
+
+                // 4. Cập nhật thanh trạng thái (Tổng số dòng tìm thấy)
+                updateStatusBar(pagedResult.totalRecords);
+
+                // 5. [Quan trọng] Xử lý phân trang UI (Nếu bạn dùng phân trang tùy chỉnh)
+                //renderPagination(pagedResult.totalRecords, currentPage, pageSize);
+
                 updateLastUpdateTime();
             } else {
                 NotificationToast("error", response.message || 'Không thể tải dữ liệu');
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('Load error:', error);
-            NotificationToast("error", 'Lỗi khi tải dữ liệu: ' + error);
+            NotificationToast("error", 'Lỗi kết nối server: ' + error);
         },
-        complete: function() {
+        complete: function () {
             hideLoading();
         }
     });
 }
 
+// Hàm cập nhật thanh status bar (Ví dụ)
+function updateStatusBar(totalCount) {
+    $('#lblTotalRecords').text("Tổng cộng: " + totalCount + " đơn hàng");
+}
 // ========================================
 // LOAD AGENTS
 // ========================================
 function loadAgents() {
     $.ajax({
-        url: '/Order/GetAgents',
+        url: '/Common/GetAgents',
         type: 'GET',
         success: function(response) {
             if (response.success) {
@@ -231,11 +277,37 @@ function loadAgents() {
 // SHOW ADD MODAL
 // ========================================
 function showAddModal() {
-    $('#modalTitle').text('Thêm đơn hàng mới');
-    $('#orderId').val('');
-    $('#orderForm')[0].reset();
-    $('#orderDate').val(new Date().toISOString().split('T')[0]);
-    $('#modalOrder').fadeIn(300);
+    //$('#modalTitle').text('Thêm đơn hàng mới');
+    //$('#orderId').val('');
+    //$('#orderForm')[0].reset();
+    //$('#orderDate').val(new Date().toISOString().split('T')[0]);
+    //$('#modalOrder').fadeIn(300);
+    const newRow = {
+        agentCode: "",
+        agentName: "",
+        buyerCompany: "",
+        buyerName: "",
+        expectedShipDate: "",
+        note: "",
+        orderCode: generateOrderCode(),
+        orderDate: "",
+        orderId: 0,
+        productType: "",
+        registerDate: "",
+        registerPerson: "",
+        shippedAt: null,
+        status: 6,
+        totalNetKg: 0,
+        updateDate: null,
+        updatePerson: null
+    }
+
+
+    gridApiOrder.applyTransaction({ add: [newRow], addIndex: rowData.length });
+    rowData.push(newRow);
+    //BẮT BUỘC
+    RefeshSingleColumn(gridApiOrder, 'action');
+    //updateRowNumbers();
 }
 
 // ========================================
@@ -567,7 +639,10 @@ function hideLoading() {
 }
 // Render Action Column
 function CellRenderAction(params) {
-	// Define action buttons
+    // Define action buttons
+    let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveOrder(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+
     let markShipped = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="markShipped(${params.value})" title="Lưu"><i class="ti ti-package f-20"></i></a>`;
     let editOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="editOrder(${params.value})" title="Bỏ"><i class="ti ti-edit f-20"></i></a>`;
     let updateStatus = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value},${params.data.status})" title="${arrMsg.key_delete}"><i class="ti ti-eye f-20"></i></a>`;
@@ -577,10 +652,25 @@ function CellRenderAction(params) {
     const hasShipped = params.data.shippedAt != null;
 
     const shipBtn = !hasShipped ? markShipped : '';
-    return `
+    // CHỈ hiện nút lưu khi chưa lưu
+    if (params.data.orderId === 0) {
+        return `
+        ${strSave}
+        ${strCancel}
+    `;
+    }
+    else {
+        return `
         ${editOrder}
         ${updateStatus}
         ${shipBtn}
         ${deleteOrder}
     `;
+    }
+   
+}
+function cancelRow(rowIndex) {
+    const objectData = gridApiOrder.getDisplayedRowAtIndex(rowIndex).data;
+    rowData = rowData.filter(item => item.orderCode !== objectData.orderCode);
+    gridApiOrder.setGridOption('rowData', rowData);
 }

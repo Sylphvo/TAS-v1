@@ -8,9 +8,11 @@ namespace TAS.Controllers
 	public class CommonController : Controller
 	{
 		private readonly CommonModels _common;
-		public CommonController(CommonModels common)
+		private readonly ILogger<CommonController> _logger;
+		public CommonController(CommonModels common, ILogger<CommonController> logger)
 		{
 			_common = common;
+			_logger = logger;
 		}
 		//Set cookie language
 		public IActionResult SetLanguageCookie(string culture, string returnUrl)
@@ -38,6 +40,23 @@ namespace TAS.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { success = false, message = ex.Message });
+			}
+		}
+		// ========================================
+		// GET: /Common/GetAgents
+		// ========================================
+		[HttpGet]
+		public async Task<IActionResult> GetAgents()
+		{
+			try
+			{
+				var agents = await _common.GetAgentsAsync();
+				return Json(new { success = true, data = agents });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAgents");
+				return Json(new { success = false, message = "Lỗi khi tải danh sách đại lý" });
 			}
 		}
 	}

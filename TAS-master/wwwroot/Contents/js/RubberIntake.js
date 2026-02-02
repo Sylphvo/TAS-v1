@@ -5,12 +5,9 @@
 var ListDataFull;
 let rowData = [];
 let fillHandleBatch = [];
-var arrValue = {
-    IdProgress: 0, // Đang xử lý
-    MsgProgress: arrMsg.key_chuaduyet, // Đã tạo đơn hàng
-    IdFinish: 1, // Đang xử lý
-    MsgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
-
+var agentByCode = {};
+var farmByCode = {};
+arrValue = {
     typeExcel: 1, // Xuất Excel Data
     typeSampleExcel: 2, // Xuất Excel Mẫu
 
@@ -20,8 +17,6 @@ var arrValue = {
     selectFirst: true,
     loadFirst: false
 };
-var agentByCode = {};
-var farmByCode = {};
 
 
 function initPage() {
@@ -199,7 +194,6 @@ const gridOptions = {
 	rowHeight: 45,// Độ cao dòng
 	headerHeight: 45,// Độ cao header
 	suppressRowClickSelection: true,// Click row không chọn
-
     
     // Events
 	onGridReady: onGridReady,// Load Data
@@ -262,7 +256,7 @@ async function loadData() {
         if (response.success) {
             rowData = response.data;
             gridApiIntake.setGridOption('rowData', rowData);
-            updateRowNumbers(); // Update row numbers
+            //updateRowNumbers(); // Update row numbers
             renderPagination(agPaging, gridApiIntake, rowData, IsOptionAll);  // Render pagination
             if (!arrValue.loadFirst) {
                 arrValue.loadFirst = true;
@@ -285,16 +279,7 @@ async function loadData() {
 // ========================================
 // CRUD OPERATIONS
 // ========================================
-function generateIntakeCode() {
-    const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
-    const randomPart = crypto
-        .getRandomValues(new Uint32Array(1))[0]
-        .toString(16)
-        .toUpperCase();
-
-    return `INT_${datePart}_${randomPart}`;
-}
 
 // Add New Row
 function addNewRow() {
@@ -319,10 +304,8 @@ function addNewRow() {
     gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
     rowData.push(newRow);
     //BẮT BUỘC
-    RefeshSingleColumn('action');
-    updateRowNumbers();
-    
-    //NotificationToast('info', 'Đã thêm dòng mới. Hãy nhập thông tin và lưu.');
+    RefeshSingleColumn(gridApiIntake, 'action');
+    //updateRowNumbers();
 }
 function onRemoveSelected() {
     const selectedData = gridApiIntake.getSelectedRows();
@@ -397,7 +380,7 @@ async function deleteRow(rowIndex) {
     // If new row (no intakeId), just remove from grid
     if (!data.intakeId || data.intakeId === 0) {
         gridApiIntake.applyTransaction({ remove: [data] });
-        updateRowNumbers();
+        //updateRowNumbers();
         NotificationToast('success', 'Đã xóa dòng');
         return;
     }
@@ -413,7 +396,7 @@ async function deleteRow(rowIndex) {
         
         if (response.success) {
             gridApiIntake.applyTransaction({ remove: [data] });
-            updateRowNumbers();
+            //updateRowNumbers();
             NotificationToast('success', 'Xóa thành công');
         } else {
             NotificationToast('error', response.message || 'Xóa thất bại');
@@ -445,7 +428,7 @@ async function deleteSelected() {
     if (intakeIds.length === 0) {
         // Just remove from grid
         gridApiIntake.applyTransaction({ remove: selectedRows });
-        updateRowNumbers();
+        //updateRowNumbers();
         NotificationToast('success', 'Đã xóa các dòng mới');
         return;
     }
@@ -460,7 +443,7 @@ async function deleteSelected() {
         
         if (response.success) {
             gridApiIntake.applyTransaction({ remove: selectedRows });
-            updateRowNumbers();
+            //updateRowNumbers();
             NotificationToast('success', response.message);
         } else {
             NotificationToast('error', response.message || 'Xóa thất bại');
@@ -494,7 +477,7 @@ async function approveRow(rowIndex, status) {
             data.status = status;
             data.statusText = arrValue.MsgProgress;
             gridApiIntake.applyTransaction({ update: [data] });
-            RefeshSingleColumn('action');
+            RefeshSingleColumn(gridApiIntake, 'action');
             NotificationToast('success', 'Duyệt thành công');
         } else {
             NotificationToast('error', response.message || 'Duyệt thất bại');
@@ -823,7 +806,7 @@ const num = v => {
     return Number.isFinite(x) ? x : 0;
 };
 function onRowDragEnd(event) {
-    updateRowNumbers();
+    //updateRowNumbers();
 }
 
 async function loadAllCombos() {
@@ -905,6 +888,7 @@ function RefeshSingleColumn(fieldName) {
 // Render Action Column
 function CellRenderAction(params) {
     let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
+
     let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
     let strApprove = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex},${arrValue.IdProgress})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
     let strDelete = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;

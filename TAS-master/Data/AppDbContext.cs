@@ -25,7 +25,7 @@ namespace TAS.Data
 
 		// ====== BRIDGE (Truy xuất nguồn gốc) ======
 		public DbSet<RubberPondIntake> RubberPondIntakes => Set<RubberPondIntake>();
-		public DbSet<RubberOrderPond> RubberOrderPonds => Set<RubberOrderPond>();
+		//public DbSet<RubberOrderPond> RubberOrderPonds => Set<RubberOrderPond>();
 		// ====== CONFIGURATION ======
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -213,57 +213,57 @@ namespace TAS.Data
 			// ========================================
 			// RUBBER ORDER (Đơn hàng)
 			// ========================================
-			modelBuilder.Entity<RubberOrder>(entity =>
-			{
-				entity.ToTable("RubberOrder");
-				entity.HasKey(e => e.OrderId);
+			//modelBuilder.Entity<RubberOrder>(entity =>
+			//{
+			//	entity.ToTable("RubberOrder");
+			//	entity.HasKey(e => e.OrderId);
 
-				entity.Property(e => e.OrderCode).HasMaxLength(50).IsRequired();
-				entity.HasIndex(e => e.OrderCode).IsUnique();
+			//	entity.Property(e => e.OrderCode).HasMaxLength(50).IsRequired();
+			//	entity.HasIndex(e => e.OrderCode).IsUnique();
 
-				entity.Property(e => e.AgentCode).HasMaxLength(50).IsRequired();
-				entity.Property(e => e.BuyerName).HasMaxLength(255);
-				entity.Property(e => e.BuyerCompany).HasMaxLength(255);
-				entity.Property(e => e.ProductType).HasMaxLength(50);
-				entity.Property(e => e.RegisterPerson).HasMaxLength(50);
-				entity.Property(e => e.UpdatePerson).HasMaxLength(50);
+			//	entity.Property(e => e.AgentCode).HasMaxLength(50).IsRequired();
+			//	entity.Property(e => e.BuyerName).HasMaxLength(255);
+			//	entity.Property(e => e.BuyerCompany).HasMaxLength(255);
+			//	entity.Property(e => e.ProductType).HasMaxLength(50);
+			//	entity.Property(e => e.RegisterPerson).HasMaxLength(50);
+			//	entity.Property(e => e.UpdatePerson).HasMaxLength(50);
 
-				entity.Property(e => e.TotalNetKg).HasColumnType("decimal(10,2)").HasDefaultValue(0.00m);
-				entity.Property(e => e.Status).HasDefaultValue((byte)1);
-				entity.Property(e => e.RegisterDate).HasDefaultValueSql("SYSDATETIME()");
+			//	entity.Property(e => e.TotalNetKg).HasColumnType("decimal(10,2)").HasDefaultValue(0.00m);
+			//	entity.Property(e => e.Status).HasDefaultValue((byte)1);
+			//	entity.Property(e => e.RegisterDate).HasDefaultValueSql("SYSDATETIME()");
 
-				// Relationship: Agent -> Order (1:N)
-				entity.HasOne(e => e.Agent)
-					.WithMany(a => a.Orders)
-					.HasForeignKey(e => e.AgentCode)
-					.HasPrincipalKey(a => a.AgentCode)
-					.OnDelete(DeleteBehavior.Cascade);
-			});
+			//	// Relationship: Agent -> Order (1:N)
+			//	entity.HasOne(e => e.Agent)
+			//		.WithMany(a => a.Orders)
+			//		.HasForeignKey(e => e.AgentCode)
+			//		.HasPrincipalKey(a => a.AgentCode)
+			//		.OnDelete(DeleteBehavior.Cascade);
+			//});
 
-			// ========================================
-			// RUBBER ORDER POND (Bridge: Đơn hàng ← Hồ)
-			// ========================================
-			modelBuilder.Entity<RubberOrderPond>(entity =>
-			{
-				entity.ToTable("RubberOrderPond");
-				entity.HasKey(e => e.OrderPondId);
+			//// ========================================
+			//// RUBBER ORDER POND (Bridge: Đơn hàng ← Hồ)
+			//// ========================================
+			//modelBuilder.Entity<RubberOrderPond>(entity =>
+			//{
+			//	entity.ToTable("RubberOrderPond");
+			//	entity.HasKey(e => e.OrderPondId);
 
-				entity.Property(e => e.AllocatedKg).HasColumnType("decimal(10,2)").IsRequired();
-				entity.Property(e => e.BatchNo).HasMaxLength(50);
+			//	entity.Property(e => e.AllocatedKg).HasColumnType("decimal(10,2)").IsRequired();
+			//	entity.Property(e => e.BatchNo).HasMaxLength(50);
 
-				// Relationship: Order -> OrderPond (1:N)
-				entity.HasOne(e => e.Order)
-					.WithMany(o => o.OrderPonds)
-					.HasForeignKey(e => e.OrderId)
-					.OnDelete(DeleteBehavior.Cascade);
+			//	// Relationship: Order -> OrderPond (1:N)
+			//	entity.HasOne(e => e.Order)
+			//		.WithMany(o => o.OrderPonds)
+			//		.HasForeignKey(e => e.OrderId)
+			//		.OnDelete(DeleteBehavior.Cascade);
 
-				// Relationship: Pond -> OrderPond (1:N)
-				entity.HasOne(e => e.Pond)
-					.WithMany(p => p.OrderPonds)
-					.HasForeignKey(e => e.PondId)
-					.OnDelete(DeleteBehavior.NoAction)
-					.IsRequired(false);
-			});
+			//	// Relationship: Pond -> OrderPond (1:N)
+			//	entity.HasOne(e => e.Pond)
+			//		.WithMany(p => p.OrderPonds)
+			//		.HasForeignKey(e => e.PondId)
+			//		.OnDelete(DeleteBehavior.NoAction)
+			//		.IsRequired(false);
+			//});
 
 			// ========================================
 			// RUBBER PALLET
@@ -288,10 +288,10 @@ namespace TAS.Data
 				entity.Property(e => e.RegisterDate).HasDefaultValueSql("SYSDATETIME()");
 
 				// Relationship: Order -> Pallet (1:N)
-				entity.HasOne(e => e.Order)
-					.WithMany(o => o.Pallets)
-					.HasForeignKey(e => e.OrderId)
-					.OnDelete(DeleteBehavior.Cascade);
+				//entity.HasOne(e => e.Order)
+				//	.WithMany(o => o.Pallets)
+				//	.HasForeignKey(e => e.OrderId)
+				//	.OnDelete(DeleteBehavior.Cascade);
 
 				// Relationship: Pond -> Pallet (1:N, Optional)
 				// NoAction để tránh multiple cascade paths

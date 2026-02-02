@@ -53,7 +53,7 @@ namespace TAS.Models
 		public virtual RubberAgent? Agent { get; set; }
 
 		public virtual ICollection<RubberPondIntake> PondIntakes { get; set; } = new List<RubberPondIntake>();
-		public virtual ICollection<RubberOrderPond> OrderPonds { get; set; } = new List<RubberOrderPond>();
+		//public virtual ICollection<RubberOrderPond> OrderPonds { get; set; } = new List<RubberOrderPond>();
 		public virtual ICollection<RubberPallet> Pallets { get; set; } = new List<RubberPallet>();
 	}
 	// ========================================

@@ -1,3 +1,9 @@
+var arrValue = {
+    IdProgress: 0, // Đang xử lý
+    MsgProgress: arrMsg.key_chuaduyet, // Đã tạo đơn hàng
+    IdFinish: 1, // Đang xử lý
+    MsgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
+};
 class SelectEditorWithTextDisplay {
     init(params) {
         this.params = params;
@@ -54,4 +60,20 @@ function CellStyle_Col_Model(params) {
     let cellAttr = {};
     cellAttr['text-align'] = 'center';
     return cellAttr;
+}
+function generateIntakeCode() {
+    //const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const datePart = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+    //const randomPart = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase();
+    return `INT_${datePart}`;
+}
+
+function generateOrderCode() {
+    //const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const datePart = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+    //const randomPart = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase();
+    return `ORD_${datePart}`;
+}
+function RefeshSingleColumn(gridApiDynamic, fieldName) {
+    gridApiDynamic.refreshCells({ force: true, columns: [fieldName] });
 }

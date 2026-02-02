@@ -277,5 +277,32 @@ namespace TAS.ViewModels
 				return new List<TotalCommonSystem>();
 			}
 		}
+		// ========================================
+		// GET AGENTS
+		// ========================================
+		public async Task<List<RubberAgentDto>> GetAgentsAsync()
+		{
+			try
+			{
+				var sql = @"
+                    SELECT 
+                        AgentId,
+                        AgentCode,
+                        AgentName
+                    FROM RubberAgent
+                    WHERE IsActive = 1
+                    ORDER BY AgentName
+                ";
+
+				var agents = await _dbHelper.QueryAsync<RubberAgentDto>(sql);
+				return agents.ToList();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in GetAgentsAsync");
+				throw;
+			}
+		}
+
 	}
 }

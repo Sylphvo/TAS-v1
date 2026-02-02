@@ -9,88 +9,46 @@ namespace TAS.Models
 	// ========================================
 	public class RubberOrder
 	{
-		[Key]
+		// ID & Contract
 		public long OrderId { get; set; }
+		public string? OrderCode { get; set; } // Mã Hợp đồng
+		public string? OrderName { get; set; }
+		public string? BookingRef { get; set; } // Số Booking hãng tàu
 
-		[Required]
-		[MaxLength(50)]
-		public string OrderCode { get; set; } = string.Empty;
+		// Quan hệ (Foreign Keys)
+		//public string? AgentCode { get; set; } // Link tới bảng Agents
+		public int BuyerId { get; set; } // Link tới bảng Buyers
 
-		[Required]
-		[MaxLength(50)]
-		public string AgentCode { get; set; } = string.Empty;
+		// Hàng hóa & Đóng gói
+		public string ProductType { get; set; } = "SVR 3L";
+		public string PackagingType { get; set; } = "Wooden Pallet"; // Pallet gỗ, Hàng rời...
+		public decimal TotalNetKg { get; set; }
+		public int ContainerCount { get; set; }
 
-		[MaxLength(255)]
-		public string? BuyerName { get; set; }
+		// Logistics (Xuất khẩu)
+		public string Incoterm { get; set; } = "FOB"; // FOB Cat Lai, CIF Hamburg...
+		public string PortOfLoading { get; set; } = string.Empty;
+		public string PortOfDischarge { get; set; } = string.Empty;
+		public string? VesselName { get; set; }
+		public string? BillOfLadingNo { get; set; }
 
-		[MaxLength(255)]
-		public string? BuyerCompany { get; set; }
+		// Dates
+		public DateTime OrderDate { get; set; }
+		public DateTime? ETD { get; set; } // Ngày đi
+		public DateTime? ETA { get; set; } // Ngày đến (Khách Âu rất quan tâm)
 
-		[Required]
-		public DateTime OrderDate { get; set; } = DateTime.UtcNow.Date;
-
-		public DateTime? ExpectedShipDate { get; set; }
-
-		public DateTime? ShippedAt { get; set; }
-
-		[MaxLength(50)]
-		public string? ProductType { get; set; }
-
-		[Column(TypeName = "decimal(10,2)")]
-		public decimal TotalNetKg { get; set; } = 0.00m;
-
-		/// <summary>
-		/// 1: Mới, 2: Đang xử lý, 3: Hoàn thành, 4: Hủy
-		/// </summary>
-		public byte Status { get; set; } = 1;
-
+		// Status
+		public ExportStatus Status { get; set; }
 		public string? Note { get; set; }
-
-		public DateTime RegisterDate { get; set; } = DateTime.UtcNow;
-
-		[MaxLength(50)]
-		public string? RegisterPerson { get; set; }
-
-		public DateTime? UpdateDate { get; set; }
-
-		[MaxLength(50)]
-		public string? UpdatePerson { get; set; }
-
-		// Navigation Properties
-		[ForeignKey(nameof(AgentCode))]
-		public virtual RubberAgent? Agent { get; set; }
-
-		public virtual ICollection<RubberOrderPond> OrderPonds { get; set; } = new List<RubberOrderPond>();
-		public virtual ICollection<RubberPallet> Pallets { get; set; } = new List<RubberPallet>();
 	}
-	// ========================================
-	// RUBBER ORDER POND (Bridge: Đơn hàng ← Hồ)
-	// ========================================
-	public class RubberOrderPond
+	// Enum trạng thái gợi ý
+	public enum ExportStatus : byte
 	{
-		[Key]
-		public long OrderPondId { get; set; }
-
-		[Required]
-		public long OrderId { get; set; }
-
-		[Required]
-		public long PondId { get; set; }
-
-		[Required]
-		[Column(TypeName = "decimal(10,2)")]
-		public decimal AllocatedKg { get; set; }
-
-		public DateTime? LoadedAt { get; set; }
-
-		[MaxLength(50)]
-		public string? BatchNo { get; set; }
-
-		// Navigation Properties
-		[ForeignKey(nameof(OrderId))]
-		public virtual RubberOrder? Order { get; set; }
-
-		[ForeignKey(nameof(PondId))]
-		public virtual RubberPond? Pond { get; set; }
+		New = 0,            // Mới tạo
+		QualityCheck = 1,   // Đang kiểm định (DRC, tạp chất)
+		Stuffing = 2,       // Đang đóng container
+		CustomsClearance = 3, // Đang làm thủ tục hải quan
+		OnBoard = 4,        // Đã lên tàu (Shipped)
+		Completed = 5       // Khách đã nhận & thanh toán
 	}
 }
