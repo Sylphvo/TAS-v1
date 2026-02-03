@@ -13,4 +13,10 @@
 		public string? Value { get; set; }
 		public string? Group { get; set; }
 	}
+	// 2. Output: Trả về bao gồm dữ liệu và tổng số dòng (để FE chia trang)
+	public class PagedResult<T>
+	{
+		public List<T> Items { get; set; } = new List<T>();
+		public int? TotalRecords { get; set; }
+	}
 }

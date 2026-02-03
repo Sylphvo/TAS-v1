@@ -31,15 +31,11 @@ namespace TAS.Controllers
 		// API: Lấy danh sách FULL
 		// ========================================
 		[HttpPost]
-		public async Task<IActionResult> GetAllIntakes(
-			string? agentCode = null,
-			string? farmCode = null,
-			string? orderCode = null,
-			int? status = null)
+		public async Task<IActionResult> GetAllIntakes(RubberIntakeRequest req)
 		{
 			try
 			{
-				var lstData = await _models.GetAllIntakesAsync(agentCode, farmCode, orderCode, status);
+				var lstData = await _models.GetAllIntakesAsync(req);
 				return Json(new { success = true, data = lstData });
 			}
 			catch (Exception ex)
@@ -184,15 +180,11 @@ namespace TAS.Controllers
 		// API: Export Excel
 		// ========================================
 		[HttpPost]
-		public async Task<IActionResult> ExportExcel(
-			string? agentCode = null,
-			string? farmCode = null,
-			string? orderCode = null,
-			int? status = null)
+		public async Task<IActionResult> ExportExcel(RubberIntakeRequest req)
 		{
 			try
 			{
-				var data = await _models.GetAllIntakesAsync(agentCode, farmCode, orderCode, status);
+				var data = await _models.GetAllIntakesAsync(req);
 
 				// Trả về data để JS xử lý export
 				return Json(new { success = true, data });

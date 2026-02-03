@@ -364,4 +364,7 @@
   <data name="key_xoaloc">
     <value>Clear Filter</value>
   </data>
+  <data name="key_to">
+    <value>to</value>
+  </data>
 </root>

@@ -826,8 +826,10 @@ textarea.form-control {
 .mb-3 {
     margin-bottom: 1rem;
 }
-.ag-paging-panel{
+.ag-paging-panel {
     height: 45px !important;
+    gap: calc(8px * 4) !important;
+    padding: calc(8px * 2 * 1);
 }
 .modal-header .close {
     opacity: 0.8;
@@ -1170,4 +1172,48 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
 
 .datatable-top{
     padding-left: 5px !important;
+}
+
+div[col-id="note"].ag-cell-value {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.ag-icon-first::before {
+    mask-image: url(/Contents/icon/first.svg);
+}
+.ag-icon-previous::before {
+    mask-image: url(/Contents/icon/previous.svg);
+}
+.ag-icon-next::before {
+    mask-image: url(/Contents/icon/next.svg);
+}
+.ag-icon-last::before {
+    mask-image: url(/Contents/icon/last.svg);
+}
+
+:where(.ag-icon):before {
+    align-items: center;
+    background-color: currentcolor;
+    color: inherit;
+    content: "";
+    display: flex;
+    font-family: inherit;
+    font-size: 16px;
+    font-style: normal;
+    font-variant: normal;
+    height: 16px;
+    justify-content: center;
+    line-height: 16px;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    text-transform: none;
+    width: 16px;
+}
+.ag-paging-button{
+    position: unset !important;
+}
+.ag-paging-page-summary-panel {
+    gap: calc( 8px * 1.5) !important;
 }

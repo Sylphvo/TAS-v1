@@ -1,79 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace TAS.DTOs
 {
 	// ========================================
 	// DTOs
 	// ========================================
-	public class RubberOrderResult
+	public class RubberOrderRequest
 	{
+		// Nếu là Thêm mới thì OrderId có thể null. Nếu Sửa thì bắt buộc có.
 		public long? OrderId { get; set; }
 
-		// 1. Thông tin chung
-		public string OrderName { get; set; } = string.Empty; // Mới: Tên gợi nhớ
-		public int AgentId { get; set; }                      // Mới: Chọn từ Dropdown
-		public int BuyerId { get; set; }                      // Mới: Chọn từ Dropdown
+		[MaxLength(50, ErrorMessage = "Mã đơn hàng tối đa 50 ký tự")]
+		public string? OrderCode { get; set; }
+		// Lưu ý: Nếu bạn dùng hàm sinh mã tự động ở Server, thì Frontend có thể không cần gửi field này
 
-		// 2. Hàng hóa
-		public string ProductType { get; set; } = "SVR 3L";
-		public decimal? TotalNetKg { get; set; }
-		public string PackagingType { get; set; }             // Mới: Quy cách đóng gói
+		[MaxLength(50, ErrorMessage = "Tên đơn hàng tối đa 50 ký tự")]
+		public string? OrderName { get; set; }
 
-		// 3. Logistics & Hợp đồng (Quan trọng cho xuất khẩu)
-		public string? BookingRef { get; set; }               // Số Booking
-		public string? Incoterm { get; set; }                 // FOB/CIF...
-		public string? PortOfDischarge { get; set; }          // Cảng đến
-		public DateTime? OrderDate { get; set; }
-		public DateTime? ETD { get; set; }                    // Ngày tàu chạy dự kiến
+		public string? OrderDate { get; set; }
+
+		// 0: Draft, 1: Stuffing, 2: On Board, 3: Completed
+		public int Status { get; set; } = 0; // Mặc định là Mới tạo
 
 		public string? Note { get; set; }
 	}
 	public class RubberOrderResponse
 	{
 		// ==========================================
-		// 1. DATA PROPERTIES (Map trực tiếp từ SQL)
+		// 1. DATA RAW (Map từ Database)
 		// ==========================================
-		public int rowNo { get; set; }
+		public long rowNo { get; set; }
 		public long OrderId { get; set; }
 		public string? OrderCode { get; set; }
-		public string? OrderName { get; set; } // Mới thêm
-
-		public string? AgentCode { get; set; }
-		public string? AgentName { get; set; }
-
-		public string? BuyerCompany { get; set; } // Tên công ty khách hàng
-
-		public string? ProductType { get; set; }
-		public decimal TotalNetKg { get; set; }
-
-		public DateTime OrderDate { get; set; }
-		public DateTime? ETD { get; set; } // Ngày tàu chạy
-		public string? PortOfDischarge { get; set; } // Cảng đến
-
-		public byte Status { get; set; }
+		public string? OrderName { get; set; }
+		public string? OrderDate { get; set; }
+		public int Status { get; set; }
 		public string? Note { get; set; }
-		public DateTime? UpdateDate { get; set; }
+
+		// Thông tin Audit (Chỉ xem, không cho sửa từ Client)
+		public string? CreatedBy { get; set; }
+		public string? CreatedDate { get; set; }
+		public string? UpdateBy { get; set; }
+		public string? UpdateDate { get; set; }
 
 		// ==========================================
-		// 2. VIEW PROPERTIES (Logic hiển thị cho Frontend)
+		// 2. UI FORMAT (Tiện ích hiển thị)
 		// ==========================================
 
-		// Tự động format ngày tháng (Frontend đỡ phải convert)
-		public string OrderDateStr => OrderDate.ToString("dd/MM/yyyy");
-		public string ETDStr => ETD?.ToString("dd/MM/yyyy") ?? "-";
+		// Format ngày tháng: dd/MM/yyyy (Ví dụ: 03/02/2026)
+		public string? OrderDateStr { get; set; }
 
-		// Hiển thị tóm tắt hàng hóa: "SVR 3L (38.4 Tấn)"
-		public string ProductSummary
-		{
-			get
-			{
-				var tons = Math.Round(TotalNetKg / 1000m, 2);
-				return $"{ProductType} ({tons} Tấn)";
-			}
-		}
+		// Format ngày tạo có cả giờ phút
+		public string? CreatedDateStr { get; set; }
 
-		// Tên trạng thái tiếng Việt
+		// Tên trạng thái (Frontend đỡ phải if/else)
 		public string StatusName
 		{
 			get
@@ -81,33 +63,31 @@ namespace TAS.DTOs
 				return Status switch
 				{
 					0 => "Mới tạo",
-					1 => "Đang đóng cont",
+					1 => "Đang đóng hàng",
 					2 => "Đã lên tàu",
 					3 => "Hoàn thành",
-					4 => "Hủy",
 					_ => "N/A"
 				};
 			}
 		}
 
-		// Màu sắc trạng thái (Bootstrap Badge)
-		public string StatusBadgeClass
+		// Class màu sắc (Badge Bootstrap)
+		public string StatusClass
 		{
 			get
 			{
 				return Status switch
 				{
-					0 => "badge-secondary", // Xám
-					1 => "badge-warning",   // Vàng
-					2 => "badge-primary",   // Xanh dương
-					3 => "badge-success",   // Xanh lá
-					4 => "badge-danger",    // Đỏ
-					_ => "badge-dark"
+					0 => "secondary", // Xám
+					1 => "warning",   // Vàng
+					2 => "primary",   // Xanh dương
+					3 => "success",   // Xanh lá
+					_ => "dark"
 				};
 			}
 		}
+		// 1. Input: Hứng dữ liệu từ API/Màn hình gửi xuống
 	}
-	// 1. Input: Hứng dữ liệu từ API/Màn hình gửi xuống
 	public class OrderFilterRequest
 	{
 		public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
@@ -119,13 +99,4 @@ namespace TAS.DTOs
 		public DateTime? ToDate { get; set; }        // Đến ngày
 	}
 
-	// 2. Output: Trả về bao gồm dữ liệu và tổng số dòng (để FE chia trang)
-	public class PagedResult<T>
-	{
-		public List<T> Items { get; set; } = new List<T>();
-		public int TotalRecords { get; set; }
-		public bool Success { get; set; }
-		public string Message { get; set; }
-	}
-	
 }

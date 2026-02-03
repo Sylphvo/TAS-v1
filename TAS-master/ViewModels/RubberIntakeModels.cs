@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Org.BouncyCastle.Ocsp;
 using System.Data;
 using TAS.DTOs;
 using TAS.Repository;
@@ -26,63 +27,71 @@ namespace TAS.ViewModels
 		// ========================================
 		// Lấy danh sách FULL với filters
 		// ========================================
-		public async Task<List<RubberIntakeResponse>> GetAllIntakesAsync(
-			string? agentCode = null,
-			string? farmCode = null,
-			string? orderCode = null,
-			int? status = null)
+		public async Task<PagedResult<RubberIntakeResponse>> GetAllIntakesAsync(RubberIntakeRequest req)
 		{
 			try
 			{
-				string strQuery = string.Empty;
-				if (agentCode != null && agentCode != "*") {
-					strQuery += @" AND (@AgentCode IS NULL OR a.AgentCode = @AgentCode) ";
-				}
-				if (farmCode != null && farmCode != "*") {
-					strQuery += @" AND (@FarmCode IS NULL OR i.FarmCode = @FarmCode) ";
-				}
-				if (status != null) {
-					strQuery += @" AND (@Status IS NULL OR i.Status = @Status) ";
-				}
+				// 1. Xây dựng Filter
+				string filterSql = "";
+				if (!string.IsNullOrEmpty(req.agentCode) && req.agentCode != "*")
+					filterSql += " AND i.AgentCode = @AgentCode ";
 
-				var sql = @"
-                    SELECT 
-                        rowNo = ROW_NUMBER() OVER(ORDER BY i.RegisterDate ASC, i.IntakeId ASC),
-                        intakeId = i.IntakeId,
-                        intakeCode = i.IntakeCode,
-                        agentCode = i.AgentCode,
-                        agentName = a.AgentName,
-                        farmCode = i.FarmCode,
-                        farmerName = f.FarmerName,
-                        rubberKg = i.RubberKg,
-                        tscPercent = i.TSCPercent,
-                        drcPercent = i.DRCPercent,
-                        finishedProductKg = i.FinishedProductKg,
-                        centrifugeProductKg = i.CentrifugeProductKg,
-                        status = i.Status,
-                        statusText = CASE i.Status
-                            WHEN 0 THEN N'"+ Language.key_chuaduyet + @"'
-                            WHEN 1 THEN N'"+ Language.key_hoanthanh + @"'
-                            ELSE N'Không xác định'
-                        END,
-                        timeDate_Person = ISNULL(i.UpdatePerson, i.RegisterPerson),
-                        registerDate = i.RegisterDate,
-                        timeDate = FORMAT(ISNULL(i.UpdateDate, i.RegisterDate), 'dd/MM/yyyy HH:mm')
-                    FROM RubberIntake i
-                    INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
-                    INNER JOIN RubberAgent a ON a.AgentCode = i.AgentCode
-                    WHERE 1=1
-                        " + strQuery + @"
+				if (!string.IsNullOrEmpty(req.farmCode) && req.farmCode != "*")
+					filterSql += " AND i.FarmCode = @FarmCode ";
 
-                    ORDER BY i.RegisterDate , i.IntakeId DESC
-                ";
+				if (req.status.HasValue)
+					filterSql += " AND i.Status = @Status ";
 
-				return await _dbHelper.QueryAsync<RubberIntakeResponse>(sql, new
+				if (!string.IsNullOrEmpty(req.searchText))
+					filterSql += " AND (i.IntakeCode LIKE @Search OR a.AgentName LIKE @Search OR f.FarmerName LIKE @Search) ";
+				// 2. SQL với Phân trang và Sắp xếp động
+				// Lưu ý: ROW_NUMBER() ở đây để hiển thị số thứ tự đúng theo trang
+				string sql = $@"
+				SELECT 
+					totalRecords = COUNT(*) OVER(),
+					rowNo = ROW_NUMBER() OVER(ORDER BY i.{req.sortColumn} {req.sortOrder}),
+					intakeId = i.IntakeId,
+					intakeCode = i.IntakeCode,
+					agentCode = i.AgentCode,
+					agentName = a.AgentName,
+					farmCode = i.FarmCode,
+					farmerName = f.FarmerName,
+					rubberKg = i.RubberKg,
+					tscPercent = i.TSCPercent,
+					drcPercent = i.DRCPercent,
+					finishedProductKg = i.FinishedProductKg,
+					centrifugeProductKg = i.CentrifugeProductKg,
+					status = i.Status,
+					statusText = CASE i.Status
+						WHEN 0 THEN N'{Language.key_chuaduyet}'
+						WHEN 1 THEN N'{Language.key_hoanthanh}'
+						ELSE N'Không xác định'
+					END,
+					timeDate_Person = ISNULL(i.UpdatePerson, i.RegisterPerson),
+					registerDate = i.RegisterDate,
+					timeDate = FORMAT(ISNULL(i.UpdateDate, i.RegisterDate), 'dd/MM/yyyy HH:mm')
+				FROM RubberIntake i
+				INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
+				INNER JOIN RubberAgent a ON a.AgentCode = i.AgentCode
+				WHERE 1=1 {filterSql}
+				ORDER BY {req.sortColumn} {req.sortOrder}
+				OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
+
+				var data = await _dbHelper.QueryAsync<RubberIntakeResponse>(sql, new
 				{
-					AgentCode = agentCode,
-					FarmCode = farmCode,
-					Status = status
+					AgentCode = req.agentCode,
+					FarmCode = req.farmCode,
+					Status = req.status,
+					Search = $"%{req.searchText}%",
+					Skip = (req.pageNumber - 1) * req.pageSize,
+					Take = req.pageSize
 				});
+				// 3. Trả về kết quả kèm TotalRecords (lấy từ dòng đầu tiên nếu có dữ liệu)
+				return new PagedResult<RubberIntakeResponse>
+				{
+					Items = data.ToList(),
+					TotalRecords = data.FirstOrDefault()?.totalRecords ?? 0
+				};
 			}
 			catch (Exception ex)
 			{

@@ -21,7 +21,7 @@ namespace TAS.Data
 		// ====== TRANSACTION ======
 		public DbSet<RubberIntake> RubberIntakes => Set<RubberIntake>();
 		public DbSet<RubberOrder> RubberOrders => Set<RubberOrder>();
-		public DbSet<RubberPallet> RubberPallets => Set<RubberPallet>();
+		//public DbSet<RubberPallet> RubberPallets => Set<RubberPallet>();
 
 		// ====== BRIDGE (Truy xuất nguồn gốc) ======
 		public DbSet<RubberPondIntake> RubberPondIntakes => Set<RubberPondIntake>();

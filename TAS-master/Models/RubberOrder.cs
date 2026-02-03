@@ -9,46 +9,76 @@ namespace TAS.Models
 	// ========================================
 	public class RubberOrder
 	{
-		// ID & Contract
+		// ==========================================
+		// 1. DATA PROPERTIES (Map trực tiếp với SQL)
+		// ==========================================
+
+		[Key]
 		public long OrderId { get; set; }
-		public string? OrderCode { get; set; } // Mã Hợp đồng
-		public string? OrderName { get; set; }
-		public string? BookingRef { get; set; } // Số Booking hãng tàu
 
-		// Quan hệ (Foreign Keys)
-		//public string? AgentCode { get; set; } // Link tới bảng Agents
-		public int BuyerId { get; set; } // Link tới bảng Buyers
+		[MaxLength(50)]
+		public string? OrderCode { get; set; } // Mã hợp đồng
 
-		// Hàng hóa & Đóng gói
-		public string ProductType { get; set; } = "SVR 3L";
-		public string PackagingType { get; set; } = "Wooden Pallet"; // Pallet gỗ, Hàng rời...
-		public decimal TotalNetKg { get; set; }
-		public int ContainerCount { get; set; }
+		[MaxLength(50)]
+		public string? OrderName { get; set; } // Tên hợp đồng/Tên gợi nhớ
 
-		// Logistics (Xuất khẩu)
-		public string Incoterm { get; set; } = "FOB"; // FOB Cat Lai, CIF Hamburg...
-		public string PortOfLoading { get; set; } = string.Empty;
-		public string PortOfDischarge { get; set; } = string.Empty;
-		public string? VesselName { get; set; }
-		public string? BillOfLadingNo { get; set; }
+		public DateTime? OrderDate { get; set; } // Ngày ký kết/Ngày tạo đơn
 
-		// Dates
-		public DateTime OrderDate { get; set; }
-		public DateTime? ETD { get; set; } // Ngày đi
-		public DateTime? ETA { get; set; } // Ngày đến (Khách Âu rất quan tâm)
+		// Trạng thái: 0: Draft, 1: Stuffing, 2: On Board, 3: Completed
+		public int Status { get; set; }
 
-		// Status
-		public ExportStatus Status { get; set; }
 		public string? Note { get; set; }
-	}
-	// Enum trạng thái gợi ý
-	public enum ExportStatus : byte
-	{
-		New = 0,            // Mới tạo
-		QualityCheck = 1,   // Đang kiểm định (DRC, tạp chất)
-		Stuffing = 2,       // Đang đóng container
-		CustomsClearance = 3, // Đang làm thủ tục hải quan
-		OnBoard = 4,        // Đã lên tàu (Shipped)
-		Completed = 5       // Khách đã nhận & thanh toán
+
+		// --- Audit Log ---
+		[MaxLength(50)]
+		public string? CreatedBy { get; set; }
+
+		public DateTime CreatedDate { get; set; } = DateTime.Now; // Mặc định giờ hiện tại
+
+		[MaxLength(50)]
+		public string? UpdateBy { get; set; }
+
+		public DateTime? UpdateDate { get; set; }
+
+		// ==========================================
+		// 2. VIEW PROPERTIES (Logic hiển thị cho Frontend)
+		// ==========================================
+
+		// Format ngày tháng (dd/MM/yyyy) để hiển thị lên lưới cho đẹp
+		public string OrderDateStr => OrderDate.HasValue ? OrderDate.Value.ToString("dd/MM/yyyy") : "";
+		public string CreatedDateStr => CreatedDate.ToString("dd/MM/yyyy HH:mm");
+
+		// Hiển thị tên trạng thái tiếng Việt
+		public string StatusName
+		{
+			get
+			{
+				return Status switch
+				{
+					0 => "Mới tạo (Draft)",
+					1 => "Đang đóng hàng",
+					2 => "Đã lên tàu",
+					3 => "Hoàn thành",
+					_ => "Không xác định"
+				};
+			}
+		}
+
+		// Hiển thị màu sắc trạng thái (Dùng cho Bootstrap Badge)
+		// Ví dụ: <span class="badge bg-{StatusClass}">{StatusName}</span>
+		public string StatusClass
+		{
+			get
+			{
+				return Status switch
+				{
+					0 => "secondary", // Xám
+					1 => "warning",   // Vàng
+					2 => "primary",   // Xanh dương
+					3 => "success",   // Xanh lá
+					_ => "dark"
+				};
+			}
+		}
 	}
 }

@@ -70,23 +70,77 @@ function setupGrid() {
                 editable: true,
                 width: 180
             },
-            //{
-            //    headerName: 'Tên đại lý',
-            //    field: 'agentName',
-            //    editable: true,
-            //    width: 180
-            //},
             {
-                headerName: 'Công ty',
-                field: 'buyerCompany',
+                headerName: 'Ngày tạo',
+                field: 'orderDate',
+                width: 180,
                 editable: true,
-                width: 180
+                // 1. Định dạng hiển thị trên bảng lưới (DD/MM/YYYY)
+                valueFormatter: params => {
+                    if (!params.data.orderDate) return '';
+                    const d = new Date(params.data.orderDate);
+                    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                },
+
+                // 2. Ép trình Edit phải hiểu dữ liệu truyền vào là kiểu Date chuẩn
+                // (Giúp picker hiển thị đúng ngày hiện tại thay vì trống rỗng hoặc báo lỗi format)
+                valueGetter: params => {
+                    return new Date(params.data.orderDate).getDate() + "-" + (new Date(params.data.orderDate).getMonth() + 1) + "-" + new Date(params.data.orderDate).getFullYear()
+                    //return params.data.orderDate ? new Date(params.data.orderDate).ddMMyyyyFormat() : null;
+                },
+
+                // 3. Xử lý sau khi người dùng chọn ngày xong
+                valueParser: params => {
+                    // Chuyển giá trị từ trình edit về lại kiểu dữ liệu mong muốn (String hoặc Date)
+                    return params.data.orderDate;
+                },
+                cellEditor: "agDateStringCellEditor",
+
+                //cellRenderer: params => {
+                //    const parts = params.data.orderDate.split('/');
+                //    // parts[0]: ngày, parts[1]: tháng, parts[2]: năm
+                //    return new Date(parts[2], parts[1] - 1, parts[0]).ddMMyyyyFormat();
+                //},
+                //// Lấy dữ liệu từ chuỗi "3/2/2026" chuyển thành Object Date cho Editor
+                //valueSetter: params => {
+                //    if (params.newValue) {
+                //        const d = new Date(params.newValue);
+                //        // Chuyển đối tượng Date thành chuỗi dd/mm/yyyy
+                //        const day = d.getDate().toString().padStart(2, '0');
+                //        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                //        const year = d.getFullYear();
+
+                //        params.data.orderDate = `${day}/${month}/${year}`;
+                //        return new Date(parts[2], parts[1] - 1, parts[0]).ddMMyyyyFormat();
+                //    }
+                //    return new Date(parts[2], parts[1] - 1, parts[0]);
+                //},
+                //// Lưu dữ liệu sau khi chọn xong về định dạng d/M/yyyy
+                //valueSetter: params => {
+                //    if (params.newValue instanceof Date) {
+                //        const d = params.newValue;
+                //        // Format không có số 0 ở trước: 3/2/2026
+                //        const formatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                //        params.data.orderDate = formatted;
+                //        return true;
+                //    }
+                //    return false;
+                //}
             },
             {
-                headerName: 'Loại SP',
-                field: 'productType',
+                headerName: 'Ghi chú',
+                field: 'note',
+                width: 120,
                 editable: true,
-                width: 120
+                cellEditor: 'agLargeTextCellEditor', // Editor vùng văn bản lớn
+                cellEditorPopup: true,               // Hiển thị dạng popup để dễ nhìn hơn
+                cellEditorParams: {
+                    maxLength: 200,                    // Giới hạn ký tự
+                    rows: 10,                          // Số dòng hiển thị trong textarea
+                    cols: 50
+                },
+                cellStyle: { 'white-space': 'normal', 'line-height': '1.5em' },
+                autoHeight: true // Tự động dãn dòng theo độ dài văn bản
             },
             {
                 headerName: 'Tổng Net (kg)',
@@ -127,14 +181,16 @@ function setupGrid() {
             sortable: true,
             filter: true,
             resizable: true,
-            floatingFilter: true
+            floatingFilter: true,
+            cellStyle: CellStyle_Col_Model
         },
 
         rowSelection: 'multiple',
         animateRows: true,
-        pagination: true,
-        paginationPageSize: 10,
-        paginationPageSizeSelector: [5, 10, 20, 100],
+        //pagination: truKe,
+        //paginationPageSize: 10,
+        //paginationPageSizeSelector: [5, 10, 20, 100],
+        //rowHeight: 50,// Độ cao dòng
 
         // Events
         onSelectionChanged: onSelectionChanged,
@@ -146,7 +202,9 @@ function setupGrid() {
     };
     gridApiOrder = agGrid.createGrid(document.querySelector("#orderGrid"), gridOptions);
 }
-
+const data = Array.from(Array(20).keys()).map((val, index) => ({
+    date: new Date(2023, 5, index + 1),
+}));
 
 // ========================================
 // RENDER STATUS BADGE
@@ -191,20 +249,23 @@ function setupEventHandlers() {
 // ========================================
 // LOAD ORDERS
 // ========================================
-function loadOrders(pageIndex) {
+function loadOrders(pageIndex, pageSize) {
     showLoading();
 
     // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
     if (pageIndex) {
-        currentPage = pageIndex;
+        arrConstant.currentPage = pageIndex;
     } else {
-        currentPage = 1;
+        arrConstant.currentPage = 1;
+    }
+    if (pageSize) {
+        arrConstant.pageSize = pageSize;
     }
 
     // 2. Lấy giá trị từ các ô Filter trên màn hình
     var filterData = {
-        PageIndex: currentPage,
-        PageSize: pageSize,
+        PageIndex: arrConstant.currentPage,
+        PageSize: arrConstant.PageSize,
         Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
         Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
         FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
@@ -229,7 +290,17 @@ function loadOrders(pageIndex) {
                 updateStatusBar(pagedResult.totalRecords);
 
                 // 5. [Quan trọng] Xử lý phân trang UI (Nếu bạn dùng phân trang tùy chỉnh)
-                //renderPagination(pagedResult.totalRecords, currentPage, pageSize);
+                // Quan trọng: Truyền hàm callback để khi bấm nút nó gọi lại loadOrders
+                renderServerPagination(
+                    'divPagingContainer',     // ID thẻ div chứa thanh phân trang
+                    pagedResult.totalRecords, // Tổng số bản ghi (Server trả về)
+                    arrConstant.currentPage,            // Trang hiện tại
+                    arrConstant.pageSize,               // Size hiện tại
+                    function (newPage, newSize) {
+                        // Callback: Khi người dùng bấm Next/Prev/Change Size -> Gọi lại hàm load này
+                        loadOrders(newPage, newSize);
+                    }
+                );
 
                 updateLastUpdateTime();
             } else {
@@ -277,30 +348,26 @@ function loadAgents() {
 // SHOW ADD MODAL
 // ========================================
 function showAddModal() {
-    //$('#modalTitle').text('Thêm đơn hàng mới');
-    //$('#orderId').val('');
-    //$('#orderForm')[0].reset();
-    //$('#orderDate').val(new Date().toISOString().split('T')[0]);
-    //$('#modalOrder').fadeIn(300);
     const newRow = {
-        agentCode: "",
-        agentName: "",
-        buyerCompany: "",
-        buyerName: "",
-        expectedShipDate: "",
+        // 1. Định danh
+        orderId: 0, // 0 đánh dấu là dòng mới chưa lưu DB
+        orderCode: generateUniqueFakeOrderCode(rowData), // Hàm sinh mã không trùng
+        orderName: "", // Mới thêm: Tên đơn hàng
+
+        // 2. Ngày tháng
+        // Mặc định lấy ngày hiện tại (Format: YYYY-MM-DD) để binding vào input date
+        orderDate: new Date().toISOString().split('T')[0],
+
+        // 3. Trạng thái & Ghi chú
+        status: 0, // Mặc định là 0 (Mới tạo/Draft)
         note: "",
-        orderCode: generateOrderCode(),
-        orderDate: "",
-        orderId: 0,
-        productType: "",
-        registerDate: "",
-        registerPerson: "",
-        shippedAt: null,
-        status: 6,
-        totalNetKg: 0,
-        updateDate: null,
-        updatePerson: null
-    }
+
+        // 4. Audit (Thông tin quản trị - Có thể để null hoặc lấy user hiện tại)
+        createdBy: "", // Có thể gán tên user đang login
+        createdDate: new Date(), // Ngày tạo là ngay bây giờ
+        updateBy: null,
+        updateDate: null
+    };
 
 
     gridApiOrder.applyTransaction({ add: [newRow], addIndex: rowData.length });
@@ -454,12 +521,12 @@ function deleteOrder(orderId) {
 // ========================================
 function updateStatus(orderId, currentStatus) {
     const statusOptions = [
-        { value: 0, text: 'Mới tạo' },
-        { value: 1, text: 'Đang xử lý' },
-        { value: 2, text: 'Đã xuất kho' },
-        { value: 3, text: 'Đã giao hàng' },
-        { value: 4, text: 'Hoàn thành' },
-        { value: 5, text: 'Đã hủy' }
+        { value: 1, text: 'Mới tạo' },
+        { value: 2, text: 'Đang xử lý' },
+        { value: 3, text: 'Đã xuất kho' },
+        { value: 4, text: 'Đã giao hàng' },
+        { value: 5, text: 'Hoàn thành' },
+        { value: 6, text: 'Đã hủy' }
     ];
     
     let html = '<select id="statusSelect" class="form-control">';
@@ -661,9 +728,6 @@ function CellRenderAction(params) {
     }
     else {
         return `
-        ${editOrder}
-        ${updateStatus}
-        ${shipBtn}
         ${deleteOrder}
     `;
     }

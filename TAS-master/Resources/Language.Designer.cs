@@ -691,6 +691,15 @@ namespace TAS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to to.
+        /// </summary>
+        public static string key_to {
+            get {
+                return ResourceManager.GetString("key_to", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tổng đại lý.
         /// </summary>
         public static string key_tongdaily {

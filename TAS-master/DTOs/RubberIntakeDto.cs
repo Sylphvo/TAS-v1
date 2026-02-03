@@ -65,7 +65,12 @@ namespace TAS.DTOs
 		public decimal? drcPercent { get; set; }
 		public decimal? finishedProductKg { get; set; }
 		public decimal? centrifugeProductKg { get; set; }
+		public string? searchText { get; set; } // Tìm kiếm chung (Code, Name...)
 		public int? status { get; set; }
+		public int pageNumber { get; set; } = 1;
+		public int pageSize { get; set; } = 10;
+		public string sortColumn { get; set; } = "RegisterDate";
+		public string sortOrder { get; set; } = "DESC"; // ASC hoặc DESC
 	}
 
 	public class RubberIntakeResponse
@@ -85,7 +90,8 @@ namespace TAS.DTOs
 		public int status { get; set; }
 		public string? statusText { get; set; }
 		public string? timeDate_Person { get; set; }
-		public DateTime registerDate { get; set; }
+		public string? registerDate { get; set; }
 		public string? timeDate { get; set; }
+		public int totalRecords { get; set; }
 	}
 }

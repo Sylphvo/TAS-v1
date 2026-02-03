@@ -43,16 +43,7 @@ async function ToastConfirm(
 
     return result.isConfirmed;
 }
-// Các hằng số cho Traceability
-var arrConstant = {
-    SortOrder_Lot: 1, // Order
-    SortOrder_Agent: 2,// Agent
-    SortOrder_Farm: 3,// Farmer
-    isCheckAll: false,// Farmer
-    isLoadFirst: true,// Farmer
-    page: 1,// Farmer
-    pageSize: 20,// Farmer
-}
+
 var arrParentIds = [];
 
 
@@ -717,6 +708,16 @@ Date.prototype.yyyyMMddhhmmFormat = function () {
     var hh = this.getHours().toString();
     var mm = this.getMinutes().toString();
     return yyyy + "/" + (MM[1] ? MM : "0" + MM[0]) + "/" + (dd[1] ? dd : "0" + dd[0]) + ' ' + (hh[1] ? hh : "0" + hh[0]) + ":" + (mm[1] ? mm : "0" + mm[0]); // padding
+};
+
+// Convert date to yyyyMMddhhmm
+Date.prototype.ddMMyyyyFormat = function () {
+    var yyyy = this.getFullYear().toString();
+    var MM = (this.getMonth() + 1).toString(); // getMonth() is zero-based
+    var dd = this.getDate().toString();
+    var hh = this.getHours().toString();
+    var mm = this.getMinutes().toString();
+    return (dd[1] ? dd : "0" + dd[0]) + "/" + (MM[1] ? MM : "0" + MM[0]) + "/" + yyyy; // padding
 };
 
 //VuongLV: Viet ham ho tro bien Date Add Year, Month, Day, Hours, Minutes 2024/12/31
@@ -3970,123 +3971,132 @@ function SetLanguage(langCurrent) {
         }
 	});
 }
+/**
+ * Render UI Phân trang Server-side (Giữ nguyên giao diện cũ)
+ * @param {string} agPagingId - ID của div chứa paging (VD: 'divPaging')
+ * @param {number} totalRecords - Tổng số dòng (Lấy từ API response.totalRecords)
+ * @param {number} currentPage - Trang hiện tại (VD: 1)
+ * @param {number} pageSize - Kích thước trang hiện tại (VD: 10)
+ * @param {function} onPageChangeCallback - Hàm callback khi đổi trang: (newPage, newSize) => void
+ */
+function renderServerPagination(agPagingId, totalRecords, currentPage, pageSize, onPageChangeCallback) {
+    // 1. Tạo ID duy nhất để tránh xung đột
+    const uniqueId = Math.random().toString(36).substr(2, 9);
+    const els = {
+        selectId: `sel_${uniqueId}`,
+        lblStart: `start_${uniqueId}`,
+        lblEnd: `end_${uniqueId}`,
+        lblTotal: `total_${uniqueId}`,
+        lblCurPage: `cur_${uniqueId}`,
+        lblTotalPage: `max_${uniqueId}`,
+        btnFirst: `btnFirst_${uniqueId}`,
+        btnPrev: `btnPrev_${uniqueId}`,
+        btnNext: `btnNext_${uniqueId}`,
+        btnLast: `btnLast_${uniqueId}`
+    };
 
-//
+    // 2. Tính toán các chỉ số
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const startRecord = totalRecords === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+    let endRecord = currentPage * pageSize;
+    if (endRecord > totalRecords) endRecord = totalRecords;
 
-
-//function ShowOrHideRowChildren(id_list, selector, funcSetValueArrParentIds, sortOrder) {
-//    var selectorCell = $(selector).parent().parent().parent();
-//    var selectorRow = $(selectorCell).parent();
-//    var itemParent = ListDataFull.find(x => x.sortIdList == id_list);
-//    var row_index = parseInt($(selectorRow).attr('row-index')) + 1;
-//    var listChild;
-//    if (sortOrder == 1) {
-//        listChild = ListRowChild.filter(function (item) {
-//            return id_list == id_list.substring(0, item.sortIdList.lastIndexOf('__'));
-//        });
-//    }
-//    else if (sortOrder == 2) {
-//        listChild = ListRowChild.filter(function (item) {
-//            return item.sortIdList.includes(id_list) && item.sortOrder == sortOrder + 1;
-//        });
-//    }
-
-//    if (itemParent.isOpenChild) {
-//        //Close Row
-//        $(selector).attr('class', 'ag-icon ag-icon-tree-closed');
-//        itemParent.isOpenChild = false;
-//        gridApi.applyTransaction({ remove: listChild });
-//        listChild.forEach(function (item) {
-//            item.isOpenChild = false;
-//        });
-
-//        if (typeof funcSetValueArrParentIds === 'function') {
-//            let arrParentIds = [...listChild.map(x => x.sortIdList)];
-//            funcSetValueArrParentIds(arrParentIds, false);
-//        }
-//    } else {
-//        if (sortOrder == 1) {
-//            if (arrConstant.isCheckAll) {
-//                listChild = ListDataFull.filter(function (item) {
-//                    return item.sortOrder > sortOrder;
-//                });
-//                ListDataFull.filter(x => x.isOpenChild = arrConstant.isCheckAll);
-//            }
-//            else {
-//                listChild = listChild.filter(function (item) {
-//                    return item.sortOrder == sortOrder + 1;
-//                });
-//            }
-//        }
-//        //Open Row
-//        $(selector).attr('class', 'ag-icon ag-icon-tree-open');
-//        itemParent.isOpenChild = true;
-//        gridApi.applyTransaction({
-//            add: listChild,
-//            addIndex: row_index,
-//        });
-
-//        if (typeof funcSetValueArrParentIds === 'function') {
-//            let arrParentIds = [...listChild.map(x => x.sortIdList)];
-//            funcSetValueArrParentIds(arrParentIds, true);
-//        }
-//    }
-//}
-function renderPagination(agPaging, gridApiPaging,listDataPaging, IsOptionAll = false) {
-    let idListPaging = 'ListPaging',idPaging = 'Paging',startCell = 'start-entries',lastCell = 'last-entries',totalCell = 'total-entries';
-    let element =
-    `<div class="grid-info">
+    // 3. Render HTML (Giữ nguyên cấu trúc của bạn)
+    const html = `
+    <div class="grid-info">
         <div class="ag-paging-grid">
-            <span>${arrMsg.key_rowperpage}</span>:
-            <select class="datatable-selector selector-paging cboSelect2SearchPage" name="per-page" id="selectorPaging">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="*">All</option>
+            <span>${typeof arrMsg !== 'undefined' ? arrMsg.key_rowperpage : 'Rows per page'}</span>:
+            <select class="datatable-selector selector-paging cboSelect2SearchPage" id="${els.selectId}">
+                <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                <option value="15" ${pageSize == 15 ? 'selected' : ''}>15</option>
+                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+                <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+                <option value="${totalRecords}" ${pageSize == totalRecords ? 'selected' : ''}>All</option>
             </select>
         </div>
-        <label>
-            <span id="${startCell}">1</span>
-            <span>-</span>
-            <span id="${lastCell}"></span>
-            <span>${arrMsg.key_of}</span>
-            <span id="${totalCell}"></span>
-        </label>
     </div>
-    <nav class="grid-paging" id="${idListPaging}">
-        <ul id="${idPaging}" class="pagination pagination-sm mb-0"></ul>
-        <span id="rowCount" style="margin-left:12px"></span>
-    </nav>`;
-    if (arrConstant.isLoadFirst) {
+    <span class="ag-paging-row-summary-panel">
+        <span class="ag-paging-row-summary-panel-number" data-ref="lbFirstRowOnPage" id="${els.lblStart}">${startRecord}</span>
+        <span id="ag-37-to">${typeof arrMsg !== 'undefined' ? arrMsg.key_to : '-'}</span> 
+        <span class="ag-paging-row-summary-panel-number" data-ref="lbLastRowOnPage" id="${els.lblEnd}">${endRecord}</span>
+        <span id="ag-37-of">${typeof arrMsg !== 'undefined' ? arrMsg.key_of : 'of'}</span>
+        <span class="ag-paging-row-summary-panel-number" data-ref="lbRecordCount" id="${els.lblTotal}">${totalRecords}</span> 
+    </span>
+
+    <span class="ag-paging-page-summary-panel" role="presentation">
+       <div class="ag-button ag-paging-button ${currentPage === 1 ? 'ag-disabled' : ''}" id="${els.btnFirst}" role="button" aria-label="First Page">
+        <span class="ag-icon ag-icon-first" role="presentation"></span>
+       </div>
+       <div class="ag-button ag-paging-button ${currentPage === 1 ? 'ag-disabled' : ''}" id="${els.btnPrev}" role="button" aria-label="Previous Page">
+        <span class="ag-icon ag-icon-previous" role="presentation"></span>
+       </div>
+       <span class="ag-paging-description"> 
+           <span>Page</span> 
+           <span class="ag-paging-number" id="${els.lblCurPage}">${currentPage}</span> 
+           <span>of</span> 
+           <span class="ag-paging-number" id="${els.lblTotalPage}">${totalPages}</span> 
+       </span> 
+       <div class="ag-button ag-paging-button ${currentPage >= totalPages ? 'ag-disabled' : ''}" id="${els.btnNext}" role="button" aria-label="Next Page">
+       <span class="ag-icon ag-icon-next" role="presentation"></span></div>
+       <div class="ag-button ag-paging-button ${currentPage >= totalPages ? 'ag-disabled' : ''}" id="${els.btnLast}" role="button" aria-label="Last Page">
+       <span class="ag-icon ag-icon-last" role="presentation"></span></div>
+    </span>`;
+
+    // 4. Đưa HTML vào DOM
+    const $container = $('#' + agPagingId);
+    // Logic check arrConstant cũ của bạn
+    if (typeof arrConstant !== 'undefined' && arrConstant.isLoadFirst) {
         arrConstant.isLoadFirst = false;
-        $('#' + agPaging).append(element);
+        $container.html(html);
+    } else {
+        // Luôn render lại để cập nhật trạng thái enable/disable của nút
+        $container.html(html);
     }
-    $('.cboSelect2SearchPage').css("width", 50);
-    $('.cboSelect2SearchPage').select2({
-        placeholder: 'Vui lòng chọn',
+
+    // 5. Khởi tạo Select2
+    const $select = $('#' + els.selectId);
+    $select.css("width", 60).select2({
+        placeholder: 'Select',
         minimumResultsForSearch: Infinity
     });
-    pagerApi = makePaginator({
-        data: listDataPaging,
-        listEl: '#' + idPaging,
-        pagerEl: '#' + idListPaging,
-        page: 1,
-        pageSize: $('.selector-paging').val(),
-        renderItem: x => ``,
-        onChange: s => {
-            gridApiPaging.setGridOption("rowData", (IsOptionAll ? listDataPaging.slice(1, s.total) : listDataPaging.slice(s.start, s.end)));
-            OnChangePaging(s);
+
+    // 6. Gắn sự kiện (Event Handlers)
+
+    // Đổi Page Size
+    $select.on('change', function () {
+        const newSize = parseInt($(this).val());
+        // Reset về trang 1 khi đổi size
+        if (onPageChangeCallback) onPageChangeCallback(1, newSize);
+    });
+
+    // Nút First
+    $(`#${els.btnFirst}`).on('click', function () {
+        if (currentPage > 1) {
+            onPageChangeCallback(1, pageSize);
         }
     });
-    function OnChangePaging(s) {
-        let total = s.total;
-        let start = (s.start == 0 ? 1 : s.start);
-        let last = (s.start + parseInt(s.pageSize)) > total ? total : s.start + parseInt(s.pageSize);
-        $('#' + totalCell).text(total);
-        $('#' + startCell).text(start);
-        $('#' + lastCell).text(last);
-    }
+
+    // Nút Previous
+    $(`#${els.btnPrev}`).on('click', function () {
+        if (currentPage > 1) {
+            onPageChangeCallback(currentPage - 1, pageSize);
+        }
+    });
+
+    // Nút Next
+    $(`#${els.btnNext}`).on('click', function () {
+        if (currentPage < totalPages) {
+            onPageChangeCallback(currentPage + 1, pageSize);
+        }
+    });
+
+    // Nút Last
+    $(`#${els.btnLast}`).on('click', function () {
+        if (currentPage < totalPages) {
+            onPageChangeCallback(totalPages, pageSize);
+        }
+    });
 }
 function OnDragMoveSetRow() {
     const start = (arrConstant.page - 1) * arrConstant.pageSize;

@@ -1,8 +1,16 @@
-var arrValue = {
-    IdProgress: 0, // Đang xử lý
-    MsgProgress: arrMsg.key_chuaduyet, // Đã tạo đơn hàng
-    IdFinish: 1, // Đang xử lý
-    MsgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
+var arrConstant = {
+    idProgress: 0, // Đang xử lý
+    msgProgress: arrMsg.key_chuaduyet, // Đã tạo đơn hàng
+    idFinish: 1, // Đang xử lý
+    msgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
+    currentPage: 1, // Đã tạo đơn hàng
+    pageSize: 10, // Đã tạo đơn hàng
+
+    SortOrder_Lot: 1, // Order
+    SortOrder_Agent: 2,// Agent
+    SortOrder_Farm: 3,// Farmer
+    isCheckAll: false,// Farmer
+    isLoadFirst: true,// Farmer
 };
 class SelectEditorWithTextDisplay {
     init(params) {
@@ -55,25 +63,111 @@ class SelectEditorWithTextDisplay {
         }
     }
 }
-
+// Can use for Ag-Grid Free version
+// Căn giữa cho cột Model
 function CellStyle_Col_Model(params) {
     let cellAttr = {};
     cellAttr['text-align'] = 'center';
     return cellAttr;
 }
+// Tạo mã Intake tự động: INT_YYYYMMDDHHMMSS
 function generateIntakeCode() {
-    //const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const datePart = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    //const randomPart = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase();
     return `INT_${datePart}`;
 }
-
-function generateOrderCode() {
-    //const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const datePart = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    //const randomPart = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase();
-    return `ORD_${datePart}`;
+// Tạo mã Order tự động: ORD_YYYYMMDDHHMMSS_001
+function getOrderCodePrefix() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `ORD_${year}${month}${day}_`;
 }
+
+/**
+ * Sinh mã ngẫu nhiên và đảm bảo KHÔNG trùng trong rowData
+ * @param {Array} rowData - Mảng dữ liệu hiện tại của Ag-Grid
+ */
+function generateUniqueFakeOrderCode(rowData) {
+    const prefix = getOrderCodePrefix();
+    let isDuplicate = true;
+    let newCode = "";
+    let safetyCounter = 0; // Chống treo trình duyệt nếu full 1000 số
+
+    while (isDuplicate && safetyCounter < 1000) {
+        // 1. Sinh số ngẫu nhiên 000-999
+        const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        newCode = `${prefix}${randomNum}`;
+
+        // 2. Kiểm tra xem mã này đã tồn tại trong rowData chưa
+        // Giả sử cột chứa mã đơn hàng tên là 'OrderCode'
+        const exists = rowData && rowData.some(item => item.OrderCode === newCode);
+
+        if (!exists) {
+            isDuplicate = false; // Ngon, không trùng -> Thoát vòng lặp
+        }
+
+        safetyCounter++;
+    }
+    if (safetyCounter >= 1000) {
+        console.error("Đã hết số để sinh trong ngày hôm nay!");
+        return `${prefix}ERROR`;
+    }
+
+    return newCode;
+}
+
+
 function RefeshSingleColumn(gridApiDynamic, fieldName) {
     gridApiDynamic.refreshCells({ force: true, columns: [fieldName] });
+}
+
+/**
+* Tạo DataSource chuẩn cho Ag-Grid Infinite Row Model
+* @param {string} apiUrl - Đường dẫn API (Controller)
+* @param {function} getFilterParamsFn - Hàm trả về object chứa tham số search/filter
+* @param {function} onDataLoaded - (Optional) Callback khi tải xong (nhận vào totalRecords)
+*/
+function createInfiniteDataSource(apiUrl, getFilterParamsFn, onDataLoaded) {
+    return {
+        getRows: function (params) {
+            // 1. Lấy tham số filter từ trang hiện tại
+            var filterParams = getFilterParamsFn ? getFilterParamsFn() : {};
+
+            // 2. Gộp với tham số phân trang của Ag-Grid
+            var requestData = Object.assign({}, filterParams, {
+                StartRow: params.startRow,
+                EndRow: params.endRow
+            });
+
+            console.log(`Loading ${apiUrl}:`, requestData);
+
+            // 3. Gọi AJAX
+            $.ajax({
+                url: apiUrl,
+                type: 'GET',
+                data: requestData,
+                success: function (response) {
+                    if (response.success) {
+                        // Gọi callback của Ag-Grid để render dữ liệu
+                        // response.rows: Mảng dữ liệu
+                        // response.lastRow: Tổng số bản ghi (để tính thanh cuộn)
+                        params.successCallback(response.rows, response.lastRow);
+
+                        // Gọi callback riêng của trang (nếu có) để update UI
+                        if (onDataLoaded) {
+                            onDataLoaded(response.lastRow);
+                        }
+                    } else {
+                        console.error("API Error:", response.message);
+                        params.failCallback();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                    params.failCallback();
+                }
+            });
+        }
+    };
 }

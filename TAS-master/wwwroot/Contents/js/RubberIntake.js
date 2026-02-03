@@ -7,7 +7,7 @@ let rowData = [];
 let fillHandleBatch = [];
 var agentByCode = {};
 var farmByCode = {};
-arrValue = {
+var arrValue = {
     typeExcel: 1, // Xuất Excel Data
     typeSampleExcel: 2, // Xuất Excel Mẫu
 
@@ -240,24 +240,57 @@ function onGridReady(params) {
 // ========================================
 // LOAD DATA
 // ========================================
-async function loadData() {
+async function loadData(pageIndex, pageSize) {
     const agentCode = $('#cboAgent').val();
     const farmCode = $('#cboFarm').val();
     const orderCode = $('#cboOrder').val();
     const status = $('#cboStatus').val();
-    
+
+    // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
+    if (pageIndex) {
+        arrConstant.currentPage = pageIndex;
+    } else {
+        arrConstant.currentPage = 1;
+    }
+    if (pageSize) {
+        arrConstant.pageSize = pageSize;
+    }
+    //{ agentCode, farmCode, orderCode, status }
+    var filterData = {
+        PageIndex: arrConstant.currentPage,
+        PageSize: arrConstant.pageSize,
+        Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
+        FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
+        ToDate: $('#dtToDate').val(),
+        agentCode: agentCode,
+        farmCode: farmCode,
+        orderCode: orderCode,
+        status: status
+    };
     try {
         const response = await $.ajax({
             url: '/RubberIntake/GetAllIntakes',
             type: 'POST',
-            data: { agentCode, farmCode, orderCode, status }
+            data: filterData
         });
         
         if (response.success) {
-            rowData = response.data;
+            var pagedResult = response.data;
+            rowData = pagedResult.items;
+
             gridApiIntake.setGridOption('rowData', rowData);
-            //updateRowNumbers(); // Update row numbers
-            renderPagination(agPaging, gridApiIntake, rowData, IsOptionAll);  // Render pagination
+
+            renderServerPagination(
+                'divPagingContainer',     // ID thẻ div chứa thanh phân trang
+                pagedResult.totalRecords, // Tổng số bản ghi (Server trả về)
+                arrConstant.currentPage,            // Trang hiện tại
+                arrConstant.pageSize,               // Size hiện tại
+                function (newPage, newSize) {
+                    // Callback: Khi người dùng bấm Next/Prev/Change Size -> Gọi lại hàm load này
+                    loadData(newPage, newSize);
+                }
+            );
+
             if (!arrValue.loadFirst) {
                 arrValue.loadFirst = true;
                 RegisterAllEvent();

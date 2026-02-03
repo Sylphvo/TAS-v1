@@ -89,7 +89,7 @@
                          AG-GRID TABLE
                     ======================================== -->
                     <div id="RubberIntake" theme="aggrid" class="ag-theme-quartz-dark" style="height: 600px; width: 100%;"></div>
-                    <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
+                    <div id="divPagingContainer" class="ag-paging-panel ag-paging-button-wrapper"></div>
                     <!-- ========================================
                          HIDDEN FILE INPUT
                     ======================================== -->
@@ -108,7 +108,6 @@
     <script src="~/Contents/js/RubberIntake.js"></script>
     <script>
         var gridApiIntake, gridColumnApi;
-        var agPaging = 'ag-paging-footer';
         var IsOptionAll = false;
         // ========================================
         // INITIALIZATION
