@@ -145,10 +145,8 @@ function handleEditorChange() {
             geojson = parsed;
             updateMapFromGeoJSON(parsed);
             updateFeatureCount();
-            document.getElementById('statusMessage').textContent = 'GeoJSON updated';
         }
     } catch (err) {
-        document.getElementById('statusMessage').textContent = 'Invalid JSON';
     }
 }
 
@@ -163,7 +161,6 @@ function exportGeoJSON() {
     a.download = 'map.geojson';
     a.click();
     URL.revokeObjectURL(url);
-    document.getElementById('statusMessage').textContent = 'GeoJSON exported';
 }
 
 // Import GeoJSON
@@ -175,10 +172,8 @@ function importGeoJSON(file) {
             geojson = imported;
             updateEditor();
             updateMapFromGeoJSON(imported);
-            document.getElementById('statusMessage').textContent = 'GeoJSON imported';
         } catch (err) {
             alert('Invalid GeoJSON file');
-            document.getElementById('statusMessage').textContent = 'Import failed';
         }
     };
     reader.readAsText(file);
@@ -193,7 +188,6 @@ function clearAll() {
         };
         updateEditor();
         drawnItems.clearLayers();
-        document.getElementById('statusMessage').textContent = 'All features cleared';
     }
 }
 

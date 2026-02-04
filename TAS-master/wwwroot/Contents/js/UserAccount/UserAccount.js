@@ -11,13 +11,9 @@ var selectedRows = [];
 // INITIALIZE
 // ========================================
 $(document).ready(function () {
-    console.log('👥 Initializing User Management...');
-
     initAgGrid();
     loadUsers();
     registerEvents();
-
-    console.log('✅ User Management initialized!');
 });
 
 // ========================================
@@ -27,6 +23,7 @@ function initAgGrid() {
     const columnDefs = [
         {
             headerName: '',
+            field: 'selected',
             checkboxSelection: true,
             headerCheckboxSelection: true,
             width: 50,
@@ -34,12 +31,6 @@ function initAgGrid() {
             lockPosition: true,
             suppressMenu: true,
             filter: false
-        },
-        {
-            field: 'id',
-            headerName: 'ID',
-            width: 80,
-            hide: true
         },
         {
             field: 'userName',

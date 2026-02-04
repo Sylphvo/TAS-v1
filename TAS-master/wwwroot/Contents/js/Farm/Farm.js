@@ -59,8 +59,10 @@ function initAgGrid() {
     const columnDefs = [
         {
             headerName: '',
+            field: 'selected',
             checkboxSelection: true,
             headerCheckboxSelection: true,
+            minWidth: 50,
             width: 50,
             pinned: 'left',
             lockPosition: true,
@@ -70,6 +72,7 @@ function initAgGrid() {
         {
             field: 'farmId',
             headerName: 'ID',
+            pinned: 'left',
             width: 80,
             hide: true
         },
@@ -237,11 +240,6 @@ function initAgGrid() {
         },
         rowSelection: 'multiple',
         suppressRowClickSelection: true,
-        pagination: true,
-        paginationPageSize: 50,
-        paginationPageSizeSelector: [25, 50, 100, 200],
-        rowHeight: 45,
-        headerHeight: 45,
         animateRows: true,
         enableCellTextSelection: true,
         onSelectionChanged: onSelectionChanged,

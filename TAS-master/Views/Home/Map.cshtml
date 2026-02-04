@@ -22,26 +22,18 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="logo-section">
-                <div class="logo">📍</div>
-                <div class="logo-text">
-                    <h1 class="title_map">GeoJSON Editor</h1>
-                    <p class="title_map">Create & edit geographic data</p>
-                </div>
-            </div>
-
-            <div class="toolbar">
-                <label class="btn btn-secondary">
-                    📤 Import
+            <div class="toolbar-action">
+                <label class="btn btn-custom-tas-action btn-sm">
+                    Import
                     <input type="file" id="importFile" accept=".geojson,.json" class="hidden">
                 </label>
 
-                <button class="btn btn-primary" id="exportBtn">
-                    📥 Export
+                <button class="btn btn-custom-tas-action btn-sm" id="exportBtn">
+                    Export
                 </button>
 
-                <button class="btn btn-danger" id="clearBtn">
-                    🗑️ Clear
+                <button class="btn btn-custom-tas-action btn-sm" id="clearBtn">
+                    Clear
                 </button>
             </div>
         </div>
@@ -74,18 +66,6 @@
                     <p>• Edit JSON directly and it updates in real-time</p>
                     <p>• Click features on map to see properties</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div id="statusMessage">Ready to create</div>
-            <div class="status-right">
-                <span id="mapStatus">Loading...</span>
-                <span class="status-indicator">
-                    <div class="status-dot"></div>
-                    Online
-                </span>
             </div>
         </div>
     </div>
