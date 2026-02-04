@@ -22,9 +22,16 @@ namespace TAS.DTOs
 		public string? OrderDate { get; set; }
 
 		// 0: Draft, 1: Stuffing, 2: On Board, 3: Completed
-		public int Status { get; set; } = 0; // Mặc định là Mới tạo
+		public int? Status { get; set; } // Mặc định là Mới tạo
 
 		public string? Note { get; set; }
+		public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
+		public int PageSize { get; set; } = 10;      // Số dòng mỗi trang
+		public string? Keyword { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
+		public string? SortColumn { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
+		public string? SortOrder { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)		
+		public DateTime? FromDate { get; set; }      // Từ ngày
+		public DateTime? ToDate { get; set; }        // Đến ngày
 	}
 	public class RubberOrderResponse
 	{
@@ -44,59 +51,5 @@ namespace TAS.DTOs
 		public string? CreatedDate { get; set; }
 		public string? UpdateBy { get; set; }
 		public string? UpdateDate { get; set; }
-
-		// ==========================================
-		// 2. UI FORMAT (Tiện ích hiển thị)
-		// ==========================================
-
-		// Format ngày tháng: dd/MM/yyyy (Ví dụ: 03/02/2026)
-		public string? OrderDateStr { get; set; }
-
-		// Format ngày tạo có cả giờ phút
-		public string? CreatedDateStr { get; set; }
-
-		// Tên trạng thái (Frontend đỡ phải if/else)
-		public string StatusName
-		{
-			get
-			{
-				return Status switch
-				{
-					0 => "Mới tạo",
-					1 => "Đang đóng hàng",
-					2 => "Đã lên tàu",
-					3 => "Hoàn thành",
-					_ => "N/A"
-				};
-			}
-		}
-
-		// Class màu sắc (Badge Bootstrap)
-		public string StatusClass
-		{
-			get
-			{
-				return Status switch
-				{
-					0 => "secondary", // Xám
-					1 => "warning",   // Vàng
-					2 => "primary",   // Xanh dương
-					3 => "success",   // Xanh lá
-					_ => "dark"
-				};
-			}
-		}
-		// 1. Input: Hứng dữ liệu từ API/Màn hình gửi xuống
 	}
-	public class OrderFilterRequest
-	{
-		public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
-		public int PageSize { get; set; } = 10;      // Số dòng mỗi trang
-
-		public string? Keyword { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
-		public byte? Status { get; set; }            // Lọc trạng thái
-		public DateTime? FromDate { get; set; }      // Từ ngày
-		public DateTime? ToDate { get; set; }        // Đến ngày
-	}
-
 }

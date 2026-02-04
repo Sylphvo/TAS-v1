@@ -2,160 +2,60 @@
 
 namespace TAS.DTOs
 {
-	// ========================================
-	// AGENT DTO - Display/Response
-	// ========================================
-	public class RubberAgentDto
+	using System;
+	using System.ComponentModel.DataAnnotations;
+
+	namespace TAS.DTOs
 	{
-		public int AgentId { get; set; }
-		public string AgentCode { get; set; } = "";
-		public string AgentName { get; set; } = "";
-		public string? AgentPhone { get; set; }
-		public string? AgentAddress { get; set; }
-		public bool IsActive { get; set; } = true;
-		public DateTime RegisterDate { get; set; }
-		public string? RegisterPerson { get; set; }
-		public DateTime? UpdateDate { get; set; }
-		public string? UpdatePerson { get; set; }
-		public string? Polygon { get; set; } // WKT format for geography
-	}
+		// ========================================
+		// 1. INPUT: RubberAgentRequest
+		// Dùng để hứng dữ liệu từ Form (Thêm/Sửa)
+		// ========================================
+		public class RubberAgentRequest
+		{
+			public int AgentId { get; set; } // 0: Thêm mới, >0: Cập nhật
 
-	// ========================================
-	// AGENT SEARCH DTO - Filter Parameters
-	// ========================================
-	public class AgentSearchDto
-	{
-		public int AgentId { get; set; }
-		public string AgentCode { get; set; } = "";
-		public string AgentName { get; set; } = "";
-		public string? AgentPhone { get; set; }
-		public string? AgentAddress { get; set; }
-		public bool IsActive { get; set; } = true;
-		public DateTime RegisterDate { get; set; }
-		public string? RegisterPerson { get; set; }
-		public DateTime? UpdateDate { get; set; }
-		public string? UpdatePerson { get; set; }
-		public string? SearchKeyword { get; set; }
+			[Required(ErrorMessage = "Mã đại lý không được để trống")]
+			[MaxLength(50)]
+			public string AgentCode { get; set; } = string.Empty;
 
-		// Pagination
-		public int PageNumber { get; set; } = 1;
-		public int PageSize { get; set; } = 100;
+			[Required(ErrorMessage = "Tên đại lý không được để trống")]
+			[MaxLength(200)]
+			public string AgentName { get; set; } = string.Empty;
 
-		// Sorting
-		public string SortColumn { get; set; } = "RegisterDate";
-		public string SortOrder { get; set; } = "desc";
-	}
+			[Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+			public string? AgentPhone { get; set; }
 
-	// ========================================
-	// CREATE AGENT DTO - For POST
-	// ========================================
-	public class CreateAgentDto
-	{
-		[Required(ErrorMessage = "Mã đại lý không được để trống")]
-		[StringLength(50, ErrorMessage = "Mã đại lý không được vượt quá 50 ký tự")]
-		public string AgentCode { get; set; } = "";
+			public string? AgentAddress { get; set; }
 
-		[Required(ErrorMessage = "Tên đại lý không được để trống")]
-		[StringLength(200, ErrorMessage = "Tên đại lý không được vượt quá 200 ký tự")]
-		public string AgentName { get; set; } = "";
+			public bool IsActive { get; set; } = true;
+			// 1: Sẵn sàng, 2: Đang sản xuất, 3: Bảo trì
+			public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
+			public int PageSize { get; set; } = 10;      // Số dòng mỗi trang
+			public string? Keyword { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
+			public string? SortColumn { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
+			public string? SortOrder { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)		
+			public int? Status { get; set; }            // Lọc trạng thái
+			public DateTime? FromDate { get; set; }      // Từ ngày
+			public DateTime? ToDate { get; set; }        // Đến ngày
+		}
 
-		[Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
-		[StringLength(20, ErrorMessage = "Số điện thoại không được vượt quá 20 ký tự")]
-		public string? AgentPhone { get; set; }
-
-		[StringLength(500, ErrorMessage = "Địa chỉ không được vượt quá 500 ký tự")]
-		public string? AgentAddress { get; set; }
-
-		public bool IsActive { get; set; } = true;
-
-		public string? Polygon { get; set; } // WKT format
-	}
-
-	// ========================================
-	// UPDATE AGENT DTO - For PUT
-	// ========================================
-	public class UpdateAgentDto
-	{
-		[Required]
-		public int AgentId { get; set; }
-
-		[Required(ErrorMessage = "Mã đại lý không được để trống")]
-		[StringLength(50, ErrorMessage = "Mã đại lý không được vượt quá 50 ký tự")]
-		public string AgentCode { get; set; } = "";
-
-		[Required(ErrorMessage = "Tên đại lý không được để trống")]
-		[StringLength(200, ErrorMessage = "Tên đại lý không được vượt quá 200 ký tự")]
-		public string AgentName { get; set; } = "";
-
-		[Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
-		[StringLength(20, ErrorMessage = "Số điện thoại không được vượt quá 20 ký tự")]
-		public string? AgentPhone { get; set; }
-
-		[StringLength(500, ErrorMessage = "Địa chỉ không được vượt quá 500 ký tự")]
-		public string? AgentAddress { get; set; }
-
-		public bool IsActive { get; set; } = true;
-
-		public string? Polygon { get; set; }
-	}
-
-	// ========================================
-	// AGENT RESPONSE - Generic API Response
-	// ========================================
-	public class AgentResponse<T>
-	{
-		public bool Success { get; set; }
-		public string Message { get; set; } = "";
-		public T? Data { get; set; }
-		public int TotalRecords { get; set; }
-	}
-
-	// ========================================
-	// BULK DELETE DTO
-	// ========================================
-	public class BulkDeleteAgentDto
-	{
-		[Required]
-		public List<int> AgentIds { get; set; } = new();
-	}
-	// ========================================
-	// ADDITIONAL DTOs
-	// ========================================
-
-	/// <summary>
-	/// Table result with pagination
-	/// </summary>
-	public class AgentTableResult
-	{
-		public List<AgentSearchDto> Data { get; set; } = new();
-		public int TotalRecords { get; set; }
-		public int PageNumber { get; set; }
-		public int PageSize { get; set; }
-		public int TotalPages { get; set; }
-	}
-
-	/// <summary>
-	/// For dropdown lists
-	/// </summary>
-	public class AgentDropdownDto
-	{
-		public int AgentId { get; set; }
-		public string AgentCode { get; set; } = "";
-		public string AgentName { get; set; } = "";
-	}	
-
-	/// <summary>
-	/// Agent with pond count
-	/// </summary>
-	public class AgentWithPondCountDto
-	{
-		public int AgentId { get; set; }
-		public string AgentCode { get; set; } = "";
-		public string AgentName { get; set; } = "";
-		public string? AgentPhone { get; set; }
-		public string? AgentAddress { get; set; }
-		public bool IsActive { get; set; }
-		public int PondCount { get; set; }
-		public decimal TotalNetKg { get; set; }
+		// ========================================
+		// 2. OUTPUT: RubberAgentResponse
+		// Dùng để trả dữ liệu hiển thị lên AG Grid
+		// ========================================
+		public class RubberAgentResponse
+		{
+			// --- Dữ liệu thô từ Database ---
+			public long rowNo { get; set; } // Số thứ tự phân trang
+			public int AgentId { get; set; }
+			public string AgentCode { get; set; } = string.Empty;
+			public string AgentName { get; set; } = string.Empty;
+			public string? AgentPhone { get; set; }
+			public string? AgentAddress { get; set; }
+			public bool IsActive { get; set; }
+			public DateTime RegisterDate { get; set; }
+			public string? RegisterPerson { get; set; }
+		}
 	}
 }

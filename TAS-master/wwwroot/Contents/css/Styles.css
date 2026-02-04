@@ -871,6 +871,8 @@ div[col-id="orderId"]{
         opacity: 0.8;
         background-color: #066fd1;
         color: #fff;
+        transform: translateY(3px);
+        box-shadow: 0 4px 8px rgb(0 0 0 / 25%);
     }
     .btn-custom-tas-action:active {
         background-color: #066fd1 !important;

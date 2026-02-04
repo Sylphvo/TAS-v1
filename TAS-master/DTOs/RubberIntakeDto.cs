@@ -31,9 +31,6 @@ namespace TAS.DTOs
 			_ => "Không xác định"
 		};
 		public DateTime registerDate { get; set; }
-
-		// Navigation
-		public RubberFarmDto? farm { get; set; }
 	}
 
 	public class CreateRubberIntakeDto

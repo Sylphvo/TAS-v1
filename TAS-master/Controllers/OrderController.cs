@@ -36,7 +36,7 @@ namespace TAS.Controllers
 		// GET: /Order/GetAllOrders
 		// ========================================
 		[HttpGet]
-		public async Task<IActionResult> GetAllOrders([FromQuery] OrderFilterRequest filter)
+		public async Task<IActionResult> GetAllOrders([FromQuery] RubberOrderRequest filter)
 		{
 			try
 			{

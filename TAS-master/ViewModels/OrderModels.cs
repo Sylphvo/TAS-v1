@@ -23,7 +23,7 @@ namespace TAS.ViewModels
 		// ========================================
 		// GET ALL ORDERS
 		// ========================================
-		public async Task<PagedResult<RubberOrderResponse>> GetOrdersWithFilterAsync(OrderFilterRequest filter)
+		public async Task<PagedResult<RubberOrderResponse>> GetOrdersWithFilterAsync(RubberOrderRequest filter)
 		{
 			try
 			{
@@ -45,10 +45,10 @@ namespace TAS.ViewModels
 				}
 
 				// --- 2. LỌC TRẠNG THÁI ---
-				if (filter.Status.HasValue)
+				if (filter.Status != null)
 				{
 					whereConditions.Add("o.Status = @Status");
-					parameters.Add("@Status", filter.Status.Value);
+					parameters.Add("@Status", filter.Status);
 				}
 
 				// --- 3. LỌC NGÀY (Dùng OrderDate hoặc CreatedDate) ---

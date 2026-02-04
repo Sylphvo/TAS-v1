@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Xml.Linq;
 using TAS.DTOs;
+using TAS.DTOs.TAS.DTOs;
 using TAS.Helpers;
 using TAS.Models;
 using TAS.TagHelpers;
@@ -280,7 +281,7 @@ namespace TAS.ViewModels
 		// ========================================
 		// GET AGENTS
 		// ========================================
-		public async Task<List<RubberAgentDto>> GetAgentsAsync()
+		public async Task<List<RubberAgentResponse>> GetAgentsAsync()
 		{
 			try
 			{
@@ -294,7 +295,7 @@ namespace TAS.ViewModels
                     ORDER BY AgentName
                 ";
 
-				var agents = await _dbHelper.QueryAsync<RubberAgentDto>(sql);
+				var agents = await _dbHelper.QueryAsync<RubberAgentResponse>(sql);
 				return agents.ToList();
 			}
 			catch (Exception ex)

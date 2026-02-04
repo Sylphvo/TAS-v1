@@ -9,12 +9,115 @@
 
 
 <div class="row">
+    <div class="col-md-6 col-xxl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avtar avtar-sm bg-light-primary">
+							<i class="ti ti-building-church f-20"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+						<h6 class="mb-0 fs-5">@Language.key_nhavuon</h6>
+                    </div>
+                </div>
+                <div class="bg-body p-3 rounded">
+                    <div class="mt-3 row align-items-center">
+                        <div class="col-12">
+							<h5 class="mb-1 f-26">@objectFarm.Total</h5>
+							<p class="text-muted mb-0">
+                                Tổng nhà vườn đang có trên hệ thống
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xxl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+						<div class="avtar avtar-sm bg-light-primary">
+							<i class="ti ti-building-community f-20"></i>
+						</div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+						<h6 class="mb-0 fs-5">@Language.key_agent</h6>
+                    </div>
+                </div>
+                <div class="bg-body p-3 rounded">
+                    <div class="mt-3 row align-items-center">
+                        <div class="col-12">
+							<h5 class="mb-1 f-26">@objectAgent.Total</h5>
+                            <p class="text-muted mb-0">
+                                Tổng nhà vườn đang có trên hệ thống
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div class="col-md-6 col-xxl-3">
+		<div class="card">
+			<div class="card-body">
+				<div class="d-flex align-items-center">
+					<div class="flex-shrink-0">
+						<div class="avtar avtar-sm bg-light-primary fs-2">
+							<i class="ti ti-chart-bar f-20"></i>
+						</div>
+					</div>
+					<div class="flex-grow-1 ms-3">
+						<h6 class="mb-0 fs-5">Tổng nguyên liệu</h6>
+					</div>
+				</div>
+				<div class="bg-body p-3 rounded">
+					<div class="mt-3 row align-items-center">
+						<div class="col-12">
+							<h5 class="mb-1 f-26">@objectAgent.Total</h5>
+							<p class="text-muted mb-0">
+								@Language.key_tongsoluongnguyenlieudamua
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6 col-xxl-3">
+		<div class="card">
+			<div class="card-body">
+				<div class="d-flex align-items-center">
+					<div class="flex-shrink-0">
+						<div class="avtar avtar-sm bg-light-primary fs-2">
+							<i class="ti ti-chart-arrows-vertical f-20"></i>
+						</div>
+					</div>
+					<div class="flex-grow-1 ms-3">
+						<h6 class="mb-0 fs-5">Tổng thành phẩm</h6>
+					</div>
+				</div>
+				<div class="bg-body p-3 rounded">
+					<div class="mt-3 row align-items-center">
+						<div class="col-12">
+							<h5 class="mb-1 f-26">@objectAgent.Total</h5>
+							<p class="text-muted mb-0">
+								@Language.key_tongthanhphamdavanchuyen
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
     <div class="row">
 		<div class="col-6">
 			<div class="card table-card">
 				<div class="card-header d-flex align-items-center justify-content-between py-3">
-					<h5 class="mb-0">Thống kê khối lượng bán của nhà vườn</h5>
-					@* <button class="btn btn-sm btn-link-primary">View All</button> *@
+					<h5 class="mb-0">Thống kê khối lượng thu hoạch của nhà vườn</h5>
 				</div>
 				<div class="card-body">
 					<div class="table-responsive">
@@ -60,44 +163,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-6">
-			<div class="row">
-				<div class="col-6">
-					<div class="card">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-								<div class="flex-shrink-0">
-									<div class="my-n4" style="width: 130px">
-										<div id="total-earning-graph-1"></div>
-									</div>
-								</div>
-								<div class="flex-grow-1 mx-2">
-									<p class="mb-1">@Language.key_nhavuon</p>
-									<h6 class="mb-0">@objectFarm.Total</h6>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-6">
-					<div class="card">
-						<div class="card-body">
-							<div class="d-flex align-items-center">
-								<div class="flex-shrink-0">
-									<div class="my-n4" style="width: 130px">
-										<div id="total-earning-graph-2"></div>
-									</div>
-								</div>
-								<div class="flex-grow-1 mx-2">
-									<p class="mb-1">@Language.key_agent</p>
-									<h6 class="mb-0">@objectAgent.Total</h6>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+		
     </div>
 </div>
 <div class="row">

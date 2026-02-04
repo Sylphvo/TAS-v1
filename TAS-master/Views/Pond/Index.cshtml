@@ -1,4 +1,5 @@
-﻿@{
+﻿@using TAS.Resources
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @section Style {
@@ -14,17 +15,19 @@
                     ======================================== -->
                     <div class="datatable-top " style="justify-content:flex-end">
                         <!-- Left side: Filters -->
-                        <div class="button_filter">
+                        <div class="button_filter_search">
+                            <label>@Language.key_congcuthaotac</label>
+                            <div>
+                                <button type="button" id="btnAdd" class="btn btn-custom-tas-action btn-sm">
+                                    <i class="fas fa-plus"></i> <span>@Language.key_themmoi</span>
+                                </button>
+                                <button type="button" id="btnRefresh" class="btn btn-custom-tas-action btn-sm">
+                                    <i class="fas fa-sync-alt"></i><span>@Language.key_reload</span>
+                                </button>
+                            </div>
                         </div>
-
                         <!-- Right side: Actions -->
                         <div class="datatable-actions">
-                            <button type="button" id="btnAdd" class="btn btn-custom-tas btn-sm">
-                                <i class="fas fa-plus"></i> Thêm mới
-                            </button>
-                            <button type="button" id="btnRefresh" class="btn btn-custom-tas btn-sm">
-                                <i class="fas fa-sync-alt"></i> Làm mới
-                            </button>
                         </div>
                     </div>
 
@@ -32,7 +35,7 @@
                          AG-GRID TABLE
                     ======================================== -->
                     <div id="pondGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
-                    <div id="ag-paging-footer" class="ag-paging-button-wrapper"></div>
+                    <div id="divPagingContainer" class="ag-paging-panel ag-paging-button-wrapper"></div>
                     <!-- ========================================
                          HIDDEN FILE INPUT
                     ======================================== -->
@@ -43,22 +46,15 @@
     </div>
 </div>
 
-<partial name="~/Views/Pond/_AddEditModal.cshtml" />
 
 <!-- ========================================
      SCRIPTS
 ======================================== -->
 @section Scripts {
-    <!-- AG Grid -->
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
-
-    <!-- SheetJS for Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <!-- Custom JS -->
     <script src="~/Contents/js/Pond/Pond.js"></script>
     <script>
-        var agPaging = 'ag-paging-footer';
         var IsOptionAll = false;
         initPondPage();
     </script>

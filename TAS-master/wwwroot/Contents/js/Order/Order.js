@@ -190,7 +190,7 @@ function setupGrid() {
         //pagination: truKe,
         //paginationPageSize: 10,
         //paginationPageSizeSelector: [5, 10, 20, 100],
-        //rowHeight: 50,// Độ cao dòng
+        rowHeight: 70,// Độ cao dòng
 
         // Events
         onSelectionChanged: onSelectionChanged,

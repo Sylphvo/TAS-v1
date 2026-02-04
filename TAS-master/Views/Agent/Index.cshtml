@@ -1,10 +1,11 @@
-﻿@{
+﻿@using TAS.Resources
+@{
 
 }
 @section Style {
     <link rel="stylesheet" href="../Contents/css/Agent/Agent.css">
 }
-<div class="row">
+@* <div class="row">
     <div class="col-12">
         <div class="card table-card">
             <div class="card-header">
@@ -46,27 +47,58 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 </div>
 <partial name="~/Views/Agent/_AddEditModal.cshtml" />
 <partial name="~/Views/Agent/_DeleteModal.cshtml" />
-<partial name="~/Views/Agent/_MapModal.cshtml" />
+<partial name="~/Views/Agent/_MapModal.cshtml" /> *@
+<div class="RubberIntake-page">
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card table-card">
+                <div class="card-body">
+                    <!-- ========================================
+                         TOOLBAR
+                    ======================================== -->
+                    <div class="datatable-top " style="justify-content:flex-end">
+                        <!-- Left side: Filters -->
+                        <div class="button_filter_search">
+                            <label>@Language.key_congcuthaotac</label>
+                            <div>
+                                <button type="button" id="btnAdd" class="btn btn-custom-tas-action btn-sm">
+                                    <i class="fas fa-plus"></i> <span>@Language.key_themmoi</span>
+                                </button>
+                                <button type="button" id="btnRefresh" class="btn btn-custom-tas-action btn-sm">
+                                    <i class="fas fa-sync-alt"></i><span>@Language.key_reload</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Right side: Actions -->
+                        <div class="datatable-actions">
+                        </div>
+                    </div>
+
+                    <!-- ========================================
+                         AG-GRID TABLE
+                    ======================================== -->
+                    <div id="agentGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
+                    <div id="divPagingContainer" class="ag-paging-panel ag-paging-button-wrapper"></div>
+                    <!-- ========================================
+                         HIDDEN FILE INPUT
+                    ======================================== -->
+                    <input type="file" id="fileImport" accept=".xlsx,.xls" style="display:none;" onchange="handleFileImport(event)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 @section Scripts {
     <script type="text/javascript" src="~/Contents/js/Agent/Agent.js"></script>
-    @* <script>
-        // var listdataEventsActual;
-        var Agent = '#AgentGrid';
-        var agPaging = 'ag-paging-footer';
+    <script>
         var IsOptionAll = false;
-        CreateGridAgent(true);
-        CreateRowDataAgent();
-          //đăng ký select trang
-        ApplyCboSelect2('selectorPaging');
-        $('#selectorPaging').change(function (e) {
-            let selectPage = $(this).val();
-            IsOptionAll = selectPage == '*';
-            RefreshAllGridWhenChangeData();
-        });
-    </script> *@
+        initPageAgent();
+    </script>
 }

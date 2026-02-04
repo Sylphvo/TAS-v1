@@ -12,16 +12,12 @@ var drawnItems = null;
 // ========================================
 // INITIALIZE
 // ========================================
-$(document).ready(function () {
-    console.log('🌾 Initializing Farm Management...');
-
+function initFarmPage() {
     loadAgentsDropdown();
     initAgGrid();
     loadFarms();
     registerEvents();
-
-    console.log('✅ Farm Management initialized!');
-});
+};
 
 // ========================================
 // LOAD AGENTS DROPDOWN
@@ -322,33 +318,48 @@ function registerEvents() {
 // ========================================
 // LOAD FARMS
 // ========================================
-function loadFarms() {
-    console.log('📥 Loading farms...');
-
-    const searchParams = {
-        searchKeyword: $('#txtSearchKeyword').val(),
-        farmCode: $('#txtFarmCode').val(),
-        farmerName: $('#txtFarmerName').val(),
-        agentCode: $('#ddlAgentCode').val(),
-        isActive: $('#ddlIsActive').val() === '' ? null : $('#ddlIsActive').val() === 'true',
-        fromDate: $('#txtFromDate').val(),
-        toDate: $('#txtToDate').val(),
-        pageNumber: 1,
-        pageSize: 1000
+function loadFarms(pageIndex, pageSize) {
+    // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
+    if (pageIndex) {
+        arrConstant.currentPage = pageIndex;
+    } else {
+        arrConstant.currentPage = 1;
+    }
+    if (pageSize) {
+        arrConstant.pageSize = pageSize;
+    }
+    // 2. Lấy giá trị từ các ô Filter trên màn hình
+    var filterData = {
+        PageIndex: arrConstant.currentPage,
+        PageSize: arrConstant.PageSize,
+        Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
+        Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
+        FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
+        ToDate: $('#dtToDate').val()           // Lấy ngày kết thúc
     };
 
     $.ajax({
-        url: '/Farm/GetFarms',
+        url: '/Farm/GetAllFarms',
         type: 'GET',
-        data: searchParams,
+        data: filterData,
         success: function (response) {
-            console.log('📥 Response:', response);
-
             if (response.success) {
-                gridApiFarm.setGridOption('rowData', response.data);
-                updateStatusBar(response.totalRecords);
+                // response.data lúc này là object PagedResult { items: [...], totalRecords: 100 }
+                var pagedResult = response.data;
+                rowData = pagedResult.items;
+                gridApiFarm.setGridOption('rowData', rowData);
+                updateStatusBar(pagedResult.totalRecords);
+                renderServerPagination(
+                    'divPagingContainer',     // ID thẻ div chứa thanh phân trang
+                    pagedResult.totalRecords, // Tổng số bản ghi (Server trả về)
+                    arrConstant.currentPage,            // Trang hiện tại
+                    arrConstant.pageSize,               // Size hiện tại
+                    function (newPage, newSize) {
+                        // Callback: Khi người dùng bấm Next/Prev/Change Size -> Gọi lại hàm load này
+                        loadPonds(newPage, newSize);
+                    }
+                );
                 updateLastUpdateTime();
-                console.log('✅ Loaded', response.totalRecords, 'farms');
             } else {
                 showError(response.message);
             }
