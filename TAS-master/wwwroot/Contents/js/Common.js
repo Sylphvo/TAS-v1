@@ -171,3 +171,21 @@ function createInfiniteDataSource(apiUrl, getFilterParamsFn, onDataLoaded) {
         }
     };
 }
+// Thêm dòng mới vào Ag-Grid và chọn dòng đó
+function AddNewRowAggrid(gridApiDynamic, listData, newItem, fieldName, rowIndex) {
+    var transaction = {
+        add: [newItem],
+        addIndex: rowIndex
+    };
+    gridApiDynamic.applyTransaction(transaction);
+    RefeshSingleColumn(gridApiDynamic, fieldName);
+    // 1. Chọn hàng (Selection - bôi màu nền)
+    gridApiOrder.getDisplayedRowAtIndex(rowIndex).setSelected(true);
+    // 2. Focus vào ô (Tạo viền khung cho ô)
+    gridApiOrder.setFocusedCell(rowIndex, fieldName);
+    // 3. Auto Scroll (Cuộn tới hàng đó)
+    // 'top', 'bottom', hoặc 'middle' để kiểm soát vị trí hàng sau khi cuộn
+    gridApiOrder.ensureIndexVisible(rowIndex, 'middle');
+    listData.push(newItem);
+    //return listData;
+}

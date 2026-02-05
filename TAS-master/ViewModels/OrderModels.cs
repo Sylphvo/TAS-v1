@@ -20,19 +20,18 @@ namespace TAS.ViewModels
 			_logger = logger;
 		}
 
-		// ========================================
-		// GET ALL ORDERS
-		// ========================================
+		/// <summary>
+		/// Lấy danh sách đơn hàng với bộ lọc và phân trang
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <returns></returns>
 		public async Task<PagedResult<RubberOrderResponse>> GetOrdersWithFilterAsync(RubberOrderRequest filter)
 		{
 			try
 			{
 				var parameters = new DynamicParameters();
 				var whereConditions = new List<string>();
-
-				// Luôn đúng
-				whereConditions.Add("1=1");
-
+				whereConditions.Add(" 1 = 1");
 				// --- 1. TÌM KIẾM (Chỉ tìm trên các cột có thực trong bảng mới) ---
 				if (!string.IsNullOrEmpty(filter.Keyword))
 				{
@@ -107,6 +106,112 @@ namespace TAS.ViewModels
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error in GetOrdersWithFilterAsync");
+				throw;
+			}
+		}
+		/// <summary>
+		/// Thêm mới hoặc Cập nhật đơn hàng
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		public async Task<long> AddOrUpdateOrderAsync(RubberOrderRequest request)
+		{
+			try
+			{
+				var parameters = new DynamicParameters();
+
+				// 1. CHUẨN BỊ DỮ LIỆU
+				parameters.Add("@OrderCode", request.OrderCode);
+				parameters.Add("@OrderName", request.OrderName);
+				parameters.Add("@Status", request.Status ?? 0); // Mặc định là 0 nếu null
+				parameters.Add("@Note", request.Note);
+
+				// Xử lý chuyển đổi ngày (String -> DateTime)
+				// Vì trong Model RubberOrderRequest bạn để string, nhưng DB là DateTime
+				DateTime? parsedDate = null;
+				if (!string.IsNullOrEmpty(request.OrderDate) && DateTime.TryParse(request.OrderDate, out var date))
+				{
+					parsedDate = date;
+				}
+				parameters.Add("@OrderDate", parsedDate);
+
+				// 2. KIỂM TRA LOGIC ADD HAY UPDATE
+				if (request.OrderId.HasValue && request.OrderId.Value > 0)
+				{
+					// --- TRƯỜNG HỢP UPDATE ---
+					parameters.Add("@OrderId", request.OrderId.Value);
+
+					string updateSql = @"
+                UPDATE RubberOrder
+                SET 
+                    OrderCode = @OrderCode,
+                    OrderName = @OrderName,
+                    OrderDate = @OrderDate,
+                    Status = @Status,
+                    Note = @Note
+                    --, UpdatedDate = GETDATE() -- Bỏ comment nếu bảng có cột này
+                WHERE OrderId = @OrderId";
+
+					await _dbHelper.ExecuteAsync(updateSql, parameters);
+
+					// Trả về chính ID đang sửa
+					return request.OrderId.Value;
+				}
+				else
+				{
+					// --- TRƯỜNG HỢP INSERT ---
+					// SCOPE_IDENTITY() để lấy ID vừa tự sinh ra
+					string insertSql = @"
+                INSERT INTO RubberOrder (OrderCode, OrderName, OrderDate, Status, Note, CreatedDate)
+                VALUES (@OrderCode, @OrderName, @OrderDate, @Status, @Note, GETDATE());
+                
+                SELECT CAST(SCOPE_IDENTITY() as bigint);";
+
+					var newId = await _dbHelper.ExecuteScalarAsync<long>(insertSql, parameters);
+
+					// Trả về ID mới để Frontend cập nhật
+					return newId;
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Error in AddOrUpdateOrderAsync. Data: {System.Text.Json.JsonSerializer.Serialize(request)}");
+				throw;
+			}
+		}
+		/// <summary>
+		/// Xóa đơn hàng theo OrderId
+		/// </summary>
+		/// <param name="orderId"></param>
+		/// <returns></returns>
+		public async Task<bool> DeleteOrderAsync(int orderId)
+		{
+			try
+			{
+				var parameters = new DynamicParameters();
+				parameters.Add("@OrderId", orderId);
+
+				// --- BƯỚC 1: (Tùy chọn) KIỂM TRA ĐIỀU KIỆN TRƯỚC KHI XÓA ---
+				// Ví dụ: Chỉ cho phép xóa đơn hàng đang ở trạng thái 'Draft' (0) hoặc 'Mới'
+				// Nếu đã 'Completed' (3) thì không cho xóa.
+				string checkSql = "SELECT Status FROM RubberOrder WHERE OrderId = @OrderId";
+				var status = await _dbHelper.ExecuteScalarAsync<int>(checkSql, parameters);
+
+				// --- BƯỚC 2: THỰC HIỆN XÓA ---
+				// Lưu ý: Nếu bảng có ràng buộc khóa ngoại (Foreign Key) với bảng chi tiết,
+				// bạn cần xóa bảng chi tiết trước hoặc dùng ON DELETE CASCADE trong SQL.
+				string deleteSql = @"
+				DELETE FROM RubberOrder 
+				WHERE OrderId = @OrderId";
+
+				var rowsAffected = await _dbHelper.ExecuteAsync(deleteSql, parameters);
+
+				// Trả về true nếu có ít nhất 1 dòng bị xóa
+				return rowsAffected > 0;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Error in DeleteOrderAsync. Id: {orderId}");
 				throw;
 			}
 		}

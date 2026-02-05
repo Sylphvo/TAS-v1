@@ -333,12 +333,7 @@ function addNewRow() {
         timeDate_Person: '',
         timeDate: ''
     };
-    
-    gridApiIntake.applyTransaction({ add: [newRow], addIndex: rowData.length });
-    rowData.push(newRow);
-    //BẮT BUỘC
-    RefeshSingleColumn(gridApiIntake, 'action');
-    //updateRowNumbers();
+    AddNewRowAggrid(gridApiIntake, rowData, newRow, 'action', 0);
 }
 function onRemoveSelected() {
     const selectedData = gridApiIntake.getSelectedRows();

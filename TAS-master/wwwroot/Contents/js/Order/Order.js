@@ -78,54 +78,13 @@ function setupGrid() {
                 // 1. Định dạng hiển thị trên bảng lưới (DD/MM/YYYY)
                 valueFormatter: params => {
                     if (!params.data.orderDate) return '';
-                    const d = new Date(params.data.orderDate);
-                    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-                },
-
-                // 2. Ép trình Edit phải hiểu dữ liệu truyền vào là kiểu Date chuẩn
-                // (Giúp picker hiển thị đúng ngày hiện tại thay vì trống rỗng hoặc báo lỗi format)
-                valueGetter: params => {
-                    return new Date(params.data.orderDate).getDate() + "-" + (new Date(params.data.orderDate).getMonth() + 1) + "-" + new Date(params.data.orderDate).getFullYear()
-                    //return params.data.orderDate ? new Date(params.data.orderDate).ddMMyyyyFormat() : null;
-                },
-
-                // 3. Xử lý sau khi người dùng chọn ngày xong
-                valueParser: params => {
-                    // Chuyển giá trị từ trình edit về lại kiểu dữ liệu mong muốn (String hoặc Date)
                     return params.data.orderDate;
                 },
                 cellEditor: "agDateStringCellEditor",
-
-                //cellRenderer: params => {
-                //    const parts = params.data.orderDate.split('/');
-                //    // parts[0]: ngày, parts[1]: tháng, parts[2]: năm
-                //    return new Date(parts[2], parts[1] - 1, parts[0]).ddMMyyyyFormat();
-                //},
-                //// Lấy dữ liệu từ chuỗi "3/2/2026" chuyển thành Object Date cho Editor
-                //valueSetter: params => {
-                //    if (params.newValue) {
-                //        const d = new Date(params.newValue);
-                //        // Chuyển đối tượng Date thành chuỗi dd/mm/yyyy
-                //        const day = d.getDate().toString().padStart(2, '0');
-                //        const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                //        const year = d.getFullYear();
-
-                //        params.data.orderDate = `${day}/${month}/${year}`;
-                //        return new Date(parts[2], parts[1] - 1, parts[0]).ddMMyyyyFormat();
-                //    }
-                //    return new Date(parts[2], parts[1] - 1, parts[0]);
-                //},
-                //// Lưu dữ liệu sau khi chọn xong về định dạng d/M/yyyy
-                //valueSetter: params => {
-                //    if (params.newValue instanceof Date) {
-                //        const d = params.newValue;
-                //        // Format không có số 0 ở trước: 3/2/2026
-                //        const formatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-                //        params.data.orderDate = formatted;
-                //        return true;
-                //    }
-                //    return false;
-                //}
+                cellRenderer: params => {
+                    if (!params.data.orderDate) return '';
+                    return new Date(params.data.orderDate).MMddyyyyFormat();
+                }
             },
             {
                 headerName: 'Ghi chú',
@@ -154,8 +113,7 @@ function setupGrid() {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     });
-                },
-                cellStyle: { fontWeight: 'bold', color: '#27ae60' }
+                }
             },
             {
                 headerName: 'Trạng thái',
@@ -168,7 +126,7 @@ function setupGrid() {
             {
                 headerName: 'Thao tác',
                 field: 'action',
-                width: 200,
+                width: 120,
                 pinned: 'right',
                 cellRenderer: CellRenderAction,
                 filter: false,
@@ -187,17 +145,14 @@ function setupGrid() {
 
         rowSelection: 'multiple',
         animateRows: true,
-        //pagination: truKe,
-        //paginationPageSize: 10,
-        //paginationPageSizeSelector: [5, 10, 20, 100],
         rowHeight: 70,// Độ cao dòng
 
         // Events
-        onSelectionChanged: onSelectionChanged,
+        onCellValueChanged: onCellValueChanged,// Edit Cell
+        //onSelectionChanged: onSelectionChanged,
         onGridReady: function (params) {
             gridApiOrder = params.api;
-            gridColumnApi = params.columnApi;
-            params.api.sizeColumnsToFit();
+            gridApiOrder.sizeColumnsToFit();
         }
     };
     gridApiOrder = agGrid.createGrid(document.querySelector("#orderGrid"), gridOptions);
@@ -229,7 +184,7 @@ function renderStatusBadge(status) {
 function setupEventHandlers() {
     // Button clicks
     $('#btnRefresh').on('click', loadOrders);
-    $('#btnAdd').on('click', showAddModal);
+	$('#btnAdd').on('click', AddNewRow);// Add thêm mới
     $('#btnExport').on('click', exportAllToExcel);
     $('#btnExportSelected').on('click', exportSelectedToExcel);
     $('#btnSave').on('click', saveOrder);
@@ -345,36 +300,24 @@ function loadAgents() {
 }
 
 // ========================================
-// SHOW ADD MODAL
+// ADD NEW ROW
 // ========================================
-function showAddModal() {
-    const newRow = {
+function AddNewRow() {
+    const newItem = {
         // 1. Định danh
         orderId: 0, // 0 đánh dấu là dòng mới chưa lưu DB
         orderCode: generateUniqueFakeOrderCode(rowData), // Hàm sinh mã không trùng
         orderName: "", // Mới thêm: Tên đơn hàng
-
-        // 2. Ngày tháng
-        // Mặc định lấy ngày hiện tại (Format: YYYY-MM-DD) để binding vào input date
-        orderDate: new Date().toISOString().split('T')[0],
-
-        // 3. Trạng thái & Ghi chú
-        status: 0, // Mặc định là 0 (Mới tạo/Draft)
+        orderDate: new Date(),
+        status: 0, 
+        totalNetKg: 0, 
         note: "",
-
-        // 4. Audit (Thông tin quản trị - Có thể để null hoặc lấy user hiện tại)
         createdBy: "", // Có thể gán tên user đang login
         createdDate: new Date(), // Ngày tạo là ngay bây giờ
         updateBy: null,
         updateDate: null
     };
-
-
-    gridApiOrder.applyTransaction({ add: [newRow], addIndex: rowData.length });
-    rowData.push(newRow);
-    //BẮT BUỘC
-    RefeshSingleColumn(gridApiOrder, 'action');
-    //updateRowNumbers();
+    AddNewRowAggrid(gridApiOrder, rowData, newItem, 'action', 0);
 }
 
 // ========================================
@@ -423,57 +366,25 @@ function editOrder(orderId) {
 // ========================================
 // SAVE ORDER
 // ========================================
-function saveOrder() {
-    // Validation
-    if (!$('#agentId').val()) {
-        NotificationToast("error",'Vui lòng chọn đại lý');
-        $('#agentId').focus();
-        return;
-    }
-    
-    if (!$('#orderDate').val()) {
-        NotificationToast("error",'Vui lòng chọn ngày đặt hàng');
-        $('#orderDate').focus();
-        return;
-    }
-    
-    const orderId = $('#orderId').val();
-    const isEdit = orderId !== '';
-    
-    const data = {
-        orderId: isEdit ? parseInt(orderId) : 0,
-        agentId: $('#agentId').val(),
-        orderDate: $('#orderDate').val(),
-        customerName: $('#customerName').val(),
-        shipmentMethod: $('#shipmentMethod').val(),
-        totalNetKg: $('#totalNetKg').val() ? parseFloat($('#totalNetKg').val()) : null,
-        notes: $('#notes').val()
-    };
-    
-    const url = isEdit ? '/Order/UpdateOrder' : '/Order/CreateOrder';
-    const method = isEdit ? 'PUT' : 'POST';
-    
+function saveOrder(rowIndex) {
+    const rowNode = gridApiOrder.getDisplayedRowAtIndex(rowIndex);
+    const data = rowNode.data;
     showLoading();
     
     $.ajax({
-        url: url,
-        type: method,
+        url: `/Order/AddOrUpdateOrder`,
+        type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(data),
-        headers: {
-            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-        },
         success: function(response) {
             if (response.success) {
                 NotificationToast("success", response.message);
-                closeModal();
                 loadOrders();
             } else {
                 NotificationToast("error", response.message);
             }
         },
         error: function(xhr, status, error) {
-            console.error('Save error:', error);
             NotificationToast("error",'Lỗi khi lưu: ' + error);
         },
         complete: function() {
@@ -482,22 +393,14 @@ function saveOrder() {
     });
 }
 
-// ========================================
-// DELETE ORDER
-// ========================================
-function deleteOrder(orderId) {
-    if (!confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
-        return;
-    }
-    
+/// ======================================== Xóa đơn hàng
+async function deleteOrder(orderId) {
+    if (!await IsToastConfirmDeleteNoLength()) return;
     showLoading();
-    
     $.ajax({
-        url: `/Order/DeleteOrder/${orderId}`,
+        url: `/Order/DeleteOrder`,
         type: 'DELETE',
-        headers: {
-            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-        },
+        data: { orderId: orderId },
         success: function(response) {
             if (response.success) {
                 NotificationToast("success",response.message);
@@ -507,7 +410,6 @@ function deleteOrder(orderId) {
             }
         },
         error: function(xhr, status, error) {
-            console.error('Delete error:', error);
             NotificationToast("error",'Lỗi khi xóa: ' + error);
         },
         complete: function() {
@@ -658,18 +560,24 @@ function exportSelectedToExcel() {
 // SELECTION CHANGED
 // ========================================
 function onSelectionChanged() {
-    const selectedRows = gridApiOrder.getSelectedRows();
-    const count = selectedRows.length;
+    //const selectedRows = gridApiOrder.getSelectedRows();
+    //const count = selectedRows.length;
     
-    if (count > 0) {
-        $('#selectedRecords').text(`Đã chọn: ${count}`).show();
-        $('#btnExportSelected').prop('disabled', false);
-    } else {
-        $('#selectedRecords').hide();
-        $('#btnExportSelected').prop('disabled', true);
-    }
+    //if (count > 0) {
+    //    $('#selectedRecords').text(`Đã chọn: ${count}`).show();
+    //    $('#btnExportSelected').prop('disabled', false);
+    //} else {
+    //    $('#selectedRecords').hide();
+    //    $('#btnExportSelected').prop('disabled', true);
+    //}
 }
-
+function onCellValueChanged(event) {
+    let rowIndex = event.node.rowIndex;
+    let colDef = event.colDef.field;
+    let isObjAgent = colDef == "agentCode";
+    let isObjFarm = colDef == "farmCode";
+    
+}
 // ========================================
 // CLOSE MODAL
 // ========================================
@@ -713,7 +621,7 @@ function CellRenderAction(params) {
     let markShipped = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="markShipped(${params.value})" title="Lưu"><i class="ti ti-package f-20"></i></a>`;
     let editOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="editOrder(${params.value})" title="Bỏ"><i class="ti ti-edit f-20"></i></a>`;
     let updateStatus = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value},${params.data.status})" title="${arrMsg.key_delete}"><i class="ti ti-eye f-20"></i></a>`;
-    let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.value})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+    let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
 
 	// Check if the order has been shipped
     const hasShipped = params.data.shippedAt != null;

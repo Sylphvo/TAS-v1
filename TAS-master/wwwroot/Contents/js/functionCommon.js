@@ -700,6 +700,7 @@ Date.prototype.hhmmddMMyyyyFormat = function () {
 	return (hh[1] ? hh : "0" + hh[0]) + ":" + (mm[1] ? mm : "0" + mm[0]) + ' ' + (dd[1] ? dd : "0" + dd[0]) + "/" + (MM[1] ? MM : "0" + MM[0]) + "/" + yyyy; // padding
 };
 
+
 // Convert date to yyyyMMddhhmm
 Date.prototype.yyyyMMddhhmmFormat = function () {
     var yyyy = this.getFullYear().toString();
@@ -718,6 +719,15 @@ Date.prototype.ddMMyyyyFormat = function () {
     var hh = this.getHours().toString();
     var mm = this.getMinutes().toString();
     return (dd[1] ? dd : "0" + dd[0]) + "/" + (MM[1] ? MM : "0" + MM[0]) + "/" + yyyy; // padding
+};
+// Convert date to yyyyMMddhhmm
+Date.prototype.MMddyyyyFormat = function () {
+    var yyyy = this.getFullYear().toString();
+    var MM = (this.getMonth() + 1).toString(); // getMonth() is zero-based
+    var dd = this.getDate().toString();
+    var hh = this.getHours().toString();
+    var mm = this.getMinutes().toString();
+    return (MM[1] ? MM : "0" + MM[0]) + "/" + (dd[1] ? dd : "0" + dd[0]) + "/" + yyyy; // padding
 };
 
 //VuongLV: Viet ham ho tro bien Date Add Year, Month, Day, Hours, Minutes 2024/12/31

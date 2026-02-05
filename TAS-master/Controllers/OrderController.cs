@@ -53,210 +53,75 @@ namespace TAS.Controllers
 			}
 		}
 
-		//// ========================================
-		//// GET: /Order/GetOrderById/{id}
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetOrderById(long id)
-		//{
-		//	try
-		//	{
-		//		var order = await _orderModels.GetOrderByIdAsync(id);
-		//		if (order == null)
-		//		{
-		//			return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
-		//		}
-		//		return Json(new { success = true, data = order });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in GetOrderById");
-		//		return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
-		//	}
-		//}
+		/// <summary>
+		/// API xử lý cả Thêm mới và Cập nhật
+		/// </summary>
+		[HttpPost]
+		public async Task<IActionResult> AddOrUpdateOrder([FromBody] RubberOrderRequest request)
+		{
+			// 1. Validate dữ liệu đầu vào cơ bản (Dựa trên DataAnnotation trong Model)
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(new
+				{
+					success = false,
+					message = "Dữ liệu không hợp lệ",
+					errors = ModelState.Values.SelectMany(v => v.Errors)
+				});
+			}
 
-		//// ========================================
-		//// POST: /Order/CreateOrder
-		//// ========================================
-		//[HttpPost]
-		//[ValidateAntiForgeryToken]
-		//public async Task<IActionResult> CreateOrder([FromBody] RubberOrderRequest request)
-		//{
-		//	try
-		//	{
-		//		if (!ModelState.IsValid)
-		//		{
-		//			return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
-		//		}
+			try
+			{
+				// 2. Gọi Service để xử lý DB (Hàm AddOrUpdateOrderAsync bạn đã viết)
+				long resultId = await _orderModels.AddOrUpdateOrderAsync(request);
 
-		//		var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
-		//		var result = await _orderModels.CreateOrderAsync(request, userName);
+				// 3. Trả về kết quả
+				// Quan trọng: Trả về resultId để Frontend cập nhật lại Grid (nếu là thêm mới)
+				return Ok(new
+				{
+					success = true,
+					message = request.OrderId > 0 ? "Cập nhật thành công!" : "Thêm mới thành công!",
+					data = resultId // Trả về ID (để update vào AG Grid)
+				});
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Lỗi khi lưu đơn hàng");
+				return StatusCode(500, new
+				{
+					success = false,
+					message = "Đã xảy ra lỗi hệ thống: " + ex.Message
+				});
+			}
+		}
 
-		//		if (result.Success)
-		//		{
-		//			_logger.LogInformation($"Order created: {result.OrderId} by {userName}");
-		//			return Json(new { success = true, message = "Tạo đơn hàng thành công", orderId = result.OrderId });
-		//		}
+		[HttpDelete]
+		public async Task<IActionResult> DeleteOrder(int orderId)
+		{
+			try
+			{
+				if (orderId <= 0)
+				{
+					return BadRequest(new { success = false, message = "ID đơn hàng không hợp lệ." });
+				}
 
-		//		return Json(new { success = false, message = result.Message });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in CreateOrder");
-		//		return Json(new { success = false, message = "Lỗi khi tạo đơn hàng" });
-		//	}
-		//}
+				var result = await _orderModels.DeleteOrderAsync(orderId);
 
-		//// ========================================
-		//// PUT: /Order/UpdateOrder
-		//// ========================================
-		//[HttpPut]
-		//[ValidateAntiForgeryToken]
-		//public async Task<IActionResult> UpdateOrder([FromBody] RubberOrderRequest request)
-		//{
-		//	try
-		//	{
-		//		if (!ModelState.IsValid)
-		//		{
-		//			return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
-		//		}
+				if (result)
+				{
+					return Ok(new { success = true, message = "Xóa thành công." });
+				}
+				else
+				{
+					return NotFound(new { success = false, message = "Không tìm thấy đơn hàng hoặc đơn hàng đã bị xóa trước đó." });
+				}
+			}
+			catch (Exception ex)
+			{
+				// Trả về lỗi 500 kèm thông báo chi tiết (nếu là lỗi logic nghiệp vụ ta throw ở trên)
+				return StatusCode(500, new { success = false, message = ex.Message });
+			}
+		}
 
-		//		var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
-		//		var result = await _orderModels.UpdateOrderAsync(request, userName);
-
-		//		if (result.Success)
-		//		{
-		//			_logger.LogInformation($"Order updated: {request.OrderId} by {userName}");
-		//			return Json(new { success = true, message = "Cập nhật đơn hàng thành công" });
-		//		}
-
-		//		return Json(new { success = false, message = result.Message });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in UpdateOrder");
-		//		return Json(new { success = false, message = "Lỗi khi cập nhật đơn hàng" });
-		//	}
-		//}
-
-		//// ========================================
-		//// DELETE: /Order/DeleteOrder/{id}
-		//// ========================================
-		//[HttpDelete]
-		//[Authorize(Roles = "Admin")]
-		//public async Task<IActionResult> DeleteOrder(long id)
-		//{
-		//	try
-		//	{
-		//		var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
-		//		var result = await _orderModels.DeleteOrderAsync(id, userName);
-
-		//		if (result.Success)
-		//		{
-		//			_logger.LogInformation($"Order deleted: {id} by {userName}");
-		//			return Json(new { success = true, message = "Xóa đơn hàng thành công" });
-		//		}
-
-		//		return Json(new { success = false, message = result.Message });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in DeleteOrder");
-		//		return Json(new { success = false, message = "Lỗi khi xóa đơn hàng" });
-		//	}
-		//}
-
-		//// ========================================
-		//// POST: /Order/UpdateStatus
-		//// ========================================
-		//[HttpPost]
-		//[ValidateAntiForgeryToken]
-		//public async Task<IActionResult> UpdateStatus([FromBody] UpdateOrderRequest request)
-		//{
-		//	try
-		//	{
-		//		var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
-		//		var result = await _orderModels.UpdateOrderStatusAsync(request.OrderId, request.Status, userName);
-
-		//		if (result.Success)
-		//		{
-		//			_logger.LogInformation($"Order status updated: {request.OrderId} to {request.Status} by {userName}");
-		//			return Json(new { success = true, message = "Cập nhật trạng thái thành công" });
-		//		}
-
-		//		return Json(new { success = false, message = result.Message });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in UpdateStatus");
-		//		return Json(new { success = false, message = "Lỗi khi cập nhật trạng thái" });
-		//	}
-		//}
-
-		//// ========================================
-		//// POST: /Order/MarkShipped
-		//// ========================================
-		//[HttpPost]
-		//[ValidateAntiForgeryToken]
-		//public async Task<IActionResult> MarkShipped([FromBody] MarkShippedOrderRequest request)
-		//{
-		//	try
-		//	{
-		//		var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
-		//		var result = await _orderModels.MarkShippedAsync(request.OrderId, userName);
-
-		//		if (result.Success)
-		//		{
-		//			_logger.LogInformation($"Order marked as shipped: {request.OrderId} by {userName}");
-		//			return Json(new { success = true, message = "Đánh dấu đã xuất hàng thành công" });
-		//		}
-
-		//		return Json(new { success = false, message = result.Message });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in MarkShipped");
-		//		return Json(new { success = false, message = "Lỗi khi đánh dấu xuất hàng" });
-		//	}
-		//}
-
-		//// ========================================
-		//// GET: /Order/GetAgents
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetAgents()
-		//{
-		//	try
-		//	{
-		//		var agents = await _orderModels.GetAgentsAsync();
-		//		return Json(new { success = true, data = agents });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in GetAgents");
-		//		return Json(new { success = false, message = "Lỗi khi tải danh sách đại lý" });
-		//	}
-		//}
-
-		//// ========================================
-		//// POST: /Order/ExportToExcel
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> ExportToExcel([FromBody] List<long> orderIds)
-		//{
-		//	try
-		//	{
-		//		var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "SYSTEM";
-		//		var fileBytes = await _orderModels.ExportToExcelAsync(orderIds, userName);
-
-		//		var fileName = $"Orders_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-		//		return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error in ExportToExcel");
-		//		return Json(new { success = false, message = "Lỗi khi xuất Excel" });
-		//	}
-		//}
 	}
 }
