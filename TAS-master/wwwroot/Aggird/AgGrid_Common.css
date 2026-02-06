@@ -1,8 +1,8 @@
 .ag-header-cell {
     padding-left: 0px !important;
     padding-right: 0px !important;
-    border-right: 1px solid;
-    border-color: #babfc7 !important;
+    /*border-right: 1px solid;
+    border-color: #babfc7 !important;*/
 }
 
 .ag-pinned-right-header .ag-header-cell:not(.ag-column-last) {
@@ -16,7 +16,7 @@
 }
 
 .ag-cell-value {
-    border-right: 1px solid #babfc7 !important;
+    /*border-right: 1px solid #babfc7 !important;*/
 }
 
 .ag-pinned-right-cols-container .ag-cell-value:not(.ag-column-last) {

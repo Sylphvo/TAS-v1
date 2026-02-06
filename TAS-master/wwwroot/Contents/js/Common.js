@@ -189,3 +189,56 @@ function AddNewRowAggrid(gridApiDynamic, listData, newItem, fieldName, rowIndex)
     listData.push(newItem);
     //return listData;
 }
+function CreateGridOption(columnDefs) {
+    return {
+        // Column Definitions
+        columnDefs: columnDefs,
+        //sideBar: true,
+        // Default Column Definition
+        rowSelection: 'multiple',// Chọn nhiều dòng
+        defaultColDef: {// Áp dụng cho tất cả các cột
+            sortable: true,// Cho phép sắp xếp cột
+            filter: true,// Cho phép lọc cột
+            resizable: true,// Cho phép thay đổi kích thước cột
+            floatingFilter: true,// Hiện ô lọc bên dưới header
+            suppressMenu: false,// Hiện menu lọc
+            cellStyle: CellStyle_Col_Model,
+
+            suppressFillHandle: true
+        },
+        rowDragManaged: true,// Kéo thả dòng được quản lý
+        rowDragEntireRow: true,// Kéo thả cả dòng
+        animateRows: true,// Hiệu ứng khi sắp xếp lại dòng
+        enableCellTextSelection: true,// Bật tính năng chọn text trong cell
+        enableClipboard: true,// Bật tính năng copy paste
+
+        suppressMultiRangeSelection: true,// chỉ chọn 1 range
+        suppressCellFocus: true,// tránh bôi đen cell khi click
+        enableRangeHandle: true,// Bật Range Handle
+        enableRangeSelection: true,// Bật Range Selection
+        enableFillHandle: true, // Bật Fill Handle
+        fillHandleDirection: 'y', // CHỈ kéo dọc
+        cellSelection: {// Fill Handle configuration
+            handle: {// Fill Handle configuration
+                mode: 'fill',// Enable Fill Handle
+                direction: 'y', // Fill Handle can only be dragged horizontally
+            }
+        },
+
+        //pagination: true,
+        paginationPageSize: 50,// Kích thước trang mặc định
+        paginationPageSizeSelector: [20, 50, 100, 200],// Các lựa chọn kích thước trang
+        rowHeight: 45,// Độ cao dòng
+        headerHeight: 45,// Độ cao header
+        suppressRowClickSelection: true,// Click row không chọn
+
+        // Events
+        onGridReady: onGridReady,// Load Data
+        onCellValueChanged: onCellValueChanged,// Edit Cell
+        //onRowDragEnd: onRowDragEnd,// Drag and Drop
+
+        singleClickEdit: false,// Double click to edit
+        onFillEnd: onFillEnd // Fill Handle
+    };
+
+}

@@ -12,9 +12,7 @@ var pageSize = 20; // Số dòng mỗi trang
 // INITIALIZE PAGE
 // ========================================
 function initPage() {
-    
-    // Setup AG Grid
-    setupGrid();
+    gridApiOrder = agGrid.createGrid(document.querySelector("#orderGrid"), gridOptions);
     
     // Setup event handlers
     setupEventHandlers();
@@ -32,134 +30,153 @@ function initPage() {
 // ========================================
 // SETUP AG GRID
 // ========================================
-function setupGrid() {
-    const gridOptions = {
-        // Column Definitions
-        columnDefs: [
-            {
-                headerName: '',
-                field: 'selected',
-                checkboxSelection: true,
-                headerCheckboxSelection: true,
-                minWidth: 50,
-                width: 50,
-                pinned: 'left',
-                lockPosition: true,
-                suppressMenu: true,
-                filter: false
-            },
-            {
-                headerName: 'Số thứ tự',
-                field: 'rowNo',
-                minWidth: 50,
-                width: 110,
-                
-            },
-            {
-                headerName: 'Mã đơn hàng',
-                field: 'orderCode',
-                editable: true,
-                minWidth: 210,
-                cellRenderer: params => {
-                    return `<strong style="color: #2c3e50;">${params.value}</strong>`;
-                }
-            },
-            {
-                headerName: 'Tên đơn hàng',
-                field: 'orderName',
-                editable: true,
-                width: 180
-            },
-            {
-                headerName: 'Ngày tạo',
-                field: 'orderDate',
-                width: 180,
-                editable: true,
-                // 1. Định dạng hiển thị trên bảng lưới (DD/MM/YYYY)
-                valueFormatter: params => {
-                    if (!params.data.orderDate) return '';
-                    return params.data.orderDate;
-                },
-                cellEditor: "agDateStringCellEditor",
-                cellRenderer: params => {
-                    if (!params.data.orderDate) return '';
-                    return new Date(params.data.orderDate).MMddyyyyFormat();
-                }
-            },
-            {
-                headerName: 'Ghi chú',
-                field: 'note',
-                width: 120,
-                editable: true,
-                cellEditor: 'agLargeTextCellEditor', // Editor vùng văn bản lớn
-                cellEditorPopup: true,               // Hiển thị dạng popup để dễ nhìn hơn
-                cellEditorParams: {
-                    maxLength: 200,                    // Giới hạn ký tự
-                    rows: 10,                          // Số dòng hiển thị trong textarea
-                    cols: 50
-                },
-                cellStyle: { 'white-space': 'normal', 'line-height': '1.5em' },
-                autoHeight: true // Tự động dãn dòng theo độ dài văn bản
-            },
-            {
-                headerName: 'Tổng Net (kg)',
-                field: 'totalNetKg',
-                editable: true,
-                width: 130,
-                type: 'numericColumn',
-                valueFormatter: params => {
-                    if (params.value == null) return '0.00';
-                    return Number(params.value).toLocaleString('vi-VN', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
-            },
-            {
-                headerName: 'Trạng thái',
-                field: 'status',
-                width: 130,
-                cellRenderer: params => {
-                    return renderStatusBadge(params.value);
-                }
-            },
-            {
-                headerName: 'Thao tác',
-                field: 'action',
-                width: 120,
-                pinned: 'right',
-                cellRenderer: CellRenderAction,
-                filter: false,
-                sortable: false
-            }
-        ],
-
-        // Grid Options
-        defaultColDef: {
-            sortable: true,
-            filter: true,
-            resizable: true,
-            floatingFilter: true,
-            cellStyle: CellStyle_Col_Model
+var columnDefs =
+    [
+        //{
+        //    headerName: '',
+        //    field: 'selected',
+        //    checkboxSelection: true,
+        //    headerCheckboxSelection: true,
+        //    minWidth: 50,
+        //    width: 50,
+        //    //pinned: 'left',
+        //    lockPosition: true,
+        //    suppressMenu: true,
+        //    suppressMovable: true,
+        //    filter: false,
+        //},
+        {
+            headerName: '',
+            field: 'actions',
+            width: 70,
+            pinned: 'left', // Giữ pinned để cố định icon bên trái
+            lockPosition: true,
+            suppressMenu: true,
+            rowDrag: true,         // Hiện icon ::
+            checkboxSelection: true, // Hiện ô Checkbox
+            suppressMovable: true,
+            filter: false,
+            resizable: false,      // Nên tắt cái này để người dùng không kéo dãn cột action
         },
+        {
+            headerName: 'Số thứ tự',
+            field: 'rowNo',
+            minWidth: 50,
+            width: 110,
 
-        rowSelection: 'multiple',
-        animateRows: true,
-        rowHeight: 70,// Độ cao dòng
+        },
+        {
+            headerName: 'Mã đơn hàng',
+            field: 'orderCode',
+            editable: true,
+            minWidth: 210,
+            cellRenderer: params => {
+                return `<strong style="color: #2c3e50;">${params.value}</strong>`;
+            },
+			suppressFillHandle: false // Cho phép Fill Handle
+        },
+        {
+            headerName: 'Tên đơn hàng',
+            field: 'orderName',
+            editable: true,
+            width: 180,
+            suppressFillHandle: false // Cho phép Fill Handle
+        },
+        {
+            headerName: 'Ngày tạo',
+            field: 'orderDate',
+            width: 180,
+            editable: true,
+            // 1. Định dạng hiển thị trên bảng lưới (DD/MM/YYYY)
+            valueFormatter: params => {
+                if (!params.data.orderDate) return '';
+                return params.data.orderDate;
+            },
+            cellEditor: "agDateStringCellEditor",
+            cellRenderer: params => {
+                if (!params.data.orderDate) return '';
+                return new Date(params.data.orderDate).MMddyyyyFormat();
+            },
+            suppressFillHandle: false // Cho phép Fill Handle
+        },
+        {
+            headerName: 'Ghi chú',
+            field: 'note',
+            width: 120,
+            editable: true,
+            cellEditor: 'agLargeTextCellEditor', // Editor vùng văn bản lớn
+            cellEditorPopup: true,               // Hiển thị dạng popup để dễ nhìn hơn
+            cellEditorParams: {
+                maxLength: 200,                    // Giới hạn ký tự
+                rows: 10,                          // Số dòng hiển thị trong textarea
+                cols: 50
+            },
+            cellStyle: { 'white-space': 'normal', 'line-height': '1.5em' },
+            autoHeight: true, // Tự động dãn dòng theo độ dài văn bản
+            suppressFillHandle: false, // Cho phép Fill Handle
+            cellRenderer: params => {
 
-        // Events
-        onCellValueChanged: onCellValueChanged,// Edit Cell
-        //onSelectionChanged: onSelectionChanged,
-        onGridReady: function (params) {
-            gridApiOrder = params.api;
-            gridApiOrder.sizeColumnsToFit();
-        }
-    };
-    gridApiOrder = agGrid.createGrid(document.querySelector("#orderGrid"), gridOptions);
-}
+                return `<div class="textNote">${params.value}</div>`;
+            },
+        },
+        {
+            headerName: 'Tổng Net (kg)',
+            field: 'totalNetKg',
+            editable: true,
+            width: 130,
+            type: 'numericColumn',
+            valueFormatter: params => {
+                if (params.value == null) return '0.00';
+                return Number(params.value).toLocaleString('vi-VN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            },
+            suppressFillHandle: false // Cho phép Fill Handle
+        },
+        {
+            headerName: 'Trạng thái',
+            field: 'status',
+            width: 130,
+            cellRenderer: params => {
+                return renderStatusBadge(params.value);
+            },
+            suppressFillHandle: false // Cho phép Fill Handle
+        },
+        //{
+        //    headerName: 'Thao tác',
+        //    field: 'action',
+        //    width: 120,
+        //    pinned: 'left',
+        //    //cellRenderer: CellRenderAction,
+        //    cellRenderer: params => {
+        //        // Trả về HTML cho icon của bạn
+        //        return `
+        //          <div class="row-hover-icons">
+        //            <span class="icon-plus">+</span>
+        //            <span class="icon-drag">⋮⋮</span>
+        //          </div>
+        //        `;
+        //    },
+        //    filter: false,
+        //    sortable: false,
+        //    suppressMovable: true
+        //}
+    ];
+var gridOptions = CreateGridOption(columnDefs);
+
+// Tạo dữ liệu mẫu
 const data = Array.from(Array(20).keys()).map((val, index) => ({
     date: new Date(2023, 5, index + 1),
 }));
+
+function onGridReady(params) {
+    gridApiOrder = params.api;
+    gridColumnApi = params.columnApi;
+
+    // Auto size columns
+    gridApiOrder.sizeColumnsToFit();
+}
 
 // ========================================
 // RENDER STATUS BADGE
@@ -646,3 +663,52 @@ function cancelRow(rowIndex) {
     rowData = rowData.filter(item => item.orderCode !== objectData.orderCode);
     gridApiOrder.setGridOption('rowData', rowData);
 }
+function onFillEnd(params) {
+    return;
+    // Kiểm tra xem có hàng đợi nào không
+    //if (fillHandleBatch.length > 0) {
+    //    // --- XỬ LÝ 1 LẦN TẠI ĐÂY ---
+    //    // Ví dụ: Gọi API saveBatch(fillHandleBatch)
+    //    saveBatchRecords(fillHandleBatch);
+
+    //    // Cực kỳ quan trọng: Reset mảng sau khi xử lý xong
+    //    fillHandleBatch = [];
+    //}
+}
+// Save All
+//async function saveBatchRecords(fillHandleBatch) {
+//    if (fillHandleBatch.length === 0) {
+//        NotificationToast('warning', 'Không có dữ liệu để lưu');
+//        return;
+//    }
+//    let dataSaveBatch = fillHandleBatch.map(x => x.data);
+//    try {
+//        const response = await $.ajax({
+//            url: '/RubberIntake/saveBatchRecords',
+//            type: 'POST',
+//            contentType: 'application/json',
+//            data: JSON.stringify(dataSaveBatch.map(item => ({
+//                intakeId: item.intakeId,
+//                agentCode: item.agentCode,
+//                farmCode: item.farmCode,
+//                farmerName: item.farmerName,
+//                rubberKg: item.rubberKg,
+//                tscPercent: item.tscPercent,
+//                drcPercent: item.drcPercent,
+//                finishedProductKg: item.finishedProductKg,
+//                centrifugeProductKg: item.centrifugeProductKg,
+//                status: item.status
+//            })))
+//        });
+
+//        if (response.success) {
+//            NotificationToast('success', response.message);
+//            loadData();
+//        } else {
+//            NotificationToast('error', response.message || 'Lưu thất bại');
+//        }
+//    } catch (error) {
+//        console.error('Error saving all:', error);
+//        NotificationToast('error', 'Lỗi kết nối server');
+//    }
+//}

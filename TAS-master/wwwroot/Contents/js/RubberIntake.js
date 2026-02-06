@@ -1,7 +1,8 @@
 // ========================================
 // GLOBAL VARIABLES
 // ========================================
-
+var gridApiIntake, gridColumnApi;
+var IsOptionAll = false;
 var ListDataFull;
 let rowData = [];
 let fillHandleBatch = [];
@@ -18,193 +19,143 @@ var arrValue = {
     loadFirst: false
 };
 
+var columnDefs =
+[
+    {
+        headerName:'',
+        field: 'selected',
+        headerCheckboxSelection: true,
+        checkboxSelection: true,
+        width: 50,
+        minWidth: 50,
+        maxWidth: 50,
+        pinned: 'left',
+        lockPinned: true,
+        suppressMovable: true,
+        filter: false,
+    },
+    {
+        headerName: 'STT',
+        field: 'rowNo',
+        minWidth: 50,
+        width: 50,
+        pinned: 'left',
+        cellStyle: CellStyle_Col_Model,
+        rowDrag: true,
+        filter: false,
+    },
+    {
+        headerName: 'Tên đại lý',
+        field: 'agentCode',
+        cellEditor: SelectEditorWithTextDisplay,
+        editable: true,
+        filter: 'agTextColumnFilter',
+        cellStyle: CellStyle_Col_Model,
+        valueFormatter: (params) => {
+            if (!params.value) return '';
+            return params.data.agentName;
+        },
+        suppressFillHandle: false // Chỉ bật fill cho riêng cột này
+    },
+    {
+        headerName: 'Tên Nhà Vườn',
+        field: 'farmCode',
+        cellEditor: SelectEditorWithTextDisplay,
+        editable: true,
+        filter: 'agTextColumnFilter',
+        valueFormatter: (params) => {
+            if (!params.value) return '';
+            return params.data.farmerName;
+        },
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'KL Mủ (kg)',
+        field: 'rubberKg',
+        width: 120,
+        editable: true,
+        type: 'numericColumn',
+        valueFormatter: params => formatNumber(params.value),
+        cellStyle: CellStyle_Col_Model,
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'TSC',
+        field: 'tscPercent',
+        width: 100,
+        editable: true,
+        type: 'numericColumn',
+        valueFormatter: params => formatNumber(params.value, 2),
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'DRC',
+        field: 'drcPercent',
+        width: 100,
+        editable: true,
+        type: 'numericColumn',
+        valueFormatter: params => formatNumber(params.value, 2),
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'Thành phẩm',
+        field: 'finishedProductKg',
+        width: 150,
+        editable: true,
+        type: 'numericColumn',
+        valueFormatter: params => formatNumber(params.value),
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'Thành Phẩm Ly Tâm',
+        field: 'centrifugeProductKg',
+        width: 170,
+        editable: true,
+        type: 'numericColumn',
+        valueFormatter: params => formatNumber(params.value),
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'Trạng thái',
+        field: 'statusText',
+        width: 120,
+        editable: false,
+        cellRenderer: CellRenderStatus,
+        suppressFillHandle: false
+    },
+    {
+        headerName: 'Người cập nhật',
+        field: 'timeDate_Person',
+        width: 130,
+        editable: false,
+		hide: true
+    },
+    {
+        headerName: 'Thời gian',
+        field: 'timeDate',
+        width: 150,
+        editable: false,
+    },
+    {
+        headerName: 'Thao tác',
+        field: 'action',
+        width: 150,
+        pinned: 'right',
+        cellRenderer: CellRenderAction,            
+        suppressMenu: true,
+        suppressMovable: true,
+        filter: false
+    }
+];
+var gridOptions = CreateGridOption(columnDefs);
 
 function initPage() {
-    document.addEventListener('DOMContentLoaded', function () {
-        gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
-        loadData();// Load initial data
-        loadAllCombos();// Setup filter change events
-        RegisterAllEvent();
-        ApplyCboSelect2();
-    });
+    gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
+    loadData();// Load initial data
+    loadAllCombos();// Setup filter change events
+    RegisterAllEvent();
+    ApplyCboSelect2();
 }
-// ========================================
-// AG GRID CONFIGURATION
-// ========================================
-
-const gridOptions = {
-    // Column Definitions
-    columnDefs: [
-        {
-            headerName:'',
-            field: 'selected',
-            headerCheckboxSelection: true,
-            checkboxSelection: true,
-            width: 50,
-            minWidth: 50,
-            maxWidth: 50,
-            pinned: 'left',
-            lockPinned: true,
-            suppressMovable: true,
-            filter: false,
-        },
-        {
-            headerName: 'STT',
-            field: 'rowNo',
-            minWidth: 50,
-            width: 50,
-            pinned: 'left',
-            //suppressMenu: true,
-            cellStyle: CellStyle_Col_Model,
-            rowDrag: true,
-            filter: false,
-            //checkboxSelection: true,          // checkbox từng dòng
-            //headerCheckboxSelection: true,    // checkbox chọn tất cả
-            //headerCheckboxSelectionFilteredOnly: true, // chỉ chọn những dòng đang filter
-        },
-        {
-            headerName: 'Tên đại lý',
-            field: 'agentCode',
-            cellEditor: SelectEditorWithTextDisplay,
-            editable: true,
-            filter: 'agTextColumnFilter',
-            cellStyle: CellStyle_Col_Model,
-            valueFormatter: (params) => {
-                if (!params.value) return '';
-                return params.data.agentName;
-            }
-        },
-        {
-            headerName: 'Tên Nhà Vườn',
-            field: 'farmCode',
-            cellEditor: SelectEditorWithTextDisplay,
-            editable: true,
-            filter: 'agTextColumnFilter',
-            
-            valueFormatter: (params) => {
-                if (!params.value) return '';
-                return params.data.farmerName;
-            }
-        },
-        {
-            headerName: 'KL Mủ (kg)',
-            field: 'rubberKg',
-            width: 120,
-            editable: true,
-            type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value),
-            cellStyle: CellStyle_Col_Model
-        },
-        {
-            headerName: 'TSC',
-            field: 'tscPercent',
-            width: 100,
-            editable: true,
-            type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value, 2)
-        },
-        {
-            headerName: 'DRC',
-            field: 'drcPercent',
-            width: 100,
-            editable: true,
-            type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value, 2)
-        },
-        {
-            headerName: 'Thành phẩm',
-            field: 'finishedProductKg',
-            width: 150,
-            editable: true,
-            type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value)
-        },
-        {
-            headerName: 'Thành Phẩm Ly Tâm',
-            field: 'centrifugeProductKg',
-            width: 170,
-            editable: true,
-            type: 'numericColumn',
-            valueFormatter: params => formatNumber(params.value)
-        },
-        {
-            headerName: 'Trạng thái',
-            field: 'statusText',
-            width: 120,
-            editable: false,
-            cellRenderer: CellRenderStatus
-        },
-        {
-            headerName: 'Người cập nhật',
-            field: 'timeDate_Person',
-            width: 130,
-            editable: false,
-			hide: true
-        },
-        {
-            headerName: 'Thời gian',
-            field: 'timeDate',
-            width: 150,
-            editable: false,
-        },
-        {
-            headerName: 'Thao tác',
-            field: 'action',
-            width: 150,
-            pinned: 'right',
-            cellRenderer: CellRenderAction,            
-            suppressMenu: true,
-            suppressMovable: true,
-            filter: false
-        }
-    ],
-    //sideBar: true,
-    // Default Column Definition
-	rowSelection: 'multiple',// Chọn nhiều dòng
-	defaultColDef: {// Áp dụng cho tất cả các cột
-		sortable: true,// Cho phép sắp xếp cột
-		filter: true,// Cho phép lọc cột
-		resizable: true,// Cho phép thay đổi kích thước cột
-		floatingFilter: true,// Hiện ô lọc bên dưới header
-        suppressMenu: false,// Hiện menu lọc
-        cellStyle: CellStyle_Col_Model
-    },
-	rowDragManaged: true,// Kéo thả dòng được quản lý
-	rowDragEntireRow: true,// Kéo thả cả dòng
-	animateRows: true,// Hiệu ứng khi sắp xếp lại dòng
-	enableCellTextSelection: true,// Bật tính năng chọn text trong cell
-	enableClipboard: true,// Bật tính năng copy paste
-
-	suppressMultiRangeSelection: true,// chỉ chọn 1 range
-	suppressCellFocus: true,// tránh bôi đen cell khi click
-	enableRangeHandle: true,// Bật Range Handle
-	enableRangeSelection: true,// Bật Range Selection
-	enableFillHandle: true, // Bật Fill Handle
-    fillHandleDirection: 'y', // CHỈ kéo dọc
-	cellSelection: {// Fill Handle configuration
-		handle: {// Fill Handle configuration
-			mode: 'fill',// Enable Fill Handle
-            direction: 'y', // Fill Handle can only be dragged horizontally
-        }
-    },
-
-    //pagination: true,
-	paginationPageSize: 50,// Kích thước trang mặc định
-	paginationPageSizeSelector: [20, 50, 100, 200],// Các lựa chọn kích thước trang
-	rowHeight: 45,// Độ cao dòng
-	headerHeight: 45,// Độ cao header
-	suppressRowClickSelection: true,// Click row không chọn
-    
-    // Events
-	onGridReady: onGridReady,// Load Data
-	onCellValueChanged: onCellValueChanged,// Edit Cell
-	onRowDragEnd: onRowDragEnd,// Drag and Drop
-
-	singleClickEdit: false,// Double click to edit
-    onFillEnd: onFillEnd // Fill Handle
-    
-};
-
 
 function RegisterAllEvent() {
     $('.ag-header-select-all:not(.ag-hidden)').on('click', function (e) {
@@ -781,8 +732,6 @@ function onCellValueChanged(event) {
 function onFillEnd(params) {
     // Kiểm tra xem có hàng đợi nào không
     if (fillHandleBatch.length > 0) {
-        console.log(`Kéo xong! Đang xử lý 1 lần cho ${fillHandleBatch.length} dòng...`);
-
         // --- XỬ LÝ 1 LẦN TẠI ĐÂY ---
         // Ví dụ: Gọi API saveBatch(fillHandleBatch)
         saveBatchRecords(fillHandleBatch);
@@ -833,9 +782,9 @@ const num = v => {
     const x = parseFloat(String(v).replace(',', '.'));
     return Number.isFinite(x) ? x : 0;
 };
-function onRowDragEnd(event) {
-    //updateRowNumbers();
-}
+//function onRowDragEnd(event) {
+//    //updateRowNumbers();
+//}
 
 async function loadAllCombos() {
     try {

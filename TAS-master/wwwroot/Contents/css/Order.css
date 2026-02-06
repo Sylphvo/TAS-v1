@@ -206,14 +206,6 @@
     overflow: hidden;
 }
 
-.ag-theme-alpine {
-    --ag-header-background-color: #f8f9fa;
-    --ag-header-foreground-color: #2c3e50;
-    --ag-border-color: #e0e0e0;
-    --ag-row-hover-color: #f0f7ff;
-    --ag-selected-row-background-color: #e3f2fd;
-}
-
 .ag-header-cell-label {
     font-weight: 600;
     font-size: 13px;
