@@ -60,7 +60,7 @@ namespace TAS.ViewModels
 				var dataSql = $@"
 				SELECT 
 					-- Tính toán rowNo dựa trên số trang và thứ tự
-					rowNo = AgentId,
+					rowNo = ROW_NUMBER() OVER (ORDER BY AgentId DESC),
 					AgentId,
 					AgentCode,
 					AgentName,

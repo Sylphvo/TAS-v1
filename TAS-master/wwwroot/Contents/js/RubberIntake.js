@@ -153,19 +153,12 @@ function initPage() {
     gridApiIntake = agGrid.createGrid(document.querySelector("#RubberIntake"), gridOptions);
     loadData();// Load initial data
     loadAllCombos();// Setup filter change events
-    RegisterAllEvent();
+    RegisterAllEvent(gridApiIntake);
+    RegisterEventPageIntake();
     ApplyCboSelect2();
 }
 
-function RegisterAllEvent() {
-    $('.ag-header-select-all:not(.ag-hidden)').on('click', function (e) {
-        let IsChecked = $(this).find('.ag-input-field-input');
-        if (IsChecked.prop('checked')) {
-            gridApiIntake.deselectAll();
-        } else {
-            gridApiIntake.selectAll(); // chọn tất cả
-        }
-    });
+function RegisterEventPageIntake() {
     //đăng ký select trang
     $('#selectorPaging').change(function (e) {
         let selectPage = $(this).val();

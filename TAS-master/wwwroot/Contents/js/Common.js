@@ -197,13 +197,12 @@ function CreateGridOption(columnDefs) {
         // Default Column Definition
         rowSelection: 'multiple',// Chọn nhiều dòng
         defaultColDef: {// Áp dụng cho tất cả các cột
-            sortable: true,// Cho phép sắp xếp cột
+            sortable: false,// Cho phép sắp xếp cột
             filter: true,// Cho phép lọc cột
             resizable: true,// Cho phép thay đổi kích thước cột
             floatingFilter: true,// Hiện ô lọc bên dưới header
             suppressMenu: false,// Hiện menu lọc
             cellStyle: CellStyle_Col_Model,
-
             suppressFillHandle: true
         },
         rowDragManaged: true,// Kéo thả dòng được quản lý
@@ -228,7 +227,7 @@ function CreateGridOption(columnDefs) {
         //pagination: true,
         paginationPageSize: 50,// Kích thước trang mặc định
         paginationPageSizeSelector: [20, 50, 100, 200],// Các lựa chọn kích thước trang
-        rowHeight: 45,// Độ cao dòng
+        rowHeight: 43,// Độ cao dòng
         headerHeight: 45,// Độ cao header
         suppressRowClickSelection: true,// Click row không chọn
 
@@ -238,7 +237,22 @@ function CreateGridOption(columnDefs) {
         //onRowDragEnd: onRowDragEnd,// Drag and Drop
 
         singleClickEdit: false,// Double click to edit
-        onFillEnd: onFillEnd // Fill Handle
+        onFillEnd: onFillEnd// Fill Handle
     };
 
+}
+function RegisterAllEvent(gridApiDynamic) {
+    $('.ag-header-select-all:not(.ag-hidden)').on('click', function (e) {
+        let IsChecked = $(this).find('.ag-input-field-input');
+        if (IsChecked.prop('checked')) {
+            gridApiDynamic.deselectAll();
+        } else {
+            gridApiDynamic.selectAll(); // chọn tất cả
+        }
+    });
+}
+function cancelRow(gridApiDynamic, rowIndex, strCode) {
+    const objectData = gridApiDynamic.getDisplayedRowAtIndex(rowIndex).data;
+    rowData = rowData.filter(item => item[strCode] == objectData[strCode]);
+    gridApiDynamic.setGridOption('rowData', rowData);
 }

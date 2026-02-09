@@ -5,8 +5,6 @@
 let gridApiOrder;
 let gridColumnApi;
 let rowData = [];
-var currentPage = 1;
-var pageSize = 20; // Số dòng mỗi trang
 
 // ========================================
 // INITIALIZE PAGE
@@ -19,12 +17,11 @@ function initPage() {
     
     // Load initial data
     loadOrders();
-    
-    // Load agents for dropdown
-    loadAgents();
-    
+
     // Set default date to today
     $('#orderDate').val(new Date().toISOString().split('T')[0]);
+
+    RegisterAllEvent(gridApiOrder);
 }
 
 // ========================================
@@ -32,54 +29,42 @@ function initPage() {
 // ========================================
 var columnDefs =
     [
-        //{
-        //    headerName: '',
-        //    field: 'selected',
-        //    checkboxSelection: true,
-        //    headerCheckboxSelection: true,
-        //    minWidth: 50,
-        //    width: 50,
-        //    //pinned: 'left',
-        //    lockPosition: true,
-        //    suppressMenu: true,
-        //    suppressMovable: true,
-        //    filter: false,
-        //},
         {
             headerName: '',
-            field: 'actions',
-            width: 70,
+            field: 'selected',
+            width: 80,
             pinned: 'left', // Giữ pinned để cố định icon bên trái
             lockPosition: true,
             suppressMenu: true,
             rowDrag: true,         // Hiện icon ::
             checkboxSelection: true, // Hiện ô Checkbox
+            headerCheckboxSelection: true,
+            columnDelete: true,
             suppressMovable: true,
             filter: false,
-            resizable: false,      // Nên tắt cái này để người dùng không kéo dãn cột action
+            resizable: false, // Nên tắt cái này để người dùng không kéo dãn cột action
+            cellRenderer: CellRenderAction // Nên tắt cái này để người dùng không kéo dãn cột action
         },
         {
             headerName: 'Số thứ tự',
             field: 'rowNo',
             minWidth: 50,
             width: 110,
-
         },
         {
             headerName: 'Mã đơn hàng',
             field: 'orderCode',
             editable: true,
             minWidth: 210,
-            cellRenderer: params => {
-                return `<strong style="color: #2c3e50;">${params.value}</strong>`;
-            },
+            filter: 'agTextColumnFilter',
 			suppressFillHandle: false // Cho phép Fill Handle
         },
         {
             headerName: 'Tên đơn hàng',
             field: 'orderName',
-            editable: true,
+            editable: true,            
             width: 180,
+            filter: 'agTextColumnFilter',
             suppressFillHandle: false // Cho phép Fill Handle
         },
         {
@@ -143,25 +128,6 @@ var columnDefs =
             },
             suppressFillHandle: false // Cho phép Fill Handle
         },
-        //{
-        //    headerName: 'Thao tác',
-        //    field: 'action',
-        //    width: 120,
-        //    pinned: 'left',
-        //    //cellRenderer: CellRenderAction,
-        //    cellRenderer: params => {
-        //        // Trả về HTML cho icon của bạn
-        //        return `
-        //          <div class="row-hover-icons">
-        //            <span class="icon-plus">+</span>
-        //            <span class="icon-drag">⋮⋮</span>
-        //          </div>
-        //        `;
-        //    },
-        //    filter: false,
-        //    sortable: false,
-        //    suppressMovable: true
-        //}
     ];
 var gridOptions = CreateGridOption(columnDefs);
 
@@ -293,28 +259,6 @@ function loadOrders(pageIndex, pageSize) {
 function updateStatusBar(totalCount) {
     $('#lblTotalRecords').text("Tổng cộng: " + totalCount + " đơn hàng");
 }
-// ========================================
-// LOAD AGENTS
-// ========================================
-function loadAgents() {
-    $.ajax({
-        url: '/Common/GetAgents',
-        type: 'GET',
-        success: function(response) {
-            if (response.success) {
-                const $select = $('#agentId');
-                $select.empty().append('<option value="">-- Chọn đại lý --</option>');
-                
-                response.data.forEach(agent => {
-                    $select.append(`<option value="${agent.agentId}">${agent.agentName} (${agent.agentCode})</option>`);
-                });
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Load agents error:', error);
-        }
-    });
-}
 
 // ========================================
 // ADD NEW ROW
@@ -334,7 +278,7 @@ function AddNewRow() {
         updateBy: null,
         updateDate: null
     };
-    AddNewRowAggrid(gridApiOrder, rowData, newItem, 'action', 0);
+    AddNewRowAggrid(gridApiOrder, rowData, newItem, 'selected', 0);
 }
 
 // ========================================
@@ -634,29 +578,9 @@ function CellRenderAction(params) {
     // Define action buttons
     let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveOrder(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
     let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
-
-    let markShipped = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="markShipped(${params.value})" title="Lưu"><i class="ti ti-package f-20"></i></a>`;
-    let editOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="editOrder(${params.value})" title="Bỏ"><i class="ti ti-edit f-20"></i></a>`;
-    let updateStatus = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="updateStatus(${params.value},${params.data.status})" title="${arrMsg.key_delete}"><i class="ti ti-eye f-20"></i></a>`;
     let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
-
-	// Check if the order has been shipped
-    const hasShipped = params.data.shippedAt != null;
-
-    const shipBtn = !hasShipped ? markShipped : '';
     // CHỈ hiện nút lưu khi chưa lưu
-    if (params.data.orderId === 0) {
-        return `
-        ${strSave}
-        ${strCancel}
-    `;
-    }
-    else {
-        return `
-        ${deleteOrder}
-    `;
-    }
-   
+    return params.data.orderId === 0 ? `${strSave}${strCancel}` : `${deleteOrder}`;
 }
 function cancelRow(rowIndex) {
     const objectData = gridApiOrder.getDisplayedRowAtIndex(rowIndex).data;

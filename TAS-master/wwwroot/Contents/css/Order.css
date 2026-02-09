@@ -202,13 +202,8 @@
     min-height: 500px;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgb(255 255 255 / 5%);
     overflow: hidden;
-}
-
-.ag-header-cell-label {
-    font-weight: 600;
-    font-size: 13px;
 }
 
 .ag-cell {

@@ -9,21 +9,21 @@ using static Azure.Core.HttpHeader;
 namespace TAS.Controllers
 {
 	[Authorize]
-	public class PondController : Controller
+	public class LotController : Controller
 	{
-		private readonly PondModels _pondModels;
-		private readonly ILogger<PondController> _logger;
+		private readonly LotModels _lotModels;
+		private readonly ILogger<LotController> _logger;
 		private readonly CommonModels _common;
 
-		public PondController(PondModels pondModels, ILogger<PondController> logger, CommonModels common)
+		public LotController(LotModels lotModels, ILogger<LotController> logger, CommonModels common)
 		{
-			_pondModels = pondModels;
+			_lotModels = lotModels;
 			_logger = logger;
 			_common = common;
 		}
 
 		// ========================================
-		// GET: /Pond/Index
+		// GET: /Lot/Index
 		// ========================================
 		[Breadcrumb(nameof(Language.key_Lake), "#", nameof(Language.key_management_info), true)]
 		public IActionResult Index()
@@ -33,15 +33,15 @@ namespace TAS.Controllers
 		}
 
 		// ========================================
-		// GET: /Pond/GetAllPonds
+		// GET: /Lot/GetAllLots
 		// ========================================
 		[HttpGet]
-		public async Task<IActionResult> GetAllPonds(RubberPondRequest filter)
+		public async Task<IActionResult> GetAllLots(RubberLotRequest filter)
 		{
 			try
 			{
-				var ponds = await _pondModels.GetPondsWithFilterAsync(filter);
-				return Json(new { success = true, data = ponds });
+				var result = await _lotModels.GetLotsWithFilterAsync(filter);
+				return Json(new { success = true, data = result });
 			}
 			catch (Exception ex)
 			{
@@ -51,7 +51,7 @@ namespace TAS.Controllers
 		}
 
 		//// ========================================
-		//// GET: /Pond/GetPondById/{id}
+		//// GET: /Lot/GetPondById/{id}
 		//// ========================================
 		//[HttpGet]
 		//public async Task<IActionResult> GetPondById(long id)

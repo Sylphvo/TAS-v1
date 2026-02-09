@@ -7,12 +7,12 @@ using TAS.TagHelpers;
 
 namespace TAS.ViewModels
 {
-	public class PondModels
+	public class LotModels
 	{
 		private readonly ConnectDbHelper _dbHelper;
-		private readonly ILogger<PondModels> _logger;
+		private readonly ILogger<LotModels> _logger;
 
-		public PondModels(ConnectDbHelper dbHelper, ILogger<PondModels> logger)
+		public LotModels(ConnectDbHelper dbHelper, ILogger<LotModels> logger)
 		{
 			_dbHelper = dbHelper;
 			_logger = logger;
@@ -21,47 +21,50 @@ namespace TAS.ViewModels
 		// ========================================
 		// GET ALL PONDS WITH FILTER AND PAGINATION
 		// ========================================
-		public async Task<PagedResult<RubberPondResponse>> GetPondsWithFilterAsync(RubberPondRequest filter)
+		public async Task<PagedResult<RubberLotResponse>> GetLotsWithFilterAsync(RubberLotRequest filter)
 		{
 			try
 			{
 				var parameters = new DynamicParameters();
 				var whereConditions = new List<string>();
+				whereConditions.Add(" 1 = 1 ");
 
-				// Mặc định luôn đúng
-				whereConditions.Add("1=1");
-
-				// --- 1. TÌM KIẾM THEO TỪ KHÓA (Mã hồ, tên hồ) ---
+				// --- 1. TÌM KIẾM (Theo mã hồ hoặc tên hồ) ---
 				if (!string.IsNullOrEmpty(filter.Keyword))
 				{
 					whereConditions.Add(@"(
-						p.PondCode LIKE @Keyword OR 
-						p.PondName LIKE @Keyword
+						l.LotCode LIKE @Keyword OR 
+						l.LotName LIKE @Keyword OR 
+						l.CreateBy LIKE @Keyword
 					)");
 					parameters.Add("@Keyword", $"%{filter.Keyword}%");
 				}
 
-				// --- 2. LỌC THEO ĐẠI LÝ (AgentCode) ---
-				if (!string.IsNullOrEmpty(filter.AgentCode))
-				{
-					whereConditions.Add("p.AgentCode = @AgentCode");
-					parameters.Add("@AgentCode", filter.AgentCode);
-				}
+				//// --- 2. LỌC TRẠNG THÁI ---
+				//if (filter.Status.HasValue)
+				//{
+				//	whereConditions.Add("l.Status = @Status");
+				//	parameters.Add("@Status", filter.Status.Value);
+				//}
 
-				// --- 3. LỌC TRẠNG THÁI ---
-				if (filter.Status.HasValue)
-				{
-					whereConditions.Add("p.Status = @Status");
-					parameters.Add("@Status", filter.Status.Value);
-				}
+				//// --- 3. LỌC NGÀY TẠO ---
+				//if (filter.FromDate.HasValue)
+				//{
+				//	whereConditions.Add("l.CreateByDate >= @FromDate");
+				//	parameters.Add("@FromDate", filter.FromDate.Value);
+				//}
+				//if (filter.ToDate.HasValue)
+				//{
+				//	whereConditions.Add("l.CreateByDate < @ToDate");
+				//	parameters.Add("@ToDate", filter.ToDate.Value.AddDays(1)); // Lấy đến hết ngày cuối
+				//}
 
 				string whereSql = string.Join(" AND ", whereConditions);
 
 				// --- BƯỚC 2: ĐẾM TỔNG SỐ DÒNG ---
 				var countSql = $@"
 				SELECT COUNT(1) 
-				FROM RubberPond p
-				INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+				FROM RubberLots l 
 				WHERE {whereSql}";
 
 				var totalRecords = await _dbHelper.ExecuteScalarAsync<int>(countSql, parameters);
@@ -69,38 +72,31 @@ namespace TAS.ViewModels
 				// --- BƯỚC 3: LẤY DỮ LIỆU PHÂN TRANG ---
 				var dataSql = $@"
 				SELECT 
-					rowNo = p.PondId,
-					p.PondId,
-					p.PondCode,
-					p.AgentCode,
-					a.AgentName,
-					p.PondName,
-					p.CapacityKg,
-					p.DailyCapacityKg,
-					p.CurrentNetKg,
-					p.Status,
-					p.RegisterDate,
-					p.RegisterPerson,
-					p.UpdateDate,
-					p.UpdatePerson,
-					-- Tính toán phần trăm sử dụng
-					CASE 
-						WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
-						ELSE 0
-					END AS UtilizationPercent
-				FROM RubberPond p
-				INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+					-- Tạo số thứ tự (Row Number)
+					RowNo = ROW_NUMBER() OVER (ORDER BY l.LotId DESC),
+					l.LotId,
+					l.LotCode,
+					l.LotName,
+					l.CapacityKg,
+					l.DailyCapacityKg,
+					l.CurrentNetKg,
+					l.Status,
+					l.CreateBy,
+					CreateByDate = FORMAT(l.CreateByDate, 'yyyy-MM-dd HH:mm'),
+					l.UpdateDate,
+					l.UpdateBy
+				FROM RubberLots l
 				WHERE {whereSql}
-				ORDER BY p.PondId
+				ORDER BY l.LotId DESC
 				OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
 
-				// Thêm tham số phân trang (PageIndex bắt đầu từ 1)
+				// Thêm tham số phân trang
 				parameters.Add("@Skip", (filter.PageIndex - 1) * filter.PageSize);
 				parameters.Add("@Take", filter.PageSize);
 
-				var items = await _dbHelper.QueryAsync<RubberPondResponse>(dataSql, parameters);
+				var items = await _dbHelper.QueryAsync<RubberLotResponse>(dataSql, parameters);
 
-				return new PagedResult<RubberPondResponse>
+				return new PagedResult<RubberLotResponse>
 				{
 					Items = items.ToList(),
 					TotalRecords = totalRecords
@@ -108,7 +104,7 @@ namespace TAS.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in GetPondsWithFilterAsync");
+				_logger.LogError(ex, "Error in GetLotsWithFilterAsync");
 				throw;
 			}
 		}
@@ -121,28 +117,28 @@ namespace TAS.ViewModels
 		//	try
 		//	{
 		//		var sql = @"
-  //                  SELECT 
-  //                      p.PondId,
-  //                      p.PondCode,
-  //                      p.AgentCode,
-  //                      a.AgentName,
-  //                      p.PondName,
-  //                      p.CapacityKg,
-  //                      p.DailyCapacityKg,
-  //                      p.CurrentNetKg,
-  //                      p.Status,
-  //                      p.RegisterDate,
-  //                      p.RegisterPerson,
-  //                      p.UpdateDate,
-  //                      p.UpdatePerson,
-  //                      CASE 
-  //                          WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
-  //                          ELSE 0
-  //                      END AS UtilizationPercent
-  //                  FROM RubberPond p
-  //                  INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
-  //                  WHERE p.PondId = @PondId
-  //              ";
+		//                  SELECT 
+		//                      p.PondId,
+		//                      p.PondCode,
+		//                      p.AgentCode,
+		//                      a.AgentName,
+		//                      p.PondName,
+		//                      p.CapacityKg,
+		//                      p.DailyCapacityKg,
+		//                      p.CurrentNetKg,
+		//                      p.Status,
+		//                      p.RegisterDate,
+		//                      p.RegisterPerson,
+		//                      p.UpdateDate,
+		//                      p.UpdatePerson,
+		//                      CASE 
+		//                          WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
+		//                          ELSE 0
+		//                      END AS UtilizationPercent
+		//                  FROM RubberPond p
+		//                  INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+		//                  WHERE p.PondId = @PondId
+		//              ";
 
 		//		return await _dbHelper.QueryFirstOrDefaultAsync<RubberPondDto>(sql, new { PondId = pondId });
 		//	}
@@ -164,20 +160,20 @@ namespace TAS.ViewModels
 		//		var pondCode = await GeneratePondCodeAsync();
 
 		//		var sql = @"
-  //                  INSERT INTO RubberPond 
-  //                  (
-  //                      PondCode, AgentCode, PondName, 
-  //                      CapacityKg, DailyCapacityKg, CurrentNetKg,
-  //                      Status, RegisterDate, RegisterPerson
-  //                  )
-  //                  VALUES 
-  //                  (
-  //                      @PondCode, @AgentCode, @PondName,
-  //                      @CapacityKg, @DailyCapacityKg, @CurrentNetKg,
-  //                      @Status, GETDATE(), @RegisterPerson
-  //                  );
-  //                  SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
-  //              ";
+		//                  INSERT INTO RubberPond 
+		//                  (
+		//                      PondCode, AgentCode, PondName, 
+		//                      CapacityKg, DailyCapacityKg, CurrentNetKg,
+		//                      Status, RegisterDate, RegisterPerson
+		//                  )
+		//                  VALUES 
+		//                  (
+		//                      @PondCode, @AgentCode, @PondName,
+		//                      @CapacityKg, @DailyCapacityKg, @CurrentNetKg,
+		//                      @Status, GETDATE(), @RegisterPerson
+		//                  );
+		//                  SELECT CAST(SCOPE_IDENTITY() AS BIGINT);
+		//              ";
 
 		//		var pondId = await _dbHelper.QueryFirstOrDefaultAsync<long>(sql, new
 		//		{
@@ -217,17 +213,17 @@ namespace TAS.ViewModels
 		//	try
 		//	{
 		//		var sql = @"
-  //                  UPDATE RubberPond
-  //                  SET 
-  //                      AgentCode = @AgentCode,
-  //                      PondName = @PondName,
-  //                      CapacityKg = @CapacityKg,
-  //                      DailyCapacityKg = @DailyCapacityKg,
-  //                      CurrentNetKg = @CurrentNetKg,
-  //                      UpdateDate = GETDATE(),
-  //                      UpdatePerson = @UpdatePerson
-  //                  WHERE PondId = @PondId
-  //              ";
+		//                  UPDATE RubberPond
+		//                  SET 
+		//                      AgentCode = @AgentCode,
+		//                      PondName = @PondName,
+		//                      CapacityKg = @CapacityKg,
+		//                      DailyCapacityKg = @DailyCapacityKg,
+		//                      CurrentNetKg = @CurrentNetKg,
+		//                      UpdateDate = GETDATE(),
+		//                      UpdatePerson = @UpdatePerson
+		//                  WHERE PondId = @PondId
+		//              ";
 
 		//		var affected = await _dbHelper.ExecuteAsync(sql, new
 		//		{
@@ -334,13 +330,13 @@ namespace TAS.ViewModels
 		//	try
 		//	{
 		//		var sql = @"
-  //                  UPDATE RubberPond
-  //                  SET 
-  //                      Status = @Status,
-  //                      UpdateDate = GETDATE(),
-  //                      UpdatePerson = @UpdatePerson
-  //                  WHERE PondId = @PondId
-  //              ";
+		//                  UPDATE RubberPond
+		//                  SET 
+		//                      Status = @Status,
+		//                      UpdateDate = GETDATE(),
+		//                      UpdatePerson = @UpdatePerson
+		//                  WHERE PondId = @PondId
+		//              ";
 
 		//		var affected = await _dbHelper.ExecuteAsync(sql, new
 		//		{
@@ -375,14 +371,14 @@ namespace TAS.ViewModels
 		//	try
 		//	{
 		//		var sql = @"
-  //                  SELECT 
-  //                      AgentId,
-  //                      AgentCode,
-  //                      AgentName
-  //                  FROM RubberAgent
-  //                  WHERE IsActive = 1
-  //                  ORDER BY AgentName
-  //              ";
+		//                  SELECT 
+		//                      AgentId,
+		//                      AgentCode,
+		//                      AgentName
+		//                  FROM RubberAgent
+		//                  WHERE IsActive = 1
+		//                  ORDER BY AgentName
+		//              ";
 
 		//		var agents = await _dbHelper.QueryAsync<RubberAgentDto>(sql);
 		//		return agents.ToList();
@@ -402,11 +398,11 @@ namespace TAS.ViewModels
 		//	try
 		//	{
 		//		var sql = @"
-  //                  SELECT TOP 1 PondCode 
-  //                  FROM RubberPond 
-  //                  WHERE PondCode LIKE 'POND' + FORMAT(GETDATE(), 'yyyyMM') + '%'
-  //                  ORDER BY PondCode DESC
-  //              ";
+		//                  SELECT TOP 1 PondCode 
+		//                  FROM RubberPond 
+		//                  WHERE PondCode LIKE 'POND' + FORMAT(GETDATE(), 'yyyyMM') + '%'
+		//                  ORDER BY PondCode DESC
+		//              ";
 
 		//		var lastCode = await _dbHelper.QueryFirstOrDefaultAsync<string>(sql);
 
@@ -443,23 +439,23 @@ namespace TAS.ViewModels
 		//		{
 		//			// Export selected ponds
 		//			var sql = @"
-  //                      SELECT 
-  //                          p.PondCode,
-  //                          a.AgentName,
-  //                          p.PondName,
-  //                          p.CapacityKg,
-  //                          p.DailyCapacityKg,
-  //                          p.CurrentNetKg,
-  //                          p.Status,
-  //                          CASE 
-  //                              WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
-  //                              ELSE 0
-  //                          END AS UtilizationPercent
-  //                      FROM RubberPond p
-  //                      INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
-  //                      WHERE p.PondId IN @PondIds
-  //                      ORDER BY p.PondCode
-  //                  ";
+		//                      SELECT 
+		//                          p.PondCode,
+		//                          a.AgentName,
+		//                          p.PondName,
+		//                          p.CapacityKg,
+		//                          p.DailyCapacityKg,
+		//                          p.CurrentNetKg,
+		//                          p.Status,
+		//                          CASE 
+		//                              WHEN p.CapacityKg > 0 THEN (p.CurrentNetKg / p.CapacityKg * 100)
+		//                              ELSE 0
+		//                          END AS UtilizationPercent
+		//                      FROM RubberPond p
+		//                      INNER JOIN RubberAgent a ON a.AgentCode = p.AgentCode
+		//                      WHERE p.PondId IN @PondIds
+		//                      ORDER BY p.PondCode
+		//                  ";
 
 		//			ponds = (await _dbHelper.QueryAsync<RubberPondResponse>(sql, new { PondIds = pondIds })).ToList();
 		//		}
@@ -539,5 +535,5 @@ namespace TAS.ViewModels
 		//}
 	}
 
-	
+
 }

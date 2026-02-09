@@ -37,7 +37,7 @@ builder.Services.AddScoped<FarmModels>();     // <-- bắt buộc
 builder.Services.AddScoped<AgentModels>();     // <-- bắt buộc
 builder.Services.AddScoped<TraceabilityModels>();     // <-- bắt buộc
 builder.Services.AddScoped<OrderModels>();     // <-- bắt buộc
-builder.Services.AddScoped<PondModels>();     // <-- bắt buộc
+builder.Services.AddScoped<LotModels>();     // <-- bắt buộc
 builder.Services.AddScoped<UserAccountModels>();     // <-- bắt buộc
 builder.Services.AddScoped<CommonModels>();
 builder.Services.AddScoped<AccountModels>();

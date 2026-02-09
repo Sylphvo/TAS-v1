@@ -18,7 +18,7 @@
                     <div class="text-center logo_auth">
                         <a href="#"><img src="../Logo/LogoBlack.png" alt="img" width="150"></a>
                     </div>
-                    <p class="text-muted" id="motivationalQuote"></p>
+                    @* <p class="text-muted" id="motivationalQuote"></p> *@
                     <form id="loginForm" asp-action="Login" asp-controller="Account" method="post" class="mt-3">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="returnUrl" value="@returnUrl" />
@@ -51,7 +51,7 @@
         </div>
     </div>
 </div>
-<script>
+@* <script>
     // Array of motivational quotes
     const quotes = [
         "Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.",
@@ -76,4 +76,4 @@
         const randomIndex = Math.floor(Math.random() * quotes.length);
         document.getElementById('motivationalQuote').innerHTML = quotes[randomIndex];
     });
-</script>
+</script> *@
