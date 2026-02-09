@@ -56,13 +56,15 @@ var columnDefs = [
 		minWidth: 150,
 		cellRenderer: params => {
 			return `<strong style="color: #2c3e50;">${params.value || ''}</strong>`;
-		}
+		},
+		suppressFillHandle: false // Cho phép Fill Handle
 	},
 	{
 		headerName: 'Tên hồ',
 		field: 'lotName',
 		editable: true,
-		width: 200
+		width: 200,
+		suppressFillHandle: false // Cho phép Fill Handle
 	},
 	{
 		headerName: 'Dung tích (kg)',
@@ -76,7 +78,8 @@ var columnDefs = [
 				minimumFractionDigits: 2,
 				maximumFractionDigits: 2
 			});
-		}
+		},
+		suppressFillHandle: false // Cho phép Fill Handle
 	},
 	{
 		headerName: 'Khối lượng hiện tại (kg)',
@@ -89,7 +92,8 @@ var columnDefs = [
 				minimumFractionDigits: 2,
 				maximumFractionDigits: 2
 			});
-		}
+		},
+		suppressFillHandle: false // Cho phép Fill Handle
 	},
 	{
 		headerName: 'Trạng thái',
