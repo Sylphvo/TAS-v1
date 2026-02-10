@@ -10,23 +10,17 @@ let rowData = [];
 // ========================================
 function initLotPage() {
 	gridApiLot = agGrid.createGrid(document.querySelector("#lotGrid"), gridOptions);
-	// Setup AG Grid
-	//setupGrid();
-
 	// Setup event handlers
 	setupEventHandlers();
 
 	// Load initial data
 	loadLots();
-
-	// Load agents for dropdown
-	//loadAgents();
 }
 
 // ========================================
 // SETUP AG GRID
 // ========================================
-var columnDefs = [
+var columnDefs =  [
 	{
 		headerName: '',
 		field: 'selected',
@@ -57,6 +51,7 @@ var columnDefs = [
 		cellRenderer: params => {
 			return `<strong style="color: #2c3e50;">${params.value || ''}</strong>`;
 		},
+		filter: 'agTextColumnFilter',
 		suppressFillHandle: false // Cho phép Fill Handle
 	},
 	{
@@ -64,6 +59,7 @@ var columnDefs = [
 		field: 'lotName',
 		editable: true,
 		width: 200,
+		filter: 'agTextColumnFilter',
 		suppressFillHandle: false // Cho phép Fill Handle
 	},
 	{
@@ -102,15 +98,6 @@ var columnDefs = [
 		cellRenderer: params => {
 			return renderStatusBadge(params.value);
 		}
-	},
-	{
-		headerName: 'Thao tác',
-		field: 'lotId',
-		width: 150,
-		pinned: 'right',
-		cellRenderer: CellRenderAction,
-		filter: false,
-		sortable: false
 	}
 ] ;
 var gridOptions = CreateGridOption(columnDefs);
@@ -163,61 +150,11 @@ function setupEventHandlers() {
 // LOAD PONDS
 // ========================================
 function loadLots(pageIndex, pageSize) {
-	showLoading();
-	// 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
-	if (pageIndex) {
-		arrConstant.currentPage = pageIndex;
-	} else {
-		arrConstant.currentPage = 1;
-	}
-	if (pageSize) {
-		arrConstant.pageSize = pageSize;
-	}
-	// 2. Lấy giá trị từ các ô Filter trên màn hình
-	var filterData = {
-		PageIndex: arrConstant.currentPage,
-		PageSize: arrConstant.PageSize,
-		Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
-		Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
-		FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
-		ToDate: $('#dtToDate').val()           // Lấy ngày kết thúc
+	let strUrl = '/Lot/GetAllLots';
+	let functionCallback = function (newPage, newSize) {
+		loadLots(gridApiLot, newPage, newSize);
 	};
-
-	$.ajax({
-		url: '/Lot/GetAllLots',
-		type: 'GET',
-		data: filterData, // Gửi object filter lên controller
-		success: function (response) {
-			if (response.success) {
-				// response.data lúc này là object PagedResult { items: [...], totalRecords: 100 }
-				var pagedResult = response.data;
-				rowData = pagedResult.items;
-
-				gridApiLot.setGridOption('rowData', rowData);
-
-				updateStatusBar(rowData.length);
-				// 5. [Quan trọng] Xử lý phân trang UI (Nếu bạn dùng phân trang tùy chỉnh)
-				// Quan trọng: Truyền hàm callback để khi bấm nút nó gọi lại loadOrders
-				renderServerPagination(
-					'divPagingContainer',     // ID thẻ div chứa thanh phân trang
-					pagedResult.totalRecords, // Tổng số bản ghi (Server trả về)
-					arrConstant.currentPage,            // Trang hiện tại
-					arrConstant.pageSize,               // Size hiện tại
-					function (newPage, newSize) {
-						// Callback: Khi người dùng bấm Next/Prev/Change Size -> Gọi lại hàm load này
-						loadPonds(newPage, newSize);
-					}
-				);
-				updateLastUpdateTime();
-			} else {
-				NotificationToast("error", response.message || 'Không thể tải dữ liệu');
-			}
-		},
-		error: function (xhr) {
-			NotificationToast("error", 'Lỗi kết nối: ' + xhr.statusText);
-		},
-		complete: hideLoading
-	});
+	LoadDataAgGrid(gridApiLot, pageIndex, pageSize, strUrl, functionCallback);
 }
 
 // ========================================
@@ -226,7 +163,7 @@ function loadLots(pageIndex, pageSize) {
 function CellRenderAction(params) {
 	// Define action buttons
 	let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveLot(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-	let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+	let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiLot}, ${params.node.rowIndex}, ${params.data.orderCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
 	let deleteLot = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
 	// CHỈ hiện nút lưu khi chưa lưu
 	return params.data.orderId === 0 ? `${strSave}${strCancel}` : `${deleteLot}`;
@@ -252,11 +189,6 @@ function AddNewRow() {
 	AddNewRowAggrid(gridApiLot, rowData, newItem, 'selected', 0);
 }
 
-function cancelRow(rowIndex) {
-	const objectData = gridApiLot.getDisplayedRowAtIndex(rowIndex).data;
-	rowData = rowData.filter(item => item.lotCode !== objectData.lotCode);
-	gridApiLot.setGridOption('rowData', rowData);
-}
 // ========================================
 // SAVE POND (Inline)
 // ========================================
@@ -278,7 +210,7 @@ function savePondInline(rowIndex) {
 		success: function (response) {
 			if (response.success) {
 				NotificationToast("success", response.message);
-				loadPonds();
+				//loadLots();
 			} else {
 				NotificationToast("error", response.message);
 			}
@@ -300,7 +232,7 @@ function deleteLot(pondId) {
 		success: function (response) {
 			if (response.success) {
 				NotificationToast("success", response.message);
-				loadPonds();
+				//loadLots();
 			} else {
 				NotificationToast("error", response.message);
 			}

@@ -1,4 +1,4 @@
-﻿#orderGrid, #RubberIntake, #lotGrid {
+﻿#orderGrid, #RubberIntake, #lotGrid, #agentGrid {
     height: 550px;
 }
 .card-body{
@@ -806,14 +806,6 @@ textarea.form-control {
 /* =========================================
    UTILITIES
 ========================================= */
-.text-center {
-    text-align: center;
-}
-
-.text-right {
-    text-align: right;
-}
-
 .mt-3 {
     margin-top: 1rem;
 }
@@ -1041,6 +1033,7 @@ div[col-id="selected"] span[class="ag-cell-value"] {
     display: flex;
     background: #d3d3d300;
     max-width: 42px;
+    justify-content: flex-start;
 }
 div[col-id="selected"] span[class="ag-cell-value"] > span{
     display: flex;
@@ -1408,4 +1401,8 @@ div[col-id="note"] {
 div[col-id="orderCode"] {
     color: #2c3e50;
     font-weight: 600;
+}
+/*màu nền của cột ẩn*/
+.ag-pinned-left-header div.ag-header-cell[col-id="selected"], .ag-pinned-left-header div.ag-header-cell[col-id="selected"] div[data-ref="eFloatingFilterBody"] {
+    background: #fff;
 }

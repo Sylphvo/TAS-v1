@@ -4,6 +4,7 @@ var arrConstant = {
     idFinish: 1, // Đang xử lý
     msgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
     currentPage: 1, // Đã tạo đơn hàng
+    pageIndex: 10, // Đã tạo đơn hàng
     pageSize: 10, // Đã tạo đơn hàng
 
     SortOrder_Lot: 1, // Order
@@ -255,4 +256,56 @@ function cancelRow(gridApiDynamic, rowIndex, strCode) {
     const objectData = gridApiDynamic.getDisplayedRowAtIndex(rowIndex).data;
     rowData = rowData.filter(item => item[strCode] == objectData[strCode]);
     gridApiDynamic.setGridOption('rowData', rowData);
+}
+function LoadDataAgGrid(gridApiDynamic, pageIndex, pageSize, strUrl, functionDynamic) {
+	// 1. Hiện loading
+    showLoading();  
+    if (typeof (pageIndex) == 'number') {
+        arrConstant.pageIndex = pageIndex;
+    } else {
+        arrConstant.pageIndex = 1;
+    }
+    if (pageSize) {
+        arrConstant.pageSize = pageSize;
+    }
+    // 2. Lấy giá trị từ các ô Filter trên màn hình
+    var filterData = {
+        PageIndex: arrConstant.pageIndex,
+        PageSize: arrConstant.pageSize,
+        Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
+        Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
+        FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
+        ToDate: $('#dtToDate').val()           // Lấy ngày kết thúc
+    };
+
+    $.ajax({
+        url: strUrl,
+        type: 'GET',
+        data: filterData, // Gửi object filter lên controller
+        success: function (response) {
+            if (response.success) {
+                // response.data lúc này là object PagedResult { items: [...], totalRecords: 100 }
+                var pagedResult = response.data;
+                rowData = pagedResult.items;
+                gridApiDynamic.setGridOption('rowData', rowData);
+                updateStatusBar(rowData.length);
+                // 5. [Quan trọng] Xử lý phân trang UI (Nếu bạn dùng phân trang tùy chỉnh)
+                // Quan trọng: Truyền hàm callback để khi bấm nút nó gọi lại loadOrders
+                renderServerPagination(
+                    'divPagingContainer',// ID thẻ div chứa thanh phân trang
+                    pagedResult.totalRecords,// Tổng số bản ghi (Server trả về)
+                    arrConstant.currentPage,// Trang hiện tại
+                    arrConstant.pageSize,// Size hiện tại
+                    functionDynamic                    
+                );
+                updateLastUpdateTime();
+            } else {
+                NotificationToast("error", response.message || 'Không thể tải dữ liệu');
+            }
+        },
+        error: function (xhr) {
+            NotificationToast("error", 'Lỗi kết nối: ' + xhr.statusText);
+        },
+        complete: hideLoading
+    });
 }

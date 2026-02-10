@@ -166,7 +166,7 @@ function renderStatusBadge(status) {
 // ========================================
 function setupEventHandlers() {
     // Button clicks
-    $('#btnRefresh').on('click', loadOrders);
+    $('#btnRefresh').on('click', loadOrders());
 	$('#btnAdd').on('click', AddNewRow);// Add thêm mới
     $('#btnExport').on('click', exportAllToExcel);
     $('#btnExportSelected').on('click', exportSelectedToExcel);
@@ -192,9 +192,9 @@ function loadOrders(pageIndex, pageSize) {
 
     // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
     if (pageIndex) {
-        arrConstant.currentPage = pageIndex;
+        arrConstant.pageIndex = pageIndex;
     } else {
-        arrConstant.currentPage = 1;
+        arrConstant.pageIndex = 1;
     }
     if (pageSize) {
         arrConstant.pageSize = pageSize;
@@ -202,7 +202,7 @@ function loadOrders(pageIndex, pageSize) {
 
     // 2. Lấy giá trị từ các ô Filter trên màn hình
     var filterData = {
-        PageIndex: arrConstant.currentPage,
+        PageIndex: arrConstant.pageIndex,
         PageSize: arrConstant.PageSize,
         Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
         Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
@@ -577,15 +577,10 @@ function hideLoading() {
 function CellRenderAction(params) {
     // Define action buttons
     let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveOrder(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiOrder}, ${params.node.rowIndex}, ${objectData.orderCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
     let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
     // CHỈ hiện nút lưu khi chưa lưu
     return params.data.orderId === 0 ? `${strSave}${strCancel}` : `${deleteOrder}`;
-}
-function cancelRow(rowIndex) {
-    const objectData = gridApiOrder.getDisplayedRowAtIndex(rowIndex).data;
-    rowData = rowData.filter(item => item.orderCode !== objectData.orderCode);
-    gridApiOrder.setGridOption('rowData', rowData);
 }
 function onFillEnd(params) {
     return;
