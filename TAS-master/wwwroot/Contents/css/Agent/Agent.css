@@ -37,11 +37,6 @@
     border-right: 1px solid #f0f0f0;
 }
 
-/* Pinned columns */
-.ag-pinned-left-header,
-.ag-pinned-right-header {
-    border-right: 2px solid #dee2e6;
-}
 
 .ag-pinned-left-cols-container,
 .ag-pinned-right-cols-container {

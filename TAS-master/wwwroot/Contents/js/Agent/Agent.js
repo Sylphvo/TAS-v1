@@ -114,53 +114,11 @@ function CellRenderAction(params) {
 // LOAD DATA WITH PAGINATION
 // ========================================
 function loadAgents(pageIndex, pageSize) {
-	showLoading();
-	// 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
-	if (pageIndex) {
-		arrConstant.currentPage = pageIndex;
-	} else {
-		arrConstant.currentPage = 1;
-	}
-	if (pageSize) {
-		arrConstant.pageSize = pageSize;
-	}
-	const filterData = {
-		PageIndex: arrConstant.currentPage,
-		PageSize: arrConstant.PageSize,
-		Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
-		Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
-		FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
-		ToDate: $('#dtToDate').val()           // Lấy ngày kết thúc
+	let strUrl = '/Agent/GetAgentsWithFilter';
+	let functionCallback = function (newPage, newSize) {
+		loadAgents(gridApiAgent, newPage, newSize);
 	};
-
-	$.ajax({
-		url: '/Agent/GetAgentsWithFilter',
-		type: 'GET',
-		data: filterData,
-		success: function (response) {
-			if (response.success) {
-
-				var pagedResult = response.data;
-				rowData = pagedResult.items;
-
-				gridApiAgent.setGridOption('rowData', rowData);
-
-				renderServerPagination(
-					'divPagingContainer',     // ID thẻ div chứa thanh phân trang
-					pagedResult.totalRecords, // Tổng số bản ghi (Server trả về)
-					arrConstant.currentPage,            // Trang hiện tại
-					arrConstant.pageSize,               // Size hiện tại
-					function (newPage, newSize) {
-						// Callback: Khi người dùng bấm Next/Prev/Change Size -> Gọi lại hàm load này
-						loadAgents(newPage, newSize);
-					}
-				);
-				updateStatusBar(response.totalRecords);
-			}
-		},
-		error: () => NotificationToast('error', 'Lỗi tải dữ liệu'),
-		complete: hideLoading
-	});
+	LoadDataAgGrid(gridApiAgent, pageIndex, pageSize, strUrl, functionCallback);
 }
 
 // ========================================

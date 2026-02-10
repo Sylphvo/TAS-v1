@@ -13,8 +13,8 @@ var drawnItems = null;
 // INITIALIZE
 // ========================================
 function initFarmPage() {
+    gridApiFarm = agGrid.createGrid(document.querySelector("#farmGrid"), gridOptions);
     loadAgentsDropdown();
-    initAgGrid();
     loadFarms();
     registerEvents();
 };
@@ -55,203 +55,198 @@ function loadAgentsDropdown() {
 // ========================================
 // AG GRID SETUP
 // ========================================
-function initAgGrid() {
-    const columnDefs = [
-        {
-            headerName: '',
-            field: 'selected',
-            checkboxSelection: true,
-            headerCheckboxSelection: true,
-            minWidth: 50,
-            width: 50,
-            pinned: 'left',
-            lockPosition: true,
-            suppressMenu: true,
-            filter: false
-        },
-        {
-            field: 'farmId',
-            headerName: 'ID',
-            pinned: 'left',
-            width: 80,
-            hide: true
-        },
-        {
-            field: 'farmCode',
-            headerName: 'Mã nhà vườn',
-            width: 150,
-            pinned: 'left',
-            cellRenderer: function (params) {
-                return `<strong>${params.value}</strong>`;
-            }
-        },
-        {
-            field: 'farmerName',
-            headerName: 'Tên chủ vườn',
-            width: 200,
-            cellRenderer: function (params) {
-                return `${params.value}`;
-            }
-        },
-        {
-            field: 'agentCode',
-            headerName: 'Mã ĐL',
-            width: 100
-        },
-        {
-            field: 'agentName',
-            headerName: 'Tên đại lý',
-            width: 180,
-            cellRenderer: function (params) {
-                if (!params.value) return '-';
-                return `${params.value}`;
-            }
-        },
-        {
-            field: 'farmPhone',
-            headerName: 'Số điện thoại',
-            width: 130,
-            cellRenderer: function (params) {
-                if (!params.value) return '-';
-                return `${params.value}`;
-            }
-        },
-        {
-            field: 'farmAddress',
-            headerName: 'Địa chỉ',
-            width: 250,
-            cellRenderer: function (params) {
-                if (!params.value) return '-';
-                return `${params.value}`;
-            }
-        },
-        {
-            field: 'certificates',
-            headerName: 'Chứng chỉ',
-            width: 120,
-            cellRenderer: function (params) {
-                if (!params.value) return '-';
-                return `<span class="badge badge-info">${params.value}</span>`;
-            }
-        },
-        {
-            field: 'totalAreaHa',
-            headerName: 'Tổng DT (ha)',
-            width: 120,
-            cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
-            valueFormatter: function (params) {
-                if (!params.value) return '-';
-                return Number(params.value).toLocaleString('vi-VN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-        },
-        {
-            field: 'rubberAreaHa',
-            headerName: 'DT mủ (ha)',
-            width: 120,
-            cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
-            valueFormatter: function (params) {
-                if (!params.value) return '-';
-                return Number(params.value).toLocaleString('vi-VN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-        },
-        {
-            field: 'totalExploit',
-            headerName: 'Sản lượng (kg)',
-            width: 140,
-            cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
-            valueFormatter: function (params) {
-                if (!params.value) return '-';
-                return Number(params.value).toLocaleString('vi-VN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-        },
-        {
-            field: 'isActive',
-            headerName: 'Trạng thái',
-            width: 120,
-            cellRenderer: function (params) {
-                if (params.value) {
-                    return '<span class="status-badge status-active">Đã duyệt</span>';
-                } else {
-                    return '<span class="status-badge status-inactive">Chưa duyệt</span>';
-                }
-            },
-            filter: 'agSetColumnFilter',
-            filterParams: {
-                values: [true, false],
-                valueFormatter: function (params) {
-                    return params.value ? 'Đã duyệt' : 'Chưa duyệt';
-                }
-            }
-        },
-        {
-            field: 'registerDate',
-            headerName: 'Ngày đăng ký',
-            width: 130,
-            valueFormatter: function (params) {
-                if (!params.value) return '';
-                return new Date(params.value).toLocaleDateString('vi-VN');
-            },
-            filter: 'agDateColumnFilter'
-        },
-        {
-            field: 'registerPerson',
-            headerName: 'Người đăng ký',
-            width: 130
-        },
-        {
-            headerName: 'Thao tác',
-            width: 200,
-            pinned: 'right',
-            cellRenderer: function (params) {
-                var approveBtn = params.data.isActive
-                    ? `
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="unapproveFarm(${params.data.farmId})" title="Hủy duyệt"><i class="ti ti-close f-20"></i> </a>`
-                    : `
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="approveFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-check f-20"></i> </a>`;
-
-                return `
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="editFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="viewFarm(${params.data.farmId})" title="Xem"><i class="ti ti-eye f-20"></i> </a>
-                    ${approveBtn}
-                    <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteFarm(${params.data.farmId})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
-                `;
-            },
-            filter: false,
-            sortable: false
+const columnDefs = [
+    {
+        headerName: '',
+        field: 'selected',
+        width: 80,
+        pinned: 'left', // Giữ pinned để cố định icon bên trái
+        lockPosition: true,
+        suppressMenu: true,
+        rowDrag: true,         // Hiện icon ::
+        checkboxSelection: true, // Hiện ô Checkbox
+        headerCheckboxSelection: true,
+        columnDelete: true,
+        suppressMovable: true,
+        filter: false,
+        resizable: false, // Nên tắt cái này để người dùng không kéo dãn cột action
+        cellRenderer: CellRenderAction // Nên tắt cái này để người dùng không kéo dãn cột action
+    },
+    {
+        field: 'farmId',
+        headerName: 'ID',
+        width: 80,
+        hide: true
+    },
+    {
+        field: 'farmCode',
+        headerName: 'Mã nhà vườn',
+        width: 150,
+        cellRenderer: function (params) {
+            return `<strong>${params.value}</strong>`;
         }
-    ];
-
-    gridOptions = {
-        columnDefs: columnDefs,
-        defaultColDef: {
-            sortable: true,
-            filter: true,
-            resizable: true,
-            floatingFilter: true
-        },
-        rowSelection: 'multiple',
-        suppressRowClickSelection: true,
-        animateRows: true,
-        enableCellTextSelection: true,
-        onSelectionChanged: onSelectionChanged,
-        onGridReady: function (params) {
-            gridApiFarm = params.api;
-            params.api.sizeColumnsToFit();
-            console.log('✅ AG Grid ready!');
+    },
+    {
+        field: 'farmerName',
+        headerName: 'Tên chủ vườn',
+        width: 200,
+        cellRenderer: function (params) {
+            return `${params.value}`;
         }
-    };
+    },
+    {
+        field: 'agentCode',
+        headerName: 'Mã ĐL',
+        width: 100
+    },
+    {
+        field: 'agentName',
+        headerName: 'Tên đại lý',
+        width: 180,
+        cellRenderer: function (params) {
+            if (!params.value) return '-';
+            return `${params.value}`;
+        }
+    },
+    {
+        field: 'farmPhone',
+        headerName: 'Số điện thoại',
+        width: 130,
+        cellRenderer: function (params) {
+            if (!params.value) return '-';
+            return `${params.value}`;
+        }
+    },
+    {
+        field: 'farmAddress',
+        headerName: 'Địa chỉ',
+        width: 250,
+        cellRenderer: function (params) {
+            if (!params.value) return '-';
+            return `${params.value}`;
+        }
+    },
+    {
+        field: 'certificates',
+        headerName: 'Chứng chỉ',
+        width: 120,
+        cellRenderer: function (params) {
+            if (!params.value) return '-';
+            return `<span class="badge badge-info">${params.value}</span>`;
+        }
+    },
+    {
+        field: 'totalAreaHa',
+        headerName: 'Tổng DT (ha)',
+        width: 120,
+        cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
+        valueFormatter: function (params) {
+            if (!params.value) return '-';
+            return Number(params.value).toLocaleString('vi-VN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    },
+    {
+        field: 'rubberAreaHa',
+        headerName: 'DT mủ (ha)',
+        width: 120,
+        cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
+        valueFormatter: function (params) {
+            if (!params.value) return '-';
+            return Number(params.value).toLocaleString('vi-VN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    },
+    {
+        field: 'totalExploit',
+        headerName: 'Sản lượng (kg)',
+        width: 140,
+        cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
+        valueFormatter: function (params) {
+            if (!params.value) return '-';
+            return Number(params.value).toLocaleString('vi-VN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    },
+    {
+        field: 'isActive',
+        headerName: 'Trạng thái',
+        width: 120,
+        cellRenderer: function (params) {
+            if (params.value) {
+                return '<span class="status-badge status-active">Đã duyệt</span>';
+            } else {
+                return '<span class="status-badge status-inactive">Chưa duyệt</span>';
+            }
+        },
+        filter: 'agSetColumnFilter',
+        filterParams: {
+            values: [true, false],
+            valueFormatter: function (params) {
+                return params.value ? 'Đã duyệt' : 'Chưa duyệt';
+            }
+        }
+    },
+    {
+        field: 'registerDate',
+        headerName: 'Ngày đăng ký',
+        width: 130,
+        valueFormatter: function (params) {
+            if (!params.value) return '';
+            return new Date(params.value).toLocaleDateString('vi-VN');
+        },
+        filter: 'agDateColumnFilter'
+    },
+    {
+        field: 'registerPerson',
+        headerName: 'Người đăng ký',
+        width: 130
+    },
+    //{
+    //    headerName: 'Thao tác',
+    //    width: 200,
+    //    pinned: 'right',
+    //    cellRenderer: function (params) {
+    //        var approveBtn = params.data.isActive
+    //            ? `
+    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="unapproveFarm(${params.data.farmId})" title="Hủy duyệt"><i class="ti ti-close f-20"></i> </a>`
+    //            : `
+    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="approveFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-check f-20"></i> </a>`;
 
-    const eGridDiv = document.querySelector('#farmGrid');
-    gridApiFarm = agGrid.createGrid(eGridDiv, gridOptions);
+    //        return `
+    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="editFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
+    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="viewFarm(${params.data.farmId})" title="Xem"><i class="ti ti-eye f-20"></i> </a>
+    //                ${approveBtn}
+    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteFarm(${params.data.farmId})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
+    //            `;
+    //    },
+    //    filter: false,
+    //    sortable: false
+    //}
+];
+var gridOptions = CreateGridOption(columnDefs);
+
+function onGridReady(params) {
+    gridApiFarm = params.api;
+    gridColumnApi = params.columnApi;
+    // Auto size columns
+    //gridApiAgent.sizeColumnsToFit();
+}
+function onCellValueChanged(event) {
+    let rowIndex = event.node.rowIndex;
+    let colDef = event.colDef.field;
+    let isObjAgent = colDef == "agentCode";
+    let isObjFarm = colDef == "farmCode";
+
+}
+function onFillEnd(params) {
+    return;
 }
 
 // ========================================
@@ -274,7 +269,7 @@ function registerEvents() {
     });
 
     // Add
-    $('#btnAdd').on('click', showAddModal);
+    $('#btnAdd').on('click', AddNewRow);
 
     // Save
     $('#btnSave').on('click', saveFarm);
@@ -317,61 +312,29 @@ function registerEvents() {
 // LOAD FARMS
 // ========================================
 function loadFarms(pageIndex, pageSize) {
-    // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
-    if (pageIndex) {
-        arrConstant.currentPage = pageIndex;
-    } else {
-        arrConstant.currentPage = 1;
-    }
-    if (pageSize) {
-        arrConstant.pageSize = pageSize;
-    }
-    // 2. Lấy giá trị từ các ô Filter trên màn hình
-    var filterData = {
-        PageIndex: arrConstant.currentPage,
-        PageSize: arrConstant.PageSize,
-        Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
-        Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
-        FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu
-        ToDate: $('#dtToDate').val()           // Lấy ngày kết thúc
+    let strUrl = '/Farm/GetAllFarms';
+    let functionCallback = function (newPage, newSize) {
+        loadFarms(gridApiFarm, newPage, newSize);
     };
-
-    $.ajax({
-        url: '/Farm/GetAllFarms',
-        type: 'GET',
-        data: filterData,
-        success: function (response) {
-            if (response.success) {
-                // response.data lúc này là object PagedResult { items: [...], totalRecords: 100 }
-                var pagedResult = response.data;
-                rowData = pagedResult.items;
-                gridApiFarm.setGridOption('rowData', rowData);
-                updateStatusBar(pagedResult.totalRecords);
-                renderServerPagination(
-                    'divPagingContainer',     // ID thẻ div chứa thanh phân trang
-                    pagedResult.totalRecords, // Tổng số bản ghi (Server trả về)
-                    arrConstant.currentPage,            // Trang hiện tại
-                    arrConstant.pageSize,               // Size hiện tại
-                    function (newPage, newSize) {
-                        // Callback: Khi người dùng bấm Next/Prev/Change Size -> Gọi lại hàm load này
-                        loadPonds(newPage, newSize);
-                    }
-                );
-                updateLastUpdateTime();
-            } else {
-                showError(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error('❌ Error loading farms:', error);
-            showError('Lỗi khi tải dữ liệu: ' + error);
-        }
-    });
+    LoadDataAgGrid(gridApiFarm, pageIndex, pageSize, strUrl, functionCallback);
 }
 
 // ========================================
 // SHOW ADD MODAL
 // ========================================
+function AddNewRow() {
+    const newItem = {
+        agentId: 0,
+        agentCode: '',
+        agentName: '',
+        address: '',
+        phone: '',
+        status: 1,
+        statusName: 'Hoạt động',
+        statusClass: 'success'
+    };
+    AddNewRowAggrid(gridApiAgent, rowData, newItem, 'selected', 0);
+}
 function showAddModal() {
     currentFarmId = null;
     $('#modalTitle').text('Thêm nhà vườn mới');
@@ -948,3 +911,13 @@ function showWarning(message) {
         alert(message);
     }
 }
+
+function CellRenderAction(params) {
+    let strSave = `<a href="#" class="avtar-xs btn-link-secondary" onclick="saveAgentInline(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiFarm}, ${params.node.rowIndex}, ${params.data.farmCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let deleteFarm = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.farmId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+    // CHỈ hiện nút lưu khi chưa lưu
+    return params.data.farmId == 0 ? `${strSave}${strCancel}` : `${deleteFarm}`;
+}
+function showLoading() { console.log('Loading...'); }
+function hideLoading() { console.log('Complete'); }
