@@ -23,22 +23,6 @@ function initPageAgent() {
 // ========================================
 var columnDefs = [
 	{
-		headerName: '',
-		field: 'selected',
-		width: 80,
-		pinned: 'left', // Giữ pinned để cố định icon bên trái
-		lockPosition: true,
-		suppressMenu: true,
-		rowDrag: true,         // Hiện icon ::
-		checkboxSelection: true, // Hiện ô Checkbox
-		headerCheckboxSelection: true,
-		columnDelete: true,
-		suppressMovable: true,
-		filter: false,
-		resizable: false, // Nên tắt cái này để người dùng không kéo dãn cột action
-		cellRenderer: CellRenderAction // Nên tắt cái này để người dùng không kéo dãn cột action
-	},
-	{
 		headerName: 'Số thứ tự',
 		field: 'rowNo',
 		minWidth: 50,
@@ -49,13 +33,15 @@ var columnDefs = [
 		field: 'agentCode',
 		editable: params => params.data.agentId === 0, // Chỉ cho sửa mã khi thêm mới
 		minWidth: 150,
-		cellRenderer: params => `<strong>${params.value || ''}</strong>`
+		cellRenderer: params => `<strong>${params.value || ''}</strong>`,
+		suppressFillHandle: false // Chỉ bật fill cho riêng cột này
 	},
 	{
 		headerName: 'Tên đại lý',
 		field: 'agentName',
 		editable: true,
-		width: 200
+		width: 200,
+		suppressFillHandle: false // Chỉ bật fill cho riêng cột này
 	},
 	{
 		headerName: 'Địa chỉ',

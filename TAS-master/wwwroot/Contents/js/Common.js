@@ -12,6 +12,8 @@ var arrConstant = {
     SortOrder_Farm: 3,// Farmer
     isCheckAll: false,// Farmer
     isLoadFirst: true,// Farmer
+    PrefixOrder: 'ORD_',
+    PrefixIntake: 'INT_'
 };
 class SelectEditorWithTextDisplay {
     init(params) {
@@ -71,26 +73,37 @@ function CellStyle_Col_Model(params) {
     cellAttr['text-align'] = 'center';
     return cellAttr;
 }
-// Tạo mã Intake tự động: INT_YYYYMMDDHHMMSS
-function generateIntakeCode() {
-    const datePart = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    return `INT_${datePart}`;
-}
-// Tạo mã Order tự động: ORD_YYYYMMDDHHMMSS_001
-function getOrderCodePrefix() {
+//// Tạo mã Intake tự động: INT_YYYYMMDDHHMMSS
+//function generateIntakeCode() {
+//    const datePart = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+//    return `INT_${datePart}`;
+//}
+//// Tạo mã Order tự động: ORD_YYYYMMDDHHMMSS_001
+//function getOrderCodePrefix() {
+//    const now = new Date();
+//    const year = now.getFullYear();
+//    const month = String(now.getMonth() + 1).padStart(2, '0');
+//    const day = String(now.getDate()).padStart(2, '0');
+//    return `ORD_${year}${month}${day}_`;
+//}
+
+// Hàm tạo Prefix động theo ngày (VD: AG_20250223_, LOT_20250223_)
+function getCodePrefix(prefixText) {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    return `ORD_${year}${month}${day}_`;
+    return `${prefixText}_${year}${month}${day}_`;
 }
 
 /**
- * Sinh mã ngẫu nhiên và đảm bảo KHÔNG trùng trong rowData
+ * Hàm core: Sinh mã ngẫu nhiên và đảm bảo KHÔNG trùng trong rowData
  * @param {Array} rowData - Mảng dữ liệu hiện tại của Ag-Grid
+ * @param {String} prefixText - Tiền tố của mã (VD: 'AG', 'LOT', 'FARM')
+ * @param {String} fieldName - Tên cột cần check trùng trong rowData (VD: 'AgentCode')
  */
-function generateUniqueFakeOrderCode(rowData) {
-    const prefix = getOrderCodePrefix();
+function generateUniqueCodeCore(rowData, prefixText, fieldName) {
+    const prefix = getCodePrefix(prefixText);
     let isDuplicate = true;
     let newCode = "";
     let safetyCounter = 0; // Chống treo trình duyệt nếu full 1000 số
@@ -100,9 +113,8 @@ function generateUniqueFakeOrderCode(rowData) {
         const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
         newCode = `${prefix}${randomNum}`;
 
-        // 2. Kiểm tra xem mã này đã tồn tại trong rowData chưa
-        // Giả sử cột chứa mã đơn hàng tên là 'OrderCode'
-        const exists = rowData && rowData.some(item => item.OrderCode === newCode);
+        // 2. Kiểm tra xem mã này đã tồn tại trong rowData chưa theo fieldName
+        const exists = rowData && rowData.some(item => item[fieldName] === newCode);
 
         if (!exists) {
             isDuplicate = false; // Ngon, không trùng -> Thoát vòng lặp
@@ -110,15 +122,14 @@ function generateUniqueFakeOrderCode(rowData) {
 
         safetyCounter++;
     }
+
     if (safetyCounter >= 1000) {
-        console.error("Đã hết số để sinh trong ngày hôm nay!");
+        console.error(`Đã hết số để sinh cho loại mã [${prefixText}] trong ngày hôm nay!`);
         return `${prefix}ERROR`;
     }
 
     return newCode;
 }
-
-
 function RefeshSingleColumn(gridApiDynamic, fieldName) {
     gridApiDynamic.refreshCells({ force: true, columns: [fieldName] });
 }
@@ -181,19 +192,38 @@ function AddNewRowAggrid(gridApiDynamic, listData, newItem, fieldName, rowIndex)
     gridApiDynamic.applyTransaction(transaction);
     RefeshSingleColumn(gridApiDynamic, fieldName);
     // 1. Chọn hàng (Selection - bôi màu nền)
-    gridApiOrder.getDisplayedRowAtIndex(rowIndex).setSelected(true);
+    gridApiDynamic.getDisplayedRowAtIndex(rowIndex).setSelected(true);
     // 2. Focus vào ô (Tạo viền khung cho ô)
-    gridApiOrder.setFocusedCell(rowIndex, fieldName);
+    gridApiDynamic.setFocusedCell(rowIndex, fieldName);
     // 3. Auto Scroll (Cuộn tới hàng đó)
     // 'top', 'bottom', hoặc 'middle' để kiểm soát vị trí hàng sau khi cuộn
-    gridApiOrder.ensureIndexVisible(rowIndex, 'middle');
+    gridApiDynamic.ensureIndexVisible(rowIndex, 'middle');
     listData.push(newItem);
     //return listData;
 }
 function CreateGridOption(columnDefs) {
+    let columndefDefault = [
+        {
+            headerName: '',
+            field: 'selected',
+            width: 80,
+            pinned: 'left', // Giữ pinned để cố định icon bên trái
+            lockPosition: true,
+            suppressMenu: true,
+            rowDrag: true,         // Hiện icon ::
+            checkboxSelection: true, // Hiện ô Checkbox
+            headerCheckboxSelection: true,
+            columnDelete: true,
+            suppressMovable: true,
+            filter: false,
+            resizable: false, // Nên tắt cái này để người dùng không kéo dãn cột action
+            cellRenderer: CellRenderAction // Nên tắt cái này để người dùng không kéo dãn cột action
+        }
+    ];
+	columndefDefault.push(...columnDefs);
     return {
         // Column Definitions
-        columnDefs: columnDefs,
+        columnDefs: columndefDefault,
         //sideBar: true,
         // Default Column Definition
         rowSelection: 'multiple',// Chọn nhiều dòng
@@ -204,7 +234,11 @@ function CreateGridOption(columnDefs) {
             floatingFilter: true,// Hiện ô lọc bên dưới header
             suppressMenu: false,// Hiện menu lọc
             cellStyle: CellStyle_Col_Model,
-            suppressFillHandle: true
+            suppressFillHandle: true,
+            cellClass: (params) => {
+                // Kiểm tra xem cột có được set editable là true hay không
+                return params.colDef.editable ? 'editcolumn' : 'noteditcolumn';
+            }
         },
         rowDragManaged: true,// Kéo thả dòng được quản lý
         rowDragEntireRow: true,// Kéo thả cả dòng
@@ -237,7 +271,7 @@ function CreateGridOption(columnDefs) {
         onCellValueChanged: onCellValueChanged,// Edit Cell
         //onRowDragEnd: onRowDragEnd,// Drag and Drop
 
-        singleClickEdit: false,// Double click to edit
+        singleClickEdit: true,// Double click to edit
         onFillEnd: onFillEnd// Fill Handle
     };
 
@@ -298,7 +332,7 @@ function LoadDataAgGrid(gridApiDynamic, pageIndex, pageSize, strUrl, functionDyn
                     arrConstant.pageSize,// Size hiện tại
                     functionDynamic                    
                 );
-                updateLastUpdateTime();
+                //updateLastUpdateTime();
             } else {
                 NotificationToast("error", response.message || 'Không thể tải dữ liệu');
             }

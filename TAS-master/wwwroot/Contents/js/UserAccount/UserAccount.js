@@ -22,17 +22,6 @@ $(document).ready(function () {
 function initAgGrid() {
     const columnDefs = [
         {
-            headerName: '',
-            field: 'selected',
-            checkboxSelection: true,
-            headerCheckboxSelection: true,
-            width: 50,
-            pinned: 'left',
-            lockPosition: true,
-            suppressMenu: true,
-            filter: false
-        },
-        {
             field: 'userName',
             headerName: 'Username',
             width: 150,

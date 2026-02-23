@@ -30,22 +30,6 @@ function initPage() {
 var columnDefs =
     [
         {
-            headerName: '',
-            field: 'selected',
-            width: 80,
-            pinned: 'left', // Giữ pinned để cố định icon bên trái
-            lockPosition: true,
-            suppressMenu: true,
-            rowDrag: true,         // Hiện icon ::
-            checkboxSelection: true, // Hiện ô Checkbox
-            headerCheckboxSelection: true,
-            columnDelete: true,
-            suppressMovable: true,
-            filter: false,
-            resizable: false, // Nên tắt cái này để người dùng không kéo dãn cột action
-            cellRenderer: CellRenderAction // Nên tắt cái này để người dùng không kéo dãn cột action
-        },
-        {
             headerName: 'Số thứ tự',
             field: 'rowNo',
             minWidth: 50,
@@ -267,7 +251,7 @@ function AddNewRow() {
     const newItem = {
         // 1. Định danh
         orderId: 0, // 0 đánh dấu là dòng mới chưa lưu DB
-        orderCode: generateUniqueFakeOrderCode(rowData), // Hàm sinh mã không trùng
+        orderCode: getCodePrefix(arrConstant.PrefixOrder), // Hàm sinh mã không trùng
         orderName: "", // Mới thêm: Tên đơn hàng
         orderDate: new Date(),
         status: 0, 
@@ -286,7 +270,6 @@ function AddNewRow() {
 // ========================================
 function editOrder(orderId) {
     showLoading();
-    
     $.ajax({
         url: `/Order/GetOrderById/${orderId}`,
         type: 'GET',
@@ -577,7 +560,7 @@ function hideLoading() {
 function CellRenderAction(params) {
     // Define action buttons
     let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveOrder(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiOrder}, ${params.node.rowIndex}, ${objectData.orderCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiOrder}, ${params.node.rowIndex}, ${params.data.orderCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
     let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
     // CHỈ hiện nút lưu khi chưa lưu
     return params.data.orderId === 0 ? `${strSave}${strCancel}` : `${deleteOrder}`;

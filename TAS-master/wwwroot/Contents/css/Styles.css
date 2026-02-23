@@ -1,4 +1,6 @@
-﻿#orderGrid, #RubberIntake, #lotGrid, #agentGrid {
+﻿
+
+#orderGrid, #RubberIntake, #lotGrid, #agentGrid {
     height: 550px;
 }
 .card-body{
@@ -1171,13 +1173,17 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
 }
 
 /* Đảm bảo toàn bộ grid không chặn việc bôi đen nếu cần thiết */
+.ag-header{
+    border: none !important;
+}
 .ag-root-wrapper {
     user-select: text !important;
+    border: 0px solid #000000;
 }
     /* Tắt highlight khi drag */
-    .ag-cell::selection {
+    /*.ag-cell::selection {
         background: transparent;
-    }
+    }*/
 .ag-menu-option, .ag-menu-separator {
     display: block !important;
 }
@@ -1373,8 +1379,9 @@ div[col-id="note"] {
 .ag-viewport.ag-center-cols-viewport .ag-row-last {
 
 }*/
-.ag-pinned-left-cols-container .ag-row:not(.ag-row-hover){
+.ag-pinned-left-cols-container .ag-row:not(.ag-row-hover) {
     opacity: 0;
+    border: none !important;
 }
 .ag-pinned-left-cols-container .ag-row-selected {
     opacity: 1 !important;
@@ -1405,4 +1412,27 @@ div[col-id="orderCode"] {
 /*màu nền của cột ẩn*/
 .ag-pinned-left-header div.ag-header-cell[col-id="selected"], .ag-pinned-left-header div.ag-header-cell[col-id="selected"] div[data-ref="eFloatingFilterBody"] {
     background: #fff;
+    border:none !important;
+}
+.ag-pinned-left-header {
+    border-width:0px !important;
+}
+
+.ag-row-selected .editcolumn:not(div[col-id="selected"]) .ag-cell-value {
+    background: #ffffff !important;
+    cursor: pointer;
+}
+.ag-row-selected .noteditcolumn:not(div[col-id="selected"]) .ag-cell-value {
+    background: #d3d3d3 !important;
+    cursor: no-drop;
+}
+div[col-id="selected"].ag-cell {
+    border: none !important;
+}
+.ag-pinned-left-cols-container .ag-row-hover {
+    border: none !important;
+}
+div.ag-row-hover div.ag-cell {
+    border: #ffffff;
+    margin-left: -1px !important;
 }

@@ -27,10 +27,10 @@ namespace TAS.Controllers
 		// ========================================
 		// VIEW - Farm Management Page
 		// ========================================
-		[Breadcrumb(nameof(Language.key_thongtinnhavuon), "#", nameof(Language.key_management_info), true)]
+		[Breadcrumb(nameof(Language.key_nhavuon), "#", nameof(Language.key_management_info), true)]
 		public IActionResult Index()
 		{
-			ViewData["Title"] = _common.GetValueByKey("key_thongtinnhavuon");
+			ViewData["Title"] = _common.GetValueByKey("key_nhavuon");
 			return View();
 		}
 

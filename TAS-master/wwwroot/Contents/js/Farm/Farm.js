@@ -23,55 +23,39 @@ function initFarmPage() {
 // LOAD AGENTS DROPDOWN
 // ========================================
 function loadAgentsDropdown() {
-    $.ajax({
-        url: '/Agent/GetAgentsForDropdown',
-        type: 'GET',
-        data: { activeOnly: true },
-        success: function (response) {
-            if (response.success) {
-                // For search filter
-                var htmlFilter = '<option value="">Tất cả</option>';
-                response.data.forEach(function (agent) {
-                    htmlFilter += `<option value="${agent.agentCode}">${agent.agentCode} - ${agent.agentName}</option>`;
-                });
-                $('#ddlAgentCode').html(htmlFilter);
+    //$.ajax({
+    //    url: '/Agent/GetAgentsForDropdown',
+    //    type: 'GET',
+    //    data: { activeOnly: true },
+    //    success: function (response) {
+    //        if (response.success) {
+    //            // For search filter
+    //            var htmlFilter = '<option value="">Tất cả</option>';
+    //            response.data.forEach(function (agent) {
+    //                htmlFilter += `<option value="${agent.agentCode}">${agent.agentCode} - ${agent.agentName}</option>`;
+    //            });
+    //            $('#ddlAgentCode').html(htmlFilter);
 
-                // For modal form
-                var htmlForm = '<option value="">-- Chọn đại lý --</option>';
-                response.data.forEach(function (agent) {
-                    htmlForm += `<option value="${agent.agentCode}">${agent.agentCode} - ${agent.agentName}</option>`;
-                });
-                $('#agentCode').html(htmlForm);
+    //            // For modal form
+    //            var htmlForm = '<option value="">-- Chọn đại lý --</option>';
+    //            response.data.forEach(function (agent) {
+    //                htmlForm += `<option value="${agent.agentCode}">${agent.agentCode} - ${agent.agentName}</option>`;
+    //            });
+    //            $('#agentCode').html(htmlForm);
 
-                console.log('✅ Loaded', response.data.length, 'agents for dropdown');
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error('❌ Error loading agents:', error);
-        }
-    });
+    //            console.log('✅ Loaded', response.data.length, 'agents for dropdown');
+    //        }
+    //    },
+    //    error: function (xhr, status, error) {
+    //        console.error('❌ Error loading agents:', error);
+    //    }
+    //});
 }
 
 // ========================================
 // AG GRID SETUP
 // ========================================
 const columnDefs = [
-    {
-        headerName: '',
-        field: 'selected',
-        width: 80,
-        pinned: 'left', // Giữ pinned để cố định icon bên trái
-        lockPosition: true,
-        suppressMenu: true,
-        rowDrag: true,         // Hiện icon ::
-        checkboxSelection: true, // Hiện ô Checkbox
-        headerCheckboxSelection: true,
-        columnDelete: true,
-        suppressMovable: true,
-        filter: false,
-        resizable: false, // Nên tắt cái này để người dùng không kéo dãn cột action
-        cellRenderer: CellRenderAction // Nên tắt cái này để người dùng không kéo dãn cột action
-    },
     {
         field: 'farmId',
         headerName: 'ID',
@@ -236,7 +220,7 @@ function onGridReady(params) {
     gridApiFarm = params.api;
     gridColumnApi = params.columnApi;
     // Auto size columns
-    //gridApiAgent.sizeColumnsToFit();
+    //gridApiFarm.sizeColumnsToFit();
 }
 function onCellValueChanged(event) {
     let rowIndex = event.node.rowIndex;

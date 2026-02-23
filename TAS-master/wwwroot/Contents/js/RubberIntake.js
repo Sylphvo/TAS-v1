@@ -16,39 +16,23 @@ var arrValue = {
     comboFarmCode: [], // combo thông tin nhà vườn
     comboOrderCode: [], // combo đơn hàng
     selectFirst: true,
-    loadFirst: false
+    loadFirst: false,	
 };
 
 var columnDefs =
 [
     {
-        headerName:'',
-        field: 'selected',
-        headerCheckboxSelection: true,
-        checkboxSelection: true,
-        width: 50,
-        minWidth: 50,
-        maxWidth: 50,
-        pinned: 'left',
-        lockPinned: true,
-        suppressMovable: true,
-        filter: false,
-    },
-    {
-        headerName: 'STT',
+        headerName: 'Số thứ tự',
         field: 'rowNo',
-        minWidth: 50,
-        width: 50,
-        pinned: 'left',
-        cellStyle: CellStyle_Col_Model,
-        rowDrag: true,
-        filter: false,
+        minWidth: 80,
+        width: 80,
     },
     {
         headerName: 'Tên đại lý',
         field: 'agentCode',
         cellEditor: SelectEditorWithTextDisplay,
         editable: true,
+        width: 120,
         filter: 'agTextColumnFilter',
         cellStyle: CellStyle_Col_Model,
         valueFormatter: (params) => {
@@ -62,6 +46,7 @@ var columnDefs =
         field: 'farmCode',
         cellEditor: SelectEditorWithTextDisplay,
         editable: true,
+        width: 120,
         filter: 'agTextColumnFilter',
         valueFormatter: (params) => {
             if (!params.value) return '';
@@ -100,7 +85,7 @@ var columnDefs =
     {
         headerName: 'Thành phẩm',
         field: 'finishedProductKg',
-        width: 150,
+        width: 100,
         editable: true,
         type: 'numericColumn',
         valueFormatter: params => formatNumber(params.value),
@@ -109,7 +94,7 @@ var columnDefs =
     {
         headerName: 'Thành Phẩm Ly Tâm',
         field: 'centrifugeProductKg',
-        width: 170,
+        width: 100,
         editable: true,
         type: 'numericColumn',
         valueFormatter: params => formatNumber(params.value),
@@ -135,16 +120,6 @@ var columnDefs =
         field: 'timeDate',
         width: 150,
         editable: false,
-    },
-    {
-        headerName: 'Thao tác',
-        field: 'action',
-        width: 150,
-        pinned: 'right',
-        cellRenderer: CellRenderAction,            
-        suppressMenu: true,
-        suppressMovable: true,
-        filter: false
     }
 ];
 var gridOptions = CreateGridOption(columnDefs);
@@ -262,7 +237,7 @@ async function loadData(pageIndex, pageSize) {
 function addNewRow() {
     const newRow = {
         intakeId: 0,
-        intakeCode: generateIntakeCode(),
+        intakeCode: getCodePrefix(arrConstant.PrefixIntake),
         agentCode: '',
         agentName: '',
         farmCode: '',

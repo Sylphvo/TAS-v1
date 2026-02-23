@@ -14,21 +14,12 @@ namespace TAS.DTOs
 		public class RubberAgentRequest
 		{
 			public int AgentId { get; set; } // 0: Thêm mới, >0: Cập nhật
-
-			[Required(ErrorMessage = "Mã đại lý không được để trống")]
-			[MaxLength(50)]
-			public string AgentCode { get; set; } = string.Empty;
-
-			[Required(ErrorMessage = "Tên đại lý không được để trống")]
-			[MaxLength(200)]
-			public string AgentName { get; set; } = string.Empty;
-
-			[Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+			public string? AgentCode { get; set; }
+			public string? AgentName { get; set; }
 			public string? AgentPhone { get; set; }
-
+			public string? OwnerName { get; set; }
 			public string? AgentAddress { get; set; }
-
-			public bool IsActive { get; set; } = true;
+			public bool IsActive { get; set; }
 			// 1: Sẵn sàng, 2: Đang sản xuất, 3: Bảo trì
 			public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
 			public int PageSize { get; set; } = 10;      // Số dòng mỗi trang

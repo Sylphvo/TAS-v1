@@ -29,7 +29,7 @@
 
 .ag-row-selected .ag-cell-value,
 .ag-row-selected::before {
-    background: #d3d3d3;
+    background: #ffffff;
 }
 
 .ag-row-deleted .ag-cell-value,

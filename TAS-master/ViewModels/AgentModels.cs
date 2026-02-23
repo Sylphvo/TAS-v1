@@ -1,6 +1,8 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Identity;
 using TAS.DTOs;
 using TAS.DTOs.TAS.DTOs;
+using TAS.Repository;
 using TAS.TagHelpers;
 
 namespace TAS.ViewModels
@@ -10,13 +12,15 @@ namespace TAS.ViewModels
 	// ========================================
 	public class AgentModels
 	{
+		private readonly ICurrentUser _userManage;
 		private readonly ConnectDbHelper _dbHelper;
 		private readonly ILogger<AgentModels> _logger;
 
-		public AgentModels(ConnectDbHelper dbHelper, ILogger<AgentModels> logger)
+		public AgentModels(ConnectDbHelper dbHelper, ILogger<AgentModels> logger, ICurrentUser userManage)
 		{
 			_dbHelper = dbHelper;
 			_logger = logger;
+			_userManage = userManage;
 		}
 
 		// ========================================
@@ -98,350 +102,81 @@ namespace TAS.ViewModels
 			}
 		}
 
-		//// ========================================
-		//// GET AGENT BY ID
-		//// ========================================
-		//public async Task<RubberAgentDto?> GetAgentByIdAsync(int agentId)
-		//{
-		//	var query = @"
-		//              SELECT 
-		//			A.AgentId,
-		//			A.AgentCode,
-		//			A.AgentName,
-		//			A.AgentPhone,
-		//			A.AgentAddress,
-		//			A.IsActive,
-		//			A.RegisterDate,
-		//			A.RegisterPerson,
-		//			A.UpdateDate,
-		//			A.UpdatePerson,
-		//			F.Polygon
-		//              FROM RubberAgent A
-		//		LEFT JOIN RubberFarm F ON A.AgentCode = F.AgentCode
-		//              WHERE AgentId = @AgentId";
-		//	return await _dbHelper.QueryFirstOrDefaultAsync<RubberAgentDto>(query, new { AgentId = agentId });
-		//}
+		// ========================================
+		// Thêm/Sửa 1 Đại lý (Agent)
+		// ========================================
+		public int AddOrUpdateAgent(RubberAgentRequest request)
+		{
+			try
+			{
+				if (request == null)
+					throw new ArgumentNullException(nameof(request));
 
-		//// ========================================
-		//// GET AGENT BY CODE
-		//// ========================================
-		//public async Task<RubberAgentDto?> GetAgentByCodeAsync(string agentCode)
-		//{
-		//	var query = @"
-		//              SELECT 
-		//			A.AgentId,
-		//			A.AgentCode,
-		//			A.AgentName,
-		//			A.AgentPhone,
-		//			A.AgentAddress,
-		//			A.IsActive,
-		//			A.RegisterDate,
-		//			A.RegisterPerson,
-		//			A.UpdateDate,
-		//			A.UpdatePerson,
-		//			F.Polygon
-		//              FROM RubberAgent A
-		//		LEFT JOIN RubberFarm F ON A.AgentCode = F.AgentCode
-		//              WHERE AgentCode = @AgentCode";
+				// Validate
+				if (string.IsNullOrWhiteSpace(request.AgentName))
+					throw new ArgumentException("Tên đại lý không được để trống");
 
-		//	return await _dbHelper.QueryFirstOrDefaultAsync<RubberAgentDto>(query, new { AgentCode = agentCode });
-		//}
+				var sql = @"
+					IF EXISTS (SELECT 1 FROM Agent WHERE AgentId = @AgentId)
+					BEGIN
+						-- Update
+						UPDATE Agent SET
+							AgentCode = @AgentCode,
+							AgentName = @AgentName,
+							OwnerName = @OwnerName,
+							AgentPhone = @AgentPhone,
+							AgentAddress = @AgentAddress,
+							IsActive = @IsActive,
+							UpdateDate = GETDATE(),
+							UpdatePerson = @UpdatePerson
+						WHERE AgentId = @AgentId;
+                
+						SELECT @AgentId;
+					END
+					ELSE
+					BEGIN
+						-- Insert
+						INSERT INTO Agent (
+							AgentCode, AgentName, OwnerName, AgentPhone, AgentAddress, 
+							IsActive, RegisterDate, RegisterPerson
+						)
+						VALUES (
+							@AgentCode, @AgentName, @OwnerName, @AgentPhone, @AgentAddress, 
+							@IsActive, GETDATE(), @RegisterPerson
+						);
+                
+						SELECT CAST(SCOPE_IDENTITY() AS INT);
+					END
+				";
 
-		//// ========================================
-		//// GET ALL ACTIVE AGENTS
-		//// ========================================
-		//public async Task<List<RubberAgentDto>> GetActiveAgentsAsync()
-		//{
+				// Generate AgentCode nếu là Insert và chưa có mã truyền vào
+				// (Bạn có thể điều chỉnh lại logic sinh mã theo rule của dự án)
+				var agentCode = request.AgentId > 0
+					? request.AgentCode
+					: (string.IsNullOrWhiteSpace(request.AgentCode)
+						? $"AG{DateTime.Now:yyMMdd}{Guid.NewGuid().ToString()[..4].ToUpper()}"
+						: request.AgentCode);
 
+				var result = _dbHelper.QueryFirstOrDefault<int>(sql, new
+				{
+					AgentId = request.AgentId,
+					AgentCode = agentCode,
+					AgentName = request.AgentName,
+					OwnerName = request.OwnerName,
+					AgentPhone = request.AgentPhone,
+					AgentAddress = request.AgentAddress,
+					IsActive = request.IsActive ? 1 : 0, // Mặc định là 1 (Active) nếu null
+					UpdatePerson = _userManage.Name,
+					RegisterPerson = _userManage.Name
+				});
 
-		//	var query = @"
-		//              SELECT 
-		//                  AgentId,
-		//                  AgentCode,
-		//                  AgentName,
-		//                  AgentPhone,
-		//                  AgentAddress,
-		//                  IsActive,
-		//                  RegisterDate,
-		//                  RegisterPerson,
-		//                  UpdateDate,
-		//                  UpdatePerson
-		//              FROM RubberAgent
-		//              WHERE IsActive = 1
-		//              ORDER BY AgentName";
-
-		//	var result = await _dbHelper.QueryAsync<RubberAgentDto>(query);
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET AGENTS FOR DROPDOWN
-		//// ========================================
-		//public async Task<List<AgentDropdownDto>> GetAgentsForDropdownAsync(bool activeOnly = true)
-		//{
-
-
-		//	var whereClause = activeOnly ? "WHERE IsActive = 1" : "";
-
-		//	var query = $@"
-		//              SELECT 
-		//                  AgentId,
-		//                  AgentCode,
-		//                  AgentName
-		//              FROM RubberAgent
-		//              {whereClause}
-		//              ORDER BY AgentName";
-
-		//	var result = await _dbHelper.QueryAsync<AgentDropdownDto>(query);
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET AGENT STATISTICS
-		//// ========================================
-		//public async Task<AgentStatisticsDto> GetAgentStatisticsAsync()
-		//{
-
-
-		//	var query = @"
-		//              SELECT 
-		//                  COUNT(*) AS TotalAgents,
-		//                  SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveAgents,
-		//                  SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS InactiveAgents,
-		//                  COUNT(DISTINCT CASE WHEN RegisterDate >= DATEADD(MONTH, -1, GETDATE()) THEN AgentId END) AS NewAgentsThisMonth,
-		//                  (SELECT COUNT(DISTINCT AgentCode) 
-		//                   FROM RubberPond 
-		//                   WHERE AgentCode IN (SELECT AgentCode FROM RubberAgent WHERE IsActive = 1)) AS AgentsWithPonds
-		//              FROM RubberAgent";
-
-		//	return await _dbHelper.QueryFirstOrDefaultAsync<AgentStatisticsDto>(query);
-		//}
-
-		//// ========================================
-		//// GET AGENTS WITH POND COUNT
-		//// ========================================
-		//public async Task<List<AgentWithPondCountDto>> GetAgentsWithPondCountAsync()
-		//{
-
-
-		//	var query = @"
-		//              SELECT 
-		//                  a.AgentId,
-		//                  a.AgentCode,
-		//                  a.AgentName,
-		//                  a.AgentPhone,
-		//                  a.AgentAddress,
-		//                  a.IsActive,
-		//                  COUNT(p.PondId) AS PondCount,
-		//                  SUM(ISNULL(p.CurrentNetKg, 0)) AS TotalNetKg
-		//              FROM RubberAgent a
-		//              LEFT JOIN RubberPond p ON p.AgentCode = a.AgentCode
-		//              GROUP BY 
-		//                  a.AgentId, 
-		//                  a.AgentCode, 
-		//                  a.AgentName, 
-		//                  a.AgentPhone, 
-		//                  a.AgentAddress, 
-		//                  a.IsActive
-		//              ORDER BY a.AgentName";
-
-		//	var result = await _dbHelper.QueryAsync<AgentWithPondCountDto>(query);
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// CHECK AGENT CODE EXISTS
-		//// ========================================
-		//public async Task<bool> AgentCodeExistsAsync(string agentCode, int? excludeAgentId = null)
-		//{
-
-
-		//	var query = excludeAgentId.HasValue
-		//		? "SELECT COUNT(*) FROM RubberAgent WHERE AgentCode = @AgentCode AND AgentId != @ExcludeAgentId"
-		//		: "SELECT COUNT(*) FROM RubberAgent WHERE AgentCode = @AgentCode";
-
-		//	var count = await _dbHelper.ExecuteScalarAsync<int>(query, new
-		//	{
-		//		AgentCode = agentCode,
-		//		ExcludeAgentId = excludeAgentId
-		//	});
-
-		//	return count > 0;
-		//}
-
-		//// ========================================
-		//// CHECK AGENT IS USED
-		//// ========================================
-		//public async Task<bool> AgentIsUsedAsync(int agentId)
-		//{
-
-
-		//	var query = @"
-		//              SELECT COUNT(*) 
-		//              FROM RubberPond 
-		//              WHERE AgentCode = (SELECT AgentCode FROM RubberAgent WHERE AgentId = @AgentId)";
-
-		//	var count = await _dbHelper.ExecuteScalarAsync<int>(query, new { AgentId = agentId });
-
-		//	return count > 0;
-		//}
-
-		//// ========================================
-		//// CREATE AGENT
-		//// ========================================
-		//public async Task<int> CreateAgentAsync(CreateAgentDto dto, string userName)
-		//{
-
-
-		//	var insertQuery = @"
-		//              INSERT INTO RubberAgent (
-		//                  AgentCode, 
-		//                  AgentName, 
-		//                  AgentPhone, 
-		//                  AgentAddress, 
-		//                  IsActive, 
-		//                  RegisterDate, 
-		//                  RegisterPerson
-		//              )
-		//              VALUES (
-		//                  @AgentCode, 
-		//                  @AgentName, 
-		//                  @AgentPhone, 
-		//                  @AgentAddress, 
-		//                  @IsActive, 
-		//                  GETDATE(), 
-		//                  @RegisterPerson                    
-		//              );
-		//              SELECT CAST(SCOPE_IDENTITY() as int);";
-
-		//	var agentId = await _dbHelper.ExecuteScalarAsync<int>(insertQuery, new
-		//	{
-		//		dto.AgentCode,
-		//		dto.AgentName,
-		//		dto.AgentPhone,
-		//		dto.AgentAddress,
-		//		dto.IsActive,
-		//		RegisterPerson = userName
-		//	});
-
-		//	return agentId;
-		//}
-
-		//// ========================================
-		//// UPDATE AGENT
-		//// ========================================
-		//public async Task<bool> UpdateAgentAsync(UpdateAgentDto dto, string userName)
-		//{
-
-
-		//	var updateQuery = @"
-		//              UPDATE RubberAgent
-		//              SET 
-		//                  AgentCode = @AgentCode,
-		//                  AgentName = @AgentName,
-		//                  AgentPhone = @AgentPhone,
-		//                  AgentAddress = @AgentAddress,
-		//                  IsActive = @IsActive,
-		//                  UpdateDate = GETDATE(),
-		//                  UpdatePerson = @UpdatePerson
-		//              WHERE AgentId = @AgentId";
-
-		//	var rowsAffected = await _dbHelper.ExecuteAsync(updateQuery, new
-		//	{
-		//		dto.AgentId,
-		//		dto.AgentCode,
-		//		dto.AgentName,
-		//		dto.AgentPhone,
-		//		dto.AgentAddress,
-		//		dto.IsActive,
-		//		UpdatePerson = userName
-		//	});
-
-		//	return rowsAffected > 0;
-		//}
-
-		//// ========================================
-		//// DELETE AGENT
-		//// ========================================
-		//public async Task<bool> DeleteAgentAsync(int agentId)
-		//{
-
-
-		//	var deleteQuery = "DELETE FROM RubberAgent WHERE AgentId = @AgentId";
-		//	var rowsAffected = await _dbHelper.ExecuteAsync(deleteQuery, new { AgentId = agentId });
-
-		//	return rowsAffected > 0;
-		//}
-
-		//// ========================================
-		//// BULK DELETE AGENTS
-		//// ========================================
-		//public async Task<int> BulkDeleteAgentsAsync(List<int> agentIds)
-		//{
-
-
-		//	var ids = string.Join(",", agentIds);
-		//	var deleteQuery = $"DELETE FROM RubberAgent WHERE AgentId IN ({ids})";
-		//	var rowsAffected = await _dbHelper.ExecuteAsync(deleteQuery);
-
-		//	return rowsAffected;
-		//}
-
-		//// ========================================
-		//// SEARCH AGENTS (Simple)
-		//// ========================================
-		//public async Task<List<RubberAgentDto>> SearchAgentsAsync(string keyword)
-		//{
-
-
-		//	var query = @"
-		//              SELECT 
-		//                  AgentId,
-		//                  AgentCode,
-		//                  AgentName,
-		//                  AgentPhone,
-		//                  AgentAddress,
-		//                  IsActive,
-		//                  RegisterDate,
-		//                  RegisterPerson,
-		//                  UpdateDate,
-		//                  UpdatePerson
-		//              FROM RubberAgent
-		//              WHERE AgentCode LIKE @Keyword 
-		//                 OR AgentName LIKE @Keyword 
-		//                 OR AgentPhone LIKE @Keyword
-		//              ORDER BY AgentName";
-
-		//	var result = await _dbHelper.QueryAsync<RubberAgentDto>(query, new { Keyword = $"%{keyword}%" });
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET AGENTS BY IDS
-		//// ========================================
-		//public async Task<List<RubberAgentDto>> GetAgentsByIdsAsync(List<int> agentIds)
-		//{
-
-
-		//	var ids = string.Join(",", agentIds);
-		//	var query = $@"
-		//              SELECT 
-		//                  AgentId,
-		//                  AgentCode,
-		//                  AgentName,
-		//                  AgentPhone,
-		//                  AgentAddress,
-		//                  IsActive,
-		//                  RegisterDate,
-		//                  RegisterPerson,
-		//                  UpdateDate,
-		//                  UpdatePerson
-		//              FROM RubberAgent
-		//              WHERE AgentId IN ({ids})
-		//              ORDER BY AgentName";
-
-		//	var result = await _dbHelper.QueryAsync<RubberAgentDto>(query);
-		//	return result.ToList();
-		//}
+				return result;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in AddOrUpdateAgent");
+				throw;
+			}
+		}
 	}
 }
