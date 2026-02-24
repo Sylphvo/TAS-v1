@@ -1423,7 +1423,7 @@ div[col-id="orderCode"] {
     cursor: pointer;
 }
 .ag-row-selected .noteditcolumn:not(div[col-id="selected"]) .ag-cell-value {
-    background: #d3d3d3 !important;
+    background: #ebeaea !important;
     cursor: no-drop;
 }
 div[col-id="selected"].ag-cell {

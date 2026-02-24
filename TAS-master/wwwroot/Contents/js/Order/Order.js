@@ -520,7 +520,7 @@ function onCellValueChanged(event) {
     let colDef = event.colDef.field;
     let isObjAgent = colDef == "agentCode";
     let isObjFarm = colDef == "farmCode";
-    
+    saveOrder(rowIndex);
 }
 // ========================================
 // CLOSE MODAL

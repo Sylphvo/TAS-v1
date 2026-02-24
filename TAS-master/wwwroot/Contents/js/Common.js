@@ -12,7 +12,7 @@ var arrConstant = {
     SortOrder_Farm: 3,// Farmer
     isCheckAll: false,// Farmer
     isLoadFirst: true,// Farmer
-    PrefixOrder: 'ORD_',
+    PrefixOrder: 'EXP_',
     PrefixIntake: 'INT_'
 };
 class SelectEditorWithTextDisplay {
