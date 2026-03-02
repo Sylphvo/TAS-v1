@@ -2,7 +2,7 @@
 // POND.JS - Pond Management (Refactored)
 // ========================================
 
-let gridApiLot;
+var gridApiLot;
 let gridColumnApi;
 let rowData = [];
 // ========================================
@@ -10,9 +10,9 @@ let rowData = [];
 // ========================================
 function initLotPage() {
 	gridApiLot = agGrid.createGrid(document.querySelector("#lotGrid"), gridOptions);
+	gridApiDynamic = gridApiLot;
 	// Setup event handlers
 	setupEventHandlers();
-
 	// Load initial data
 	loadLots();
 }
@@ -95,9 +95,7 @@ function onGridReady(params) {
 function onCellValueChanged(event) {
 	let rowIndex = event.node.rowIndex;
 	let colDef = event.colDef.field;
-	let isObjAgent = colDef == "agentCode";
-	let isObjFarm = colDef == "farmCode";
-
+	saveOrder(rowIndex);
 }
 function onFillEnd(params) {
 	return;
@@ -147,10 +145,10 @@ function loadLots(pageIndex, pageSize) {
 function CellRenderAction(params) {
 	// Define action buttons
 	let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveLot(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-	let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiLot}, ${params.node.rowIndex}, ${params.data.orderCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
-	let deleteLot = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+	let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex}, 'lotCode')" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+	let deleteLot = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.lotId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
 	// CHỈ hiện nút lưu khi chưa lưu
-	return params.data.orderId === 0 ? `${strSave}${strCancel}` : `${deleteLot}`;
+	return params.data.lotId === 0 ? `${strSave}${strCancel}` : `${deleteLot}`;
 }
 
 // ========================================
@@ -159,7 +157,7 @@ function CellRenderAction(params) {
 function AddNewRow() {
 	const newItem = {
 		lotId: 0,
-		lotCode: "",
+		lotCode: generateUniqueCodeCore(rowData, arrConstant.PrefixLot, 'lotCode'),
 		lotName: "",
 		capacityKg: 0,
 		dailyCapacityKg: 0,
@@ -170,36 +168,37 @@ function AddNewRow() {
 		updateBy: null,
 		updateDate: null
 	};
-	AddNewRowAggrid(gridApiLot, rowData, newItem, 'selected', 0);
+	AddNewRowAggrid(gridApiLot, rowData, newItem, 'selected', rowData.length);
+	RefeshSingleColumn(gridApiLot, 'selected');
 }
 
 // ========================================
-// SAVE POND (Inline)
+// SAVE ORDER
 // ========================================
-function savePondInline(rowIndex) {
-	const rowNode = gridApiLot.getDisplayedRowAtIndex(rowIndex);
+function saveOrder(rowIndex) {
+	const rowNode = gridApiOrder.getDisplayedRowAtIndex(rowIndex);
 	const data = rowNode.data;
-
-	if (!data.pondCode || !data.pondName) {
-		NotificationToast("error", "Vui lòng nhập Mã và Tên hồ");
-		return;
-	}
-
 	showLoading();
+
 	$.ajax({
-		url: data.pondId === 0 ? '/Lot/CreateLot' : '/Lot/UpdateLot',
-		type: data.pondId === 0 ? 'POST' : 'PUT',
+		url: `/Order/AddOrUpdateOrder`,
+		type: 'POST',
 		contentType: 'application/json',
 		data: JSON.stringify(data),
 		success: function (response) {
 			if (response.success) {
 				NotificationToast("success", response.message);
-				//loadLots();
+				loadOrders();
 			} else {
 				NotificationToast("error", response.message);
 			}
 		},
-		complete: hideLoading
+		error: function (xhr, status, error) {
+			NotificationToast("error", 'Lỗi khi lưu: ' + error);
+		},
+		complete: function () {
+			hideLoading();
+		}
 	});
 }
 

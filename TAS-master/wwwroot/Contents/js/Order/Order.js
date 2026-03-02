@@ -2,7 +2,7 @@
 // ORDER.JS - Order Management
 // ========================================
 
-let gridApiOrder;
+var gridApiOrder, gridApiDynamic;
 let gridColumnApi;
 let rowData = [];
 
@@ -11,7 +11,7 @@ let rowData = [];
 // ========================================
 function initPage() {
     gridApiOrder = agGrid.createGrid(document.querySelector("#orderGrid"), gridOptions);
-    
+    gridApiDynamic = gridApiOrder;
     // Setup event handlers
     setupEventHandlers();
     
@@ -251,7 +251,7 @@ function AddNewRow() {
     const newItem = {
         // 1. Định danh
         orderId: 0, // 0 đánh dấu là dòng mới chưa lưu DB
-        orderCode: getCodePrefix(arrConstant.PrefixOrder), // Hàm sinh mã không trùng
+        orderCode: generateUniqueCodeCore(rowData, arrConstant.PrefixOrder, 'orderCode'), // Hàm sinh mã không trùng
         orderName: "", // Mới thêm: Tên đơn hàng
         orderDate: new Date(),
         status: 0, 
@@ -262,7 +262,7 @@ function AddNewRow() {
         updateBy: null,
         updateDate: null
     };
-    AddNewRowAggrid(gridApiOrder, rowData, newItem, 'selected', 0);
+    AddNewRowAggrid(gridApiOrder, rowData, newItem, 'selected', rowData.length);
 }
 
 // ========================================
@@ -518,8 +518,6 @@ function onSelectionChanged() {
 function onCellValueChanged(event) {
     let rowIndex = event.node.rowIndex;
     let colDef = event.colDef.field;
-    let isObjAgent = colDef == "agentCode";
-    let isObjFarm = colDef == "farmCode";
     saveOrder(rowIndex);
 }
 // ========================================
@@ -560,7 +558,7 @@ function hideLoading() {
 function CellRenderAction(params) {
     // Define action buttons
     let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveOrder(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiOrder}, ${params.node.rowIndex}, ${params.data.orderCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex}, 'orderCode')" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
     let deleteOrder = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteOrder(${params.data.orderId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
     // CHỈ hiện nút lưu khi chưa lưu
     return params.data.orderId === 0 ? `${strSave}${strCancel}` : `${deleteOrder}`;

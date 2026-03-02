@@ -13,7 +13,8 @@ var arrConstant = {
     isCheckAll: false,// Farmer
     isLoadFirst: true,// Farmer
     PrefixOrder: 'EXP_',
-    PrefixIntake: 'INT_'
+    PrefixIntake: 'INT_',
+    PrefixLot: 'LOT_',
 };
 class SelectEditorWithTextDisplay {
     init(params) {
@@ -286,9 +287,9 @@ function RegisterAllEvent(gridApiDynamic) {
         }
     });
 }
-function cancelRow(gridApiDynamic, rowIndex, strCode) {
+function cancelRow(rowIndex, strCode) {
     const objectData = gridApiDynamic.getDisplayedRowAtIndex(rowIndex).data;
-    rowData = rowData.filter(item => item[strCode] == objectData[strCode]);
+    rowData = rowData.filter(item => item[strCode] != objectData[strCode]);
     gridApiDynamic.setGridOption('rowData', rowData);
 }
 function LoadDataAgGrid(gridApiDynamic, pageIndex, pageSize, strUrl, functionDynamic) {

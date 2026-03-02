@@ -235,9 +235,9 @@ async function loadData(pageIndex, pageSize) {
 
 // Add New Row
 function addNewRow() {
-    const newRow = {
+    const newItem = {
         intakeId: 0,
-        intakeCode: getCodePrefix(arrConstant.PrefixIntake),
+        intakeCode: generateUniqueCodeCore(rowData, arrConstant.PrefixIntake, 'intakeCode'),
         agentCode: '',
         agentName: '',
         farmCode: '',
@@ -252,7 +252,7 @@ function addNewRow() {
         timeDate_Person: '',
         timeDate: ''
     };
-    AddNewRowAggrid(gridApiIntake, rowData, newRow, 'action', 0);
+    AddNewRowAggrid(gridApiIntake, rowData, newItem, 'selected', rowData.length);
 }
 function onRemoveSelected() {
     const selectedData = gridApiIntake.getSelectedRows();
@@ -834,7 +834,7 @@ function RefeshSingleColumn(fieldName) {
 function CellRenderAction(params) {
     let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveRow(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
 
-    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex}, 'intakeCode')" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
     let strApprove = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="approveRow(${params.node.rowIndex},${arrValue.IdProgress})" title="${arrMsg.key_delete}"><i class="ti ti-arrow-back f-20"></i></a>`;
     let strDelete = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteRow(${params.node.rowIndex})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
     const status = params.data.status == arrValue.IdFinish;

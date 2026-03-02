@@ -78,7 +78,7 @@ namespace TAS.ViewModels
 				var dataSql = $@"
 				SELECT 
 					-- Tạo số thứ tự ảo (Để hiển thị STT trên Grid)
-					rowNo = ROW_NUMBER() OVER (ORDER BY o.OrderId DESC),
+					rowNo = ROW_NUMBER() OVER (ORDER BY o.OrderId),
 					-- Các cột có dữ liệu thật
 					o.OrderId,
 					o.OrderCode,
