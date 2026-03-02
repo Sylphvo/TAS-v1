@@ -36,7 +36,7 @@ namespace TAS.Controllers
 		// GET: /Lot/GetAllLots
 		// ========================================
 		[HttpGet]
-		public async Task<IActionResult> GetAllLots(RubberLotRequest filter)
+		public async Task<IActionResult> GetAllLots([FromQuery] RubberLotRequest filter)
 		{
 			try
 			{
@@ -45,11 +45,85 @@ namespace TAS.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error in GetAllPonds");
-				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
+				_logger.LogError(ex, "Error in GetAllLots");
+				return Json(new { success = false, message = "Lỗi khi tải dữ liệu: " + ex.Message });
 			}
 		}
 
-		
+		// ========================================
+		// POST: /Lot/AddOrUpdateLot
+		// ========================================
+		[HttpPost]
+		public async Task<IActionResult> AddOrUpdateLot([FromBody] RubberLotRequest request)
+		{
+			// 1. Validate dữ liệu đầu vào cơ bản
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(new
+				{
+					success = false,
+					message = "Dữ liệu không hợp lệ",
+					errors = ModelState.Values.SelectMany(v => v.Errors)
+				});
+			}
+
+			try
+			{
+				// 2. Gọi Service để xử lý DB (Bạn cần chắc chắn _lotModels đã có hàm này)
+				long resultId = await _lotModels.AddOrUpdateLotAsync(request);
+
+				// 3. Trả về kết quả
+				// Chú ý: Cần thêm LotId vào RubberLotRequest để check điều kiện dưới đây
+				bool isUpdate = request.LotId > 0;
+
+				return Ok(new
+				{
+					success = true,
+					message = isUpdate ? "Cập nhật thành công!" : "Thêm mới thành công!",
+					data = resultId // Trả về ID để FE cập nhật lại Grid
+				});
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Lỗi khi lưu thông tin Hồ/Lô");
+				return StatusCode(500, new
+				{
+					success = false,
+					message = "Đã xảy ra lỗi hệ thống: " + ex.Message
+				});
+			}
+		}
+
+		// ========================================
+		// DELETE: /Lot/DeleteLot
+		// ========================================
+		[HttpDelete]
+		public async Task<IActionResult> DeleteLot(int lotId)
+		{
+			try
+			{
+				if (lotId <= 0)
+				{
+					return BadRequest(new { success = false, message = "ID không hợp lệ." });
+				}
+
+				// Bạn cần chắc chắn _lotModels đã có hàm DeleteLotAsync
+				var result = await _lotModels.DeleteLotAsync(lotId);
+
+				if (result)
+				{
+					return Ok(new { success = true, message = "Xóa thành công." });
+				}
+				else
+				{
+					return NotFound(new { success = false, message = "Không tìm thấy dữ liệu hoặc đã bị xóa trước đó." });
+				}
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = ex.Message });
+			}
+		}
+
 	}
 }

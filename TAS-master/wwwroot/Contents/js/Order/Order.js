@@ -176,9 +176,9 @@ function loadOrders(pageIndex, pageSize) {
 
     // 1. Nếu không truyền pageIndex, mặc định là trang 1 (khi bấm nút Tìm kiếm)
     if (pageIndex) {
-        arrConstant.pageIndex = pageIndex;
+        arrConstant.currentPage = pageIndex;
     } else {
-        arrConstant.pageIndex = 1;
+        arrConstant.currentPage = 1;
     }
     if (pageSize) {
         arrConstant.pageSize = pageSize;
@@ -186,8 +186,8 @@ function loadOrders(pageIndex, pageSize) {
 
     // 2. Lấy giá trị từ các ô Filter trên màn hình
     var filterData = {
-        PageIndex: arrConstant.pageIndex,
-        PageSize: arrConstant.PageSize,
+        PageIndex: arrConstant.currentPage,
+        PageSize: arrConstant.pageSize,
         Keyword: $('#txtSearchKeyword').val(), // Lấy từ ô tìm kiếm
         Status: $('#ddlStatus').val(),         // Lấy từ dropdown trạng thái
         FromDate: $('#dtFromDate').val(),      // Lấy ngày bắt đầu

@@ -64,8 +64,8 @@ namespace TAS.DTOs
 		public decimal? centrifugeProductKg { get; set; }
 		public string? searchText { get; set; } // Tìm kiếm chung (Code, Name...)
 		public int? status { get; set; }
-		public int pageNumber { get; set; } = 1;
-		public int pageSize { get; set; } = 10;
+		public int PageIndex { get; set; }
+		public int pageSize { get; set; }
 		public string sortColumn { get; set; } = "RegisterDate";
 		public string sortOrder { get; set; } = "DESC"; // ASC hoặc DESC
 	}

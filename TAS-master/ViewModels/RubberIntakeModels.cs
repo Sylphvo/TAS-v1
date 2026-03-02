@@ -83,7 +83,7 @@ namespace TAS.ViewModels
 					FarmCode = req.farmCode,
 					Status = req.status,
 					Search = $"%{req.searchText}%",
-					Skip = (req.pageNumber - 1) * req.pageSize,
+					Skip = (req.PageIndex - 1) * req.pageSize,
 					Take = req.pageSize
 				});
 				// 3. Trả về kết quả kèm TotalRecords (lấy từ dòng đầu tiên nếu có dữ liệu)

@@ -27,6 +27,7 @@ namespace TAS.DTOs
 	public class RubberLotRequest
 	{
 		public int RowNo { get; set; }
+		public int LotId { get; set; }
 		public string? LotCode { get; set; }
 		public string? LotName { get; set; }
 		public decimal CapacityKg { get; set; }

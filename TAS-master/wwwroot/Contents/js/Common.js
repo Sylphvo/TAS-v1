@@ -4,8 +4,8 @@ var arrConstant = {
     idFinish: 1, // Đang xử lý
     msgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
     currentPage: 1, // Đã tạo đơn hàng
-    pageIndex: 10, // Đã tạo đơn hàng
-    pageSize: 10, // Đã tạo đơn hàng
+    pageIndex: 1, // Đã tạo đơn hàng
+    pageSize: 5, // Đã tạo đơn hàng
 
     SortOrder_Lot: 1, // Order
     SortOrder_Agent: 2,// Agent

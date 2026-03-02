@@ -25,8 +25,8 @@ namespace TAS.DTOs
 		public int? Status { get; set; } // Mặc định là Mới tạo
 
 		public string? Note { get; set; }
-		public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
-		public int PageSize { get; set; } = 10;      // Số dòng mỗi trang
+		public int PageIndex { get; set; }      // Trang hiện tại (Mặc định trang 1)
+		public int PageSize { get; set; }    // Số dòng mỗi trang
 		public string? Keyword { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
 		public string? SortColumn { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
 		public string? SortOrder { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)		

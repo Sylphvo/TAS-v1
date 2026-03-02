@@ -175,20 +175,20 @@ function AddNewRow() {
 // ========================================
 // SAVE ORDER
 // ========================================
-function saveOrder(rowIndex) {
-	const rowNode = gridApiOrder.getDisplayedRowAtIndex(rowIndex);
+function saveLot(rowIndex) {
+	const rowNode = gridApiLot.getDisplayedRowAtIndex(rowIndex);
 	const data = rowNode.data;
 	showLoading();
 
 	$.ajax({
-		url: `/Order/AddOrUpdateOrder`,
+		url: `/Lot/AddOrUpdateLot`,
 		type: 'POST',
 		contentType: 'application/json',
 		data: JSON.stringify(data),
 		success: function (response) {
 			if (response.success) {
 				NotificationToast("success", response.message);
-				loadOrders();
+				loadLots();
 			} else {
 				NotificationToast("error", response.message);
 			}
