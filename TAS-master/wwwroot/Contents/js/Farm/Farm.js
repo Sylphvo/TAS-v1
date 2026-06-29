@@ -1,869 +1,404 @@
-﻿// ========================================
-// FARM MANAGEMENT - AG GRID
-// ========================================
-
+﻿//#region 1. GLOBAL VARIABLES & INITIALIZE PAGE
 var gridApiFarm;
 var gridOptions;
 var currentFarmId = null;
 var selectedRows = [];
 var map = null;
 var drawnItems = null;
+let rowData = []; // Bổ sung biến rowData để đồng bộ với hàm AddNewRow
 
-// ========================================
-// INITIALIZE
-// ========================================
 function initFarmPage() {
     gridApiFarm = agGrid.createGrid(document.querySelector("#farmGrid"), gridOptions);
+    gridApiDynamic = gridApiFarm; // Đồng bộ biến toàn cục
+    
+    // Load các dropdown filter
     loadAgentsDropdown();
+    
+    // Setup event handlers
+    setupEventHandlers();
+    
+    // Load initial data
     loadFarms();
-    registerEvents();
 };
+//#endregion
 
-// ========================================
-// LOAD AGENTS DROPDOWN
-// ========================================
-function loadAgentsDropdown() {
-    //$.ajax({
-    //    url: '/Agent/GetAgentsForDropdown',
-    //    type: 'GET',
-    //    data: { activeOnly: true },
-    //    success: function (response) {
-    //        if (response.success) {
-    //            // For search filter
-    //            var htmlFilter = '<option value="">Tất cả</option>';
-    //            response.data.forEach(function (agent) {
-    //                htmlFilter += `<option value="${agent.agentCode}">${agent.agentCode} - ${agent.agentName}</option>`;
-    //            });
-    //            $('#ddlAgentCode').html(htmlFilter);
-
-    //            // For modal form
-    //            var htmlForm = '<option value="">-- Chọn đại lý --</option>';
-    //            response.data.forEach(function (agent) {
-    //                htmlForm += `<option value="${agent.agentCode}">${agent.agentCode} - ${agent.agentName}</option>`;
-    //            });
-    //            $('#agentCode').html(htmlForm);
-
-    //            console.log('✅ Loaded', response.data.length, 'agents for dropdown');
-    //        }
-    //    },
-    //    error: function (xhr, status, error) {
-    //        console.error('❌ Error loading agents:', error);
-    //    }
-    //});
-}
-
-// ========================================
-// AG GRID SETUP
-// ========================================
-const columnDefs = [
-    {
-        field: 'farmId',
-        headerName: 'ID',
-        width: 80,
-        hide: true
+//#region 2. SETUP AG GRID & COLUMNS
+var columnDefsFarm = [
+    { headerName: 'Số thứ tự', field: 'rowNo', minWidth: 50, width: 90 },
+    { 
+        headerName: 'Mã nhà vườn', 
+        field: 'farmCode', 
+        minWidth: 150,
+        editable: params => params.data.farmId === 0, 
+        cellRenderer: params => `<strong>${params.value || ''}</strong>`,
+        suppressFillHandle: false
     },
-    {
-        field: 'farmCode',
-        headerName: 'Mã nhà vườn',
-        width: 150,
-        cellRenderer: function (params) {
-            return `<strong>${params.value}</strong>`;
-        }
+    { headerName: 'Tên nhà vườn', field: 'farmName', width: 200, editable: true, suppressFillHandle: false },
+    { headerName: 'Người đại diện', field: 'ownerName', width: 180, editable: true, suppressFillHandle: false },
+    { headerName: 'Mã đại lý', field: 'agentCode', width: 150, editable: true, suppressFillHandle: false },
+    { headerName: 'Số điện thoại', field: 'phone', width: 150, editable: true, suppressFillHandle: false },
+    { 
+        headerName: 'Diện tích (Ha)', 
+        field: 'area', 
+        width: 150, 
+        editable: true,
+        type: 'numericColumn',
+        valueFormatter: params => params.value ? Number(params.value).toLocaleString('vi-VN') : '0',
+        suppressFillHandle: false
     },
+    { headerName: 'Địa chỉ', field: 'address', width: 250, editable: true, suppressFillHandle: false },
+    { headerName: 'Tọa độ GPS', field: 'coordinates', width: 200, editable: true, suppressFillHandle: false },
     {
-        field: 'farmerName',
-        headerName: 'Tên chủ vườn',
-        width: 200,
-        cellRenderer: function (params) {
-            return `${params.value}`;
-        }
-    },
-    {
-        field: 'agentCode',
-        headerName: 'Mã ĐL',
-        width: 100
-    },
-    {
-        field: 'agentName',
-        headerName: 'Tên đại lý',
-        width: 180,
-        cellRenderer: function (params) {
-            if (!params.value) return '-';
-            return `${params.value}`;
-        }
-    },
-    {
-        field: 'farmPhone',
-        headerName: 'Số điện thoại',
-        width: 130,
-        cellRenderer: function (params) {
-            if (!params.value) return '-';
-            return `${params.value}`;
-        }
-    },
-    {
-        field: 'farmAddress',
-        headerName: 'Địa chỉ',
-        width: 250,
-        cellRenderer: function (params) {
-            if (!params.value) return '-';
-            return `${params.value}`;
-        }
-    },
-    {
-        field: 'certificates',
-        headerName: 'Chứng chỉ',
-        width: 120,
-        cellRenderer: function (params) {
-            if (!params.value) return '-';
-            return `<span class="badge badge-info">${params.value}</span>`;
-        }
-    },
-    {
-        field: 'totalAreaHa',
-        headerName: 'Tổng DT (ha)',
-        width: 120,
-        cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
-        valueFormatter: function (params) {
-            if (!params.value) return '-';
-            return Number(params.value).toLocaleString('vi-VN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-    },
-    {
-        field: 'rubberAreaHa',
-        headerName: 'DT mủ (ha)',
-        width: 120,
-        cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
-        valueFormatter: function (params) {
-            if (!params.value) return '-';
-            return Number(params.value).toLocaleString('vi-VN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-    },
-    {
-        field: 'totalExploit',
-        headerName: 'Sản lượng (kg)',
-        width: 140,
-        cellStyle: { 'text-align': 'right', 'padding-right': '10px' },
-        valueFormatter: function (params) {
-            if (!params.value) return '-';
-            return Number(params.value).toLocaleString('vi-VN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-    },
-    {
-        field: 'isActive',
         headerName: 'Trạng thái',
-        width: 120,
-        cellRenderer: function (params) {
-            if (params.value) {
-                return '<span class="status-badge status-active">Đã duyệt</span>';
-            } else {
-                return '<span class="status-badge status-inactive">Chưa duyệt</span>';
-            }
+        field: 'status',
+        width: 150,
+        editable: true,
+        cellEditor: 'agSelectCellEditor',
+        cellEditorParams: {
+            values: [0, 1, 2]
         },
-        filter: 'agSetColumnFilter',
-        filterParams: {
-            values: [true, false],
-            valueFormatter: function (params) {
-                return params.value ? 'Đã duyệt' : 'Chưa duyệt';
-            }
-        }
-    },
-    {
-        field: 'registerDate',
-        headerName: 'Ngày đăng ký',
-        width: 130,
-        valueFormatter: function (params) {
-            if (!params.value) return '';
-            return new Date(params.value).toLocaleDateString('vi-VN');
-        },
-        filter: 'agDateColumnFilter'
-    },
-    {
-        field: 'registerPerson',
-        headerName: 'Người đăng ký',
-        width: 130
-    },
-    //{
-    //    headerName: 'Thao tác',
-    //    width: 200,
-    //    pinned: 'right',
-    //    cellRenderer: function (params) {
-    //        var approveBtn = params.data.isActive
-    //            ? `
-    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="unapproveFarm(${params.data.farmId})" title="Hủy duyệt"><i class="ti ti-close f-20"></i> </a>`
-    //            : `
-    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="approveFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-check f-20"></i> </a>`;
-
-    //        return `
-    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="editFarm(${params.data.farmId})" title="Duyệt"><i class="ti ti-edit f-20"></i> </a>
-    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="viewFarm(${params.data.farmId})" title="Xem"><i class="ti ti-eye f-20"></i> </a>
-    //                ${approveBtn}
-    //                <a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteFarm(${params.data.farmId})" title="Xóa"><i class="ti ti-trash f-20"></i> </a>
-    //            `;
-    //    },
-    //    filter: false,
-    //    sortable: false
-    //}
+        cellRenderer: params => renderStatusBadge(params.value),
+        suppressFillHandle: false
+    }
 ];
-var gridOptions = CreateGridOption(columnDefs);
+
+gridOptions = CreateGridOption(columnDefsFarm);
 
 function onGridReady(params) {
     gridApiFarm = params.api;
-    gridColumnApi = params.columnApi;
-    // Auto size columns
-    //gridApiFarm.sizeColumnsToFit();
+    params.api.sizeColumnsToFit();
 }
-function onCellValueChanged(event) {
-    let rowIndex = event.node.rowIndex;
-    let colDef = event.colDef.field;
-    let isObjAgent = colDef == "agentCode";
-    let isObjFarm = colDef == "farmCode";
+//#endregion
 
-}
-function onFillEnd(params) {
-    return;
-}
-
-// ========================================
-// REGISTER EVENTS
-// ========================================
-function registerEvents() {
-    // Search
-    $('#btnSearch').on('click', loadFarms);
-
-    // Reset
-    $('#btnReset').on('click', function () {
-        $('#txtSearchKeyword').val('');
-        $('#txtFarmCode').val('');
-        $('#txtFarmerName').val('');
-        $('#ddlAgentCode').val('');
-        $('#ddlIsActive').val('true');
-        $('#txtFromDate').val('');
-        $('#txtToDate').val('');
-        loadFarms();
-    });
-
-    // Add
+//#region 3. EVENT HANDLERS
+function setupEventHandlers() {
+    // Nút chức năng cơ bản
+    $('#btnRefresh').on('click', loadFarms);
     $('#btnAdd').on('click', AddNewRow);
-
-    // Save
+    $('#btnExport').on('click', exportAllToExcel);
+    $('#btnExportSelected').on('click', exportSelectedToExcel);
     $('#btnSave').on('click', saveFarm);
 
-    // Approve/Unapprove
-    $('#btnApprove').on('click', bulkApproveFarms);
-    $('#btnUnapprove').on('click', bulkUnapproveFarms);
-
-    // Bulk Delete
-    $('#btnBulkDelete').on('click', bulkDeleteFarms);
-
-    // Export
-    $('#btnExport').on('click', exportToExcel);
-
-    // Refresh
-    $('#btnRefresh').on('click', loadFarms);
-
-    // Confirm Delete
-    $('#btnConfirmDelete').on('click', confirmDelete);
-
-    // Polygon buttons
-    $('#btnDrawPolygon').on('click', showMapModal);
-    $('#btnClearPolygon').on('click', function () {
-        $('#polygon').val('');
-    });
-    $('#btnSavePolygon').on('click', savePolygonFromMap);
-
-    // Enter to search
-    $('#txtSearchKeyword, #txtFarmCode, #txtFarmerName').on('keypress', function (e) {
-        if (e.which === 13) {
-            loadFarms();
+    // Chức năng xóa nhiều dòng
+    $('#btnDelete').on('click', function () {
+        if (selectedRows.length === 0) return showWarning('Vui lòng chọn ít nhất 1 nông trường để xóa');
+        if (confirm(`Bạn có chắc muốn xóa ${selectedRows.length} nông trường đã chọn?`)) {
+            const ids = selectedRows.map(r => r.farmId);
+            $.ajax({
+                url: '/Farm/DeleteMultiple',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(ids),
+                success: function (res) {
+                    if (res.success) {
+                        showSuccess(res.message);
+                        loadFarms();
+                    } else showError(res.message);
+                }
+            });
         }
     });
 
-    // Show statistics
-    $('.btn-info').on('dblclick', showStatistics);
+    // Dropdown Filters
+    $('#ddlAgentCode').on('change', loadFarms);
+    $('#ddlStatus').on('change', loadFarms);
+
+    // Xử lý sự kiện Modal Tỉnh/Huyện/Xã
+    $('#ddlProvince').on('change', function () {
+        loadDistrict($(this).val());
+        $('#ddlWard').html('<option value="">-- Chọn Phường/Xã --</option>');
+    });
+    $('#ddlDistrict').on('change', function () { loadWard($(this).val()); });
+
+    // Tabs trong Modal
+    $('.nav-tabs a').on('click', function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+        if ($(this).attr('href') === '#map-tab' && map !== null) {
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+    });
+    
+    // Quick filter
+    $('#quickFilter').on('input', function () {
+        gridApiFarm.setGridOption('quickFilterText', $(this).val());
+    });
 }
 
-// ========================================
-// LOAD FARMS
-// ========================================
+function onSelectionChanged() {
+    selectedRows = gridApiFarm.getSelectedRows();
+    const count = selectedRows.length;
+    $('#selectedRecords').text(count > 0 ? `Đã chọn: ${count}` : "").toggle(count > 0);
+    $('#btnExportSelected, #btnDelete').prop('disabled', count === 0);
+}
+
+function onFilterChanged() { updateStatusBar(); }
+function onSortChanged() { updateStatusBar(); }
+
+function onCellValueChanged(event) {
+    let rowIndex = event.node.rowIndex;
+    saveFarmInline(rowIndex); 
+}
+//#endregion
+
+//#region 4. CRUD OPERATIONS (LOAD, ADD, SAVE, DELETE)
 function loadFarms(pageIndex, pageSize) {
-    let strUrl = '/Farm/GetAllFarms';
+    let strUrl = '/Farm/GetAll';
     let functionCallback = function (newPage, newSize) {
         loadFarms(gridApiFarm, newPage, newSize);
     };
     LoadDataAgGrid(gridApiFarm, pageIndex, pageSize, strUrl, functionCallback);
 }
 
-// ========================================
-// SHOW ADD MODAL
-// ========================================
 function AddNewRow() {
     const newItem = {
-        agentId: 0,
-        agentCode: '',
-        agentName: '',
-        address: '',
-        phone: '',
-        status: 1,
-        statusName: 'Hoạt động',
-        statusClass: 'success'
+        farmId: 0,
+        farmCode: generateUniqueCodeCore(rowData, 'FM', 'farmCode'),
+        farmName: "",
+        ownerName: "",
+        agentCode: "",
+        phone: "",
+        area: 0,
+        address: "",
+        coordinates: "",
+        status: 1
     };
-    AddNewRowAggrid(gridApiAgent, rowData, newItem, 'selected', 0);
-}
-function showAddModal() {
-    currentFarmId = null;
-    $('#modalTitle').text('Thêm nhà vườn mới');
-    $('#farmForm')[0].reset();
-    $('#farmId').val('');
-    $('#isActive').val('false'); // Default: chưa duyệt
-    $('#farmModal').modal('show');
+    AddNewRowAggrid(gridApiFarm, rowData, newItem, 'selected', rowData.length);
+    RefeshSingleColumn(gridApiFarm, 'selected');
 }
 
-// ========================================
-// EDIT FARM
-// ========================================
-function editFarm(id) {
-    console.log('✏️ Editing farm:', id);
-    currentFarmId = id;
+function saveFarmInline(rowIndex) {
+    const rowNode = gridApiFarm.getDisplayedRowAtIndex(rowIndex);
+    const data = rowNode.data;
+
+    if (!data.farmCode || !data.farmName) {
+        NotificationToast('warning', 'Vui lòng nhập đầy đủ Mã và Tên nông trường');
+        return;
+    }
 
     $.ajax({
-        url: '/Farm/GetFarmById',
-        type: 'GET',
-        data: { id: id },
-        success: function (response) {
-            if (response.success) {
-                const farm = response.data;
-
-                $('#modalTitle').text('Sửa thông tin nhà vườn');
-                $('#farmId').val(farm.farmId);
-                $('#farmCode').val(farm.farmCode);
-                $('#agentCode').val(farm.agentCode);
-                $('#farmerName').val(farm.farmerName);
-                $('#farmPhone').val(farm.farmPhone);
-                $('#farmAddress').val(farm.farmAddress);
-                $('#certificates').val(farm.certificates);
-                $('#totalAreaHa').val(farm.totalAreaHa);
-                $('#rubberAreaHa').val(farm.rubberAreaHa);
-                $('#totalExploit').val(farm.totalExploit);
-                $('#isActive').val(farm.isActive.toString());
-                $('#polygon').val(farm.polygon || '');
-
-                $('#farmModal').modal('show');
+        url: '/Farm/SaveInline',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (res) {
+            if (res.success) {
+                NotificationToast('success', 'Lưu thành công');
+                loadFarms();
             } else {
-                showError(response.message);
+                NotificationToast('error', res.message);
             }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi tải thông tin nhà vườn: ' + error);
         }
     });
 }
 
-// ========================================
-// VIEW FARM
-// ========================================
-function viewFarm(id) {
-    editFarm(id);
-    // Make all fields readonly
-    $('#farmForm input, #farmForm select, #farmForm textarea').prop('readonly', true);
-    $('#farmForm select').prop('disabled', true);
-    $('#btnSave').hide();
-
-    $('#farmModal').on('hidden.bs.modal', function () {
-        $('#farmForm input, #farmForm select, #farmForm textarea').prop('readonly', false);
-        $('#farmForm select').prop('disabled', false);
-        $('#btnSave').show();
-    });
-}
-
-// ========================================
-// SAVE FARM
-// ========================================
 function saveFarm() {
-    // Validation
-    if (!$('#farmCode').val()) {
-        showWarning('Vui lòng nhập mã nhà vườn');
-        $('#farmCode').focus();
-        return;
+    // Hàm này cho form Modal chi tiết (nếu có sử dụng)
+    const formData = new FormData($('#farmForm')[0]);
+    var coordinates = [];
+    if (drawnItems) {
+        drawnItems.eachLayer(function (layer) {
+            if (layer instanceof L.Polygon) {
+                var latlngs = layer.getLatLngs()[0];
+                coordinates = latlngs.map(ll => [ll.lat, ll.lng]);
+            }
+        });
     }
-
-    if (!$('#farmerName').val()) {
-        showWarning('Vui lòng nhập tên chủ vườn');
-        $('#farmerName').focus();
-        return;
-    }
-
-    if (!$('#agentCode').val()) {
-        showWarning('Vui lòng chọn đại lý');
-        $('#agentCode').focus();
-        return;
-    }
-
-    const farmData = {
-        farmId: $('#farmId').val() ? parseInt($('#farmId').val()) : 0,
-        farmCode: $('#farmCode').val(),
-        agentCode: $('#agentCode').val(),
-        farmerName: $('#farmerName').val(),
-        farmPhone: $('#farmPhone').val(),
-        farmAddress: $('#farmAddress').val(),
-        isActive: $('#isActive').val() === 'true',
-        certificates: $('#certificates').val(),
-        totalAreaHa: parseFloat($('#totalAreaHa').val()) || null,
-        rubberAreaHa: parseFloat($('#rubberAreaHa').val()) || null,
-        totalExploit: parseFloat($('#totalExploit').val()) || null,
-        polygon: $('#polygon').val()
-    };
-
-    const isEdit = currentFarmId !== null && currentFarmId > 0;
-    const url = isEdit ? '/Farm/UpdateFarm' : '/Farm/CreateFarm';
-    const method = isEdit ? 'PUT' : 'POST';
-
-    console.log(isEdit ? '✏️ Updating farm...' : '➕ Creating farm...');
+    formData.append('coordinatesJson', JSON.stringify(coordinates));
 
     $.ajax({
-        url: url,
-        type: method,
-        contentType: 'application/json',
-        data: JSON.stringify(farmData),
-        success: function (response) {
-            if (response.success) {
-                showSuccess(response.message);
-                $('#farmModal').modal('hide');
+        url: '/Farm/Save',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            if (res.success) {
+                showSuccess(res.message);
+                closeModal();
                 loadFarms();
             } else {
-                showError(response.message);
+                showError(res.message);
             }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi lưu nhà vườn: ' + error);
         }
     });
 }
-// ========================================
-// FARM.JS - PART 2
-// ========================================
 
-// ========================================
-// DELETE FARM
-// ========================================
-function deleteFarm(id) {
-    currentFarmId = id;
-    $('#deleteModal').modal('show');
-}
-
-function confirmDelete() {
-    if (!currentFarmId) return;
-
-    console.log('🗑️ Deleting farm:', currentFarmId);
-
+function deleteFarm(farmId) {
+    if (!confirm('Bạn có chắc muốn xóa nông trường này?')) return;
     $.ajax({
-        url: '/Farm/DeleteFarm',
+        url: `/Farm/Delete/${farmId}`,
         type: 'DELETE',
-        data: { id: currentFarmId },
-        success: function (response) {
-            if (response.success) {
-                showSuccess(response.message);
-                $('#deleteModal').modal('hide');
+        success: function (res) {
+            if (res.success) {
+                showSuccess(res.message);
                 loadFarms();
             } else {
-                showError(response.message);
+                showError(res.message);
             }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi xóa nhà vườn: ' + error);
         }
     });
 }
+//#endregion
 
-// ========================================
-// APPROVE FARM
-// ========================================
-function approveFarm(farmId) {
-    console.log('✅ Approving farm:', farmId);
-
+//#region 5. MAP & DROPDOWNS (PROVINCE, DISTRICT, WARD)
+function loadAgentsDropdown() {
+    // Logic của bạn đang comment, mình giữ nguyên cấu trúc
+    /*
     $.ajax({
-        url: '/Farm/ApproveFarm',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ farmId: farmId, isActive: true }),
-        success: function (response) {
-            if (response.success) {
-                showSuccess(response.message);
-                loadFarms();
-            } else {
-                showError(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi duyệt nhà vườn: ' + error);
-        }
-    });
-}
-
-// ========================================
-// UNAPPROVE FARM
-// ========================================
-function unapproveFarm(farmId) {
-    console.log('❌ Unapproving farm:', farmId);
-
-    if (!confirm('Bạn có chắc chắn muốn hủy duyệt nhà vườn này?')) {
-        return;
-    }
-
-    $.ajax({
-        url: '/Farm/ApproveFarm',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ farmId: farmId, isActive: false }),
-        success: function (response) {
-            if (response.success) {
-                showSuccess(response.message);
-                loadFarms();
-            } else {
-                showError(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi hủy duyệt nhà vườn: ' + error);
-        }
-    });
-}
-
-// ========================================
-// BULK APPROVE FARMS
-// ========================================
-function bulkApproveFarms() {
-    if (selectedRows.length === 0) {
-        showWarning('Vui lòng chọn ít nhất một nhà vườn để duyệt');
-        return;
-    }
-
-    // Filter only unapproved farms
-    var unapprovedFarms = selectedRows.filter(row => !row.isActive);
-
-    if (unapprovedFarms.length === 0) {
-        showWarning('Tất cả các nhà vườn đã chọn đã được duyệt');
-        return;
-    }
-
-    if (!confirm(`Duyệt ${unapprovedFarms.length} nhà vườn đã chọn?`)) {
-        return;
-    }
-
-    console.log('✅ Bulk approving', unapprovedFarms.length, 'farms');
-
-    let completed = 0;
-    let errors = 0;
-
-    unapprovedFarms.forEach(function (farm) {
-        $.ajax({
-            url: '/Farm/ApproveFarm',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ farmId: farm.farmId, isActive: true }),
-            success: function (response) {
-                completed++;
-                if (completed + errors === unapprovedFarms.length) {
-                    showSuccess(`Đã duyệt ${completed} nhà vườn` + (errors > 0 ? ` (${errors} lỗi)` : ''));
-                    loadFarms();
-                    selectedRows = [];
-                    updateSelectedCount();
-                }
-            },
-            error: function () {
-                errors++;
-                if (completed + errors === unapprovedFarms.length) {
-                    showError(`Duyệt thất bại ${errors}/${unapprovedFarms.length} nhà vườn`);
-                    loadFarms();
-                }
-            }
-        });
-    });
-}
-
-// ========================================
-// BULK UNAPPROVE FARMS
-// ========================================
-function bulkUnapproveFarms() {
-    if (selectedRows.length === 0) {
-        showWarning('Vui lòng chọn ít nhất một nhà vườn để hủy duyệt');
-        return;
-    }
-
-    // Filter only approved farms
-    var approvedFarms = selectedRows.filter(row => row.isActive);
-
-    if (approvedFarms.length === 0) {
-        showWarning('Tất cả các nhà vườn đã chọn chưa được duyệt');
-        return;
-    }
-
-    if (!confirm(`Hủy duyệt ${approvedFarms.length} nhà vườn đã chọn?`)) {
-        return;
-    }
-
-    console.log('❌ Bulk unapproving', approvedFarms.length, 'farms');
-
-    let completed = 0;
-    let errors = 0;
-
-    approvedFarms.forEach(function (farm) {
-        $.ajax({
-            url: '/Farm/ApproveFarm',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ farmId: farm.farmId, isActive: false }),
-            success: function (response) {
-                completed++;
-                if (completed + errors === approvedFarms.length) {
-                    showSuccess(`Đã hủy duyệt ${completed} nhà vườn` + (errors > 0 ? ` (${errors} lỗi)` : ''));
-                    loadFarms();
-                    selectedRows = [];
-                    updateSelectedCount();
-                }
-            },
-            error: function () {
-                errors++;
-                if (completed + errors === approvedFarms.length) {
-                    showError(`Hủy duyệt thất bại ${errors}/${approvedFarms.length} nhà vườn`);
-                    loadFarms();
-                }
-            }
-        });
-    });
-}
-
-// ========================================
-// BULK DELETE
-// ========================================
-function bulkDeleteFarms() {
-    if (selectedRows.length === 0) {
-        showWarning('Vui lòng chọn ít nhất một nhà vườn để xóa');
-        return;
-    }
-
-    if (!confirm(`Bạn có chắc chắn muốn xóa ${selectedRows.length} nhà vườn đã chọn?`)) {
-        return;
-    }
-
-    const farmIds = selectedRows.map(row => row.farmId);
-
-    console.log('🗑️ Bulk deleting farms:', farmIds);
-
-    $.ajax({
-        url: '/Farm/BulkDeleteFarms',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ farmIds: farmIds }),
-        success: function (response) {
-            if (response.success) {
-                showSuccess(response.message);
-                loadFarms();
-                selectedRows = [];
-                updateSelectedCount();
-            } else {
-                showError(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi xóa nhà vườn: ' + error);
-        }
-    });
-}
-
-// ========================================
-// SELECTION CHANGED
-// ========================================
-function onSelectionChanged() {
-    selectedRows = gridApiFarm.getSelectedRows();
-    updateSelectedCount();
-}
-
-function updateSelectedCount() {
-    var totalCount = selectedRows.length;
-    var approvedCount = selectedRows.filter(row => !row.isActive).length; // Count unapproved for approve button
-    var unapprovedCount = selectedRows.filter(row => row.isActive).length; // Count approved for unapprove button
-
-    $('#selectedCount').text(totalCount);
-    $('#approveCount').text(approvedCount);
-    $('#unapproveCount').text(unapprovedCount);
-
-    $('#btnBulkDelete').prop('disabled', totalCount === 0);
-    $('#btnApprove').prop('disabled', approvedCount === 0);
-    $('#btnUnapprove').prop('disabled', unapprovedCount === 0);
-}
-
-// ========================================
-// SHOW STATISTICS
-// ========================================
-function showStatistics() {
-    console.log('📊 Loading statistics...');
-
-    $.ajax({
-        url: '/Farm/GetFarmStatistics',
+        url: '/Agent/GetAgentsForDropdown',
         type: 'GET',
-        success: function (response) {
-            if (response.success) {
-                const stats = response.data;
+        data: { activeOnly: true },
+        success: function (response) { ... }
+    });
+    */
+}
 
-                $('#statTotalFarms').text(stats.totalFarms);
-                $('#statActiveFarms').text(stats.activeFarms);
-                $('#statInactiveFarms').text(stats.inactiveFarms);
-                $('#statNewFarms').text(stats.newFarmsThisMonth);
-
-                $('#statTotalArea').text(Number(stats.totalAreaHa).toLocaleString('vi-VN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-
-                $('#statRubberArea').text(Number(stats.totalRubberAreaHa).toLocaleString('vi-VN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-
-                $('#statTotalExploit').text((Number(stats.totalExploitKg) / 1000).toLocaleString('vi-VN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-
-                $('#statsModal').modal('show');
-            } else {
-                showError(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            showError('Lỗi khi tải thống kê: ' + error);
+function loadProvince() {
+    $.get('/Farm/GetProvinces', function (res) {
+        if (res.success) {
+            let html = '<option value="">-- Chọn Tỉnh/Thành --</option>';
+            res.data.forEach(p => html += `<option value="${p.code}">${p.name}</option>`);
+            $('#ddlProvince').html(html);
         }
     });
 }
 
-// ========================================
-// EXPORT TO EXCEL
-// ========================================
-function exportToExcel() {
-    console.log('📊 Exporting to Excel...');
-
-    const params = {
-        fileName: `DanhSachNhaVuon_${new Date().toISOString().split('T')[0]}.xlsx`,
-        sheetName: 'Nhà vườn'
-    };
-
-    gridApiFarm.exportDataAsExcel(params);
+function loadDistrict(provinceCode) {
+    if (!provinceCode) {
+        $('#ddlDistrict').html('<option value="">-- Chọn Quận/Huyện --</option>');
+        return;
+    }
+    $.get('/Farm/GetDistricts', { provinceCode: provinceCode }, function (res) {
+        if (res.success) {
+            let html = '<option value="">-- Chọn Quận/Huyện --</option>';
+            res.data.forEach(d => html += `<option value="${d.code}">${d.name}</option>`);
+            $('#ddlDistrict').html(html);
+        }
+    });
 }
 
-// ========================================
-// MAP FUNCTIONS
-// ========================================
-function showMapModal() {
-    $('#mapModal').modal('show');
-
-    // Initialize map after modal is shown
-    setTimeout(function () {
-        if (!map) {
-            initMap();
+function loadWard(districtCode) {
+    if (!districtCode) {
+        $('#ddlWard').html('<option value="">-- Chọn Phường/Xã --</option>');
+        return;
+    }
+    $.get('/Farm/GetWards', { districtCode: districtCode }, function (res) {
+        if (res.success) {
+            let html = '<option value="">-- Chọn Phường/Xã --</option>';
+            res.data.forEach(w => html += `<option value="${w.code}">${w.name}</option>`);
+            $('#ddlWard').html(html);
         }
-    }, 300);
+    });
 }
 
 function initMap() {
-    // Initialize Leaflet map
-    map = L.map('map').setView([10.8231, 106.6297], 13); // Ho Chi Minh City
+    if (map !== null) { map.remove(); }
+    map = L.map('farmMap').setView([14.0583, 108.2772], 6); // Default Vietnam
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }).addTo(map);
 
-    // Initialize draw control
     drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
     var drawControl = new L.Control.Draw({
-        edit: {
-            featureGroup: drawnItems
-        },
         draw: {
             polygon: true,
             polyline: false,
             rectangle: true,
             circle: false,
-            marker: false,
+            marker: true,
             circlemarker: false
-        }
+        },
+        edit: { featureGroup: drawnItems }
     });
     map.addControl(drawControl);
 
-    // Load existing polygon if any
-    const existingPolygon = $('#polygon').val();
-    if (existingPolygon) {
-        try {
-            const coords = parseWKT(existingPolygon);
-            if (coords) {
-                const polygon = L.polygon(coords);
-                drawnItems.addLayer(polygon);
-                map.fitBounds(polygon.getBounds());
-            }
-        } catch (e) {
-            console.error('Error parsing polygon:', e);
-        }
-    }
-
-    // Handle draw events
-    map.on(L.Draw.Event.CREATED, function (e) {
+    map.on(L.Draw.Event.CREATED, function (event) {
+        var layer = event.layer;
         drawnItems.clearLayers();
-        drawnItems.addLayer(e.layer);
+        drawnItems.addLayer(layer);
+        updateCoordinatesToMap(layer);
     });
+    
+    setupMapSearch();
 }
 
-function savePolygonFromMap() {
-    if (!drawnItems || drawnItems.getLayers().length === 0) {
-        showWarning('Vui lòng vẽ vùng vườn trên bản đồ');
-        return;
+function updateCoordinatesToMap(layer) {
+    if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
+        var latlngs = layer.getLatLngs()[0];
+        var coordString = latlngs.map(ll => `${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}`).join('; ');
+        $('#txtCoordinates').val(coordString);
+        
+        // Calculate approx area
+        var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+        $('#txtArea').val((area / 10000).toFixed(2)); // convert sqm to hectares
+    } else if (layer instanceof L.Marker) {
+        var ll = layer.getLatLng();
+        $('#txtCoordinates').val(`${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}`);
     }
-
-    const layer = drawnItems.getLayers()[0];
-    const coords = layer.getLatLngs()[0];
-
-    // Convert to WKT format
-    const wkt = coordsToWKT(coords);
-    $('#polygon').val(wkt);
-
-    showSuccess('Đã lưu vùng vườn');
-    $('#mapModal').modal('hide');
 }
 
-function coordsToWKT(coords) {
-    const points = coords.map(c => `${c.lng} ${c.lat}`).join(', ');
-    return `POLYGON((${points}, ${coords[0].lng} ${coords[0].lat}))`;
-}
-
-function parseWKT(wkt) {
-    // Simple WKT parser for POLYGON
-    const match = wkt.match(/POLYGON\(\((.*?)\)\)/);
-    if (!match) return null;
-
-    const coordsStr = match[1];
-    const coords = coordsStr.split(',').map(pair => {
-        const [lng, lat] = pair.trim().split(' ');
-        return [parseFloat(lat), parseFloat(lng)];
+function setupMapSearch() {
+    $('#btnSearchMap').click(function() {
+        var query = $('#txtMapSearch').val();
+        if (!query) return;
+        
+        $.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`, function(data) {
+            if (data && data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 15);
+            } else {
+                showWarning("Không tìm thấy địa điểm");
+            }
+        });
     });
-
-    return coords;
 }
 
-// ========================================
-// UI HELPERS
-// ========================================
-function updateStatusBar(total) {
-    $('#totalRecords').html(`Tổng: <strong>${total}</strong> nhà vườn`);
+function closeModal() {
+    $('#farmModal').modal('hide');
+    $('#farmForm')[0].reset();
+    currentFarmId = null;
+    if (drawnItems) drawnItems.clearLayers();
+    $('#txtCoordinates').val('');
+}
+//#endregion
+
+//#region 6. EXCEL EXPORT
+function exportAllToExcel() {
+    window.location.href = '/Farm/ExportAll';
+}
+
+function exportSelectedToExcel() {
+    if (selectedRows.length === 0) return showWarning('Vui lòng chọn dữ liệu để xuất');
+    const ids = selectedRows.map(r => r.farmId);
+    
+    // Tạo form ẩn để submit post request download file
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/Farm/ExportSelected';
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'ids';
+    input.value = JSON.stringify(ids);
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+//#endregion
+
+//#region 7. UTILITIES & RENDERERS
+function updateStatusBar() {
+    if (!gridApiFarm) return;
+    const total = gridApiFarm.getDisplayedRowCount();
+    $('#totalRecords').text(`Tổng: ${total} nông trường`);
 }
 
 function updateLastUpdateTime() {
@@ -873,35 +408,38 @@ function updateLastUpdateTime() {
 }
 
 function showSuccess(message) {
-    if (typeof NotificationToast !== 'undefined') {
-        NotificationToast('success', message);
-    } else {
-        alert(message);
-    }
+    if (typeof NotificationToast !== 'undefined') NotificationToast('success', message);
+    else alert(message);
 }
 
 function showError(message) {
-    if (typeof NotificationToast !== 'undefined') {
-        NotificationToast('error', message);
-    } else {
-        alert('Lỗi: ' + message);
-    }
+    if (typeof NotificationToast !== 'undefined') NotificationToast('error', message);
+    else alert('Lỗi: ' + message);
 }
 
 function showWarning(message) {
-    if (typeof NotificationToast !== 'undefined') {
-        NotificationToast('warning', message);
-    } else {
-        alert(message);
-    }
+    if (typeof NotificationToast !== 'undefined') NotificationToast('warning', message);
+    else alert(message);
 }
 
 function CellRenderAction(params) {
-    let strSave = `<a href="#" class="avtar-xs btn-link-secondary" onclick="saveAgentInline(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiFarm}, ${params.node.rowIndex}, ${params.data.farmCode})" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
-    let deleteFarm = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.farmId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
-    // CHỈ hiện nút lưu khi chưa lưu
-    return params.data.farmId == 0 ? `${strSave}${strCancel}` : `${deleteFarm}`;
+    let strSave = `<a href="#" class="avtar-xs btn-link-secondary" onclick="saveFarmInline(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
+    let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${gridApiFarm}, ${params.node.rowIndex}, '${params.data.farmCode}')" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+    let deleteBtn = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteFarm(${params.data.farmId})" title="${typeof arrMsg !== 'undefined' ? arrMsg.key_delete : 'Xóa'}"><i class="ti ti-trash f-20"></i></a>`;
+    
+    return params.data.farmId === 0 ? `${strSave}${strCancel}` : deleteBtn;
 }
-function showLoading() { console.log('Loading...'); }
-function hideLoading() { console.log('Complete'); }
+
+function renderStatusBadge(status) {
+    const map = {
+        1: { text: 'Hoạt động', class: 'badge-success' },
+        0: { text: 'Ngừng hoạt động', class: 'badge-danger' },
+        2: { text: 'Tạm ngưng', class: 'badge-warning' }
+    };
+    const info = map[status] || { text: 'Unknown', class: 'badge-secondary' };
+    return `<span class="badge ${info.class}">${info.text}</span>`;
+}
+//#endregion
+function onFillEnd(params) {
+    return;
+}

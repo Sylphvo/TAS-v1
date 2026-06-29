@@ -8,448 +8,191 @@ using static Azure.Core.HttpHeader;
 
 namespace TAS.Controllers
 {
-	[Authorize]
-	public class AgentController : Controller
-	{
-		private readonly AgentModels _agentModels;
-		private readonly ILogger<AgentController> _logger;
-		private readonly CommonModels _common;
+    [Authorize]
+    public class AgentController : Controller
+    {
+        private readonly AgentModels _agentModels;
+        private readonly ILogger<AgentController> _logger;
+        private readonly CommonModels _common;
 
-		public AgentController(IConfiguration configuration, ILogger<AgentController> logger, AgentModels agentModels, CommonModels common)
-		{
-			_logger = logger;
-			_agentModels = agentModels;
-			_common = common;
-		}
+        public AgentController(ILogger<AgentController> logger, AgentModels agentModels, CommonModels common)
+        {
+            _logger = logger;
+            _agentModels = agentModels;
+            _common = common;
+        }
 
-		// ========================================
-		// VIEW - Agent Management Page
-		// ========================================
-		[HttpGet]
-		[Breadcrumb(nameof(Language.key_agent), "#", nameof(Language.key_management_info), true)]
-		public IActionResult Index()
-		{
-			ViewData["Title"] = _common.GetValueByKey("key_agent");
-			return View();
-		}
+        // ========================================
+        // GET: /Agent/Index
+        // ========================================
+        [HttpGet]
+        [Breadcrumb(nameof(Language.key_agent), "#", nameof(Language.key_management_info), true)]
+        public IActionResult Index()
+        {
+            ViewData["Title"] = _common.GetValueByKey("key_agent");
+            return View();
+        }
 
-		// ========================================
-		// API - GET ALL AGENTS (with filters)
-		// ========================================
-		[HttpGet]
-		public async Task<IActionResult> GetAgentsWithFilter([FromQuery] RubberAgentRequest req)
-		{
-			try
-			{
-				var agents = await _agentModels.GetAgentsWithFilterAsync(req);
-				return Json(new { success = true, data = agents });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in GetAllPonds");
-				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
-			}
-		}
+        // ========================================
+        // GET: /Agent/GetAllAgents
+        // ========================================
+        [HttpGet]
+        public async Task<IActionResult> GetAllAgents([FromQuery] RubberAgentRequest filter)
+        {
+            try
+            {
+                var agents = await _agentModels.GetAgentsWithFilterAsync(filter);
+                return Json(new { success = true, data = agents });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách đại lý");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//// ========================================
-		//// API - GET AGENT BY ID
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetAgentById(int id)
-		//{
-		//	try
-		//	{
-		//		var agent = await _agentModels.GetAgentByIdAsync(id);
+        // ========================================
+        // GET: /Agent/GetAgentById/{id}
+        // ========================================
+        [HttpGet]
+        [Route("Agent/GetAgentById/{id}")]
+        public async Task<IActionResult> GetAgentById(int id)
+        {
+            try
+            {
+                if (id <= 0) return BadRequest(new { success = false, message = "ID không hợp lệ" });
 
-		//		if (agent == null)
-		//		{
-		//			return Json(new AgentResponse<RubberAgentDto>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy đại lý",
-		//				Data = null
-		//			});
-		//		}
+                var agent = await _agentModels.GetAgentByIdAsync(id);
+                if (agent != null) return Ok(new { success = true, data = agent });
 
-		//		return Json(new AgentResponse<RubberAgentDto>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy thông tin đại lý thành công",
-		//			Data = agent
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting agent by id: {AgentId}", id);
-		//		return Json(new AgentResponse<RubberAgentDto>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
+                return NotFound(new { success = false, message = "Không tìm thấy thông tin đại lý" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Lỗi khi lấy thông tin đại lý ID: {id}");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//// ========================================
-		//// API - CREATE AGENT
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> CreateAgent([FromBody] CreateAgentDto dto)
-		//{
-		//	if (!ModelState.IsValid)
-		//	{
-		//		var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-		//		return Json(new AgentResponse<RubberAgentDto>
-		//		{
-		//			Success = false,
-		//			Message = string.Join(", ", errors),
-		//			Data = null
-		//		});
-		//	}
+        // ========================================
+        // POST: /Agent/SaveAgent (Add/Update)
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> SaveAgent([FromBody] RubberAgentRequest request)
+        {
+            try
+            {
+                if (request == null) return BadRequest(new { success = false, message = "Dữ liệu không hợp lệ." });
 
-		//	try
-		//	{
-		//		// Check if AgentCode already exists
-		//		var exists = await _agentModels.AgentCodeExistsAsync(dto.AgentCode);
+                long resultId = await _agentModels.SaveAgentAsync(request);
+                bool isUpdate = request.AgentId > 0;
 
-		//		if (exists)
-		//		{
-		//			return Json(new AgentResponse<RubberAgentDto>
-		//			{
-		//				Success = false,
-		//				Message = $"Mã đại lý '{dto.AgentCode}' đã tồn tại",
-		//				Data = null
-		//			});
-		//		}
+                return Ok(new
+                {
+                    success = true,
+                    message = isUpdate ? "Cập nhật thành công!" : "Thêm mới thành công!",
+                    data = resultId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lưu thông tin đại lý");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//		var userName = User.Identity?.Name ?? "SYSTEM";
-		//		var agentId = await _agentModels.CreateAgentAsync(dto, userName);
+        // ========================================
+        // POST: /Agent/SaveBatchAgents
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> SaveBatchAgents([FromBody] List<RubberAgentRequest> requests)
+        {
+            try
+            {
+                if (requests == null || !requests.Any())
+                    return BadRequest(new { success = false, message = "Không có dữ liệu để lưu." });
 
-		//		return Json(new AgentResponse<int>
-		//		{
-		//			Success = true,
-		//			Message = "Tạo đại lý thành công",
-		//			Data = agentId
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error creating agent");
-		//		return Json(new AgentResponse<RubberAgentDto>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
+                var result = await _agentModels.SaveBatchAgentsAsync(requests);
 
-		//// ========================================
-		//// API - UPDATE AGENT
-		//// ========================================
-		//[HttpPut]
-		//public async Task<IActionResult> UpdateAgent([FromBody] UpdateAgentDto dto)
-		//{
-		//	if (!ModelState.IsValid)
-		//	{
-		//		var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-		//		return Json(new AgentResponse<RubberAgentDto>
-		//		{
-		//			Success = false,
-		//			Message = string.Join(", ", errors),
-		//			Data = null
-		//		});
-		//	}
+                if (result) return Ok(new { success = true, message = $"Đã lưu thành công {requests.Count} đại lý!" });
+                return BadRequest(new { success = false, message = "Lưu thất bại, vui lòng thử lại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lưu hàng loạt đại lý");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//	try
-		//	{
-		//		// Check if agent exists
-		//		var agent = await _agentModels.GetAgentByIdAsync(dto.AgentId);
+        // ========================================
+        // POST: /Agent/DeleteBatchAgents
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> DeleteBatchAgents([FromBody] List<long> agentIds)
+        {
+            try
+            {
+                if (agentIds == null || !agentIds.Any())
+                    return BadRequest(new { success = false, message = "Không có đại lý nào được chọn để xóa." });
 
-		//		if (agent == null)
-		//		{
-		//			return Json(new AgentResponse<RubberAgentDto>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy đại lý",
-		//				Data = null
-		//			});
-		//		}
+                var result = await _agentModels.DeleteBatchAgentsAsync(agentIds);
 
-		//		// Check if AgentCode is used by another agent
-		//		var isDuplicate = await _agentModels.AgentCodeExistsAsync(dto.AgentCode, dto.AgentId);
+                if (result) return Ok(new { success = true, message = $"Đã xóa thành công {agentIds.Count} đại lý!" });
+                return BadRequest(new { success = false, message = "Xóa thất bại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xóa nhiều đại lý");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//		if (isDuplicate)
-		//		{
-		//			return Json(new AgentResponse<RubberAgentDto>
-		//			{
-		//				Success = false,
-		//				Message = $"Mã đại lý '{dto.AgentCode}' đã được sử dụng bởi đại lý khác",
-		//				Data = null
-		//			});
-		//		}
+        // ========================================
+        // DELETE: /Agent/DeleteAgent/{id}
+        // ========================================
+        [HttpDelete]
+        [Route("Agent/DeleteAgent/{id}")]
+        public async Task<IActionResult> DeleteAgent(int id)
+        {
+            try
+            {
+                if (id <= 0) return BadRequest(new { success = false, message = "ID không hợp lệ." });
 
-		//		var userName = User.Identity?.Name ?? "SYSTEM";
-		//		var success = await _agentModels.UpdateAgentAsync(dto, userName);
+                var result = await _agentModels.DeleteAgentAsync(id);
+                if (result) return Ok(new { success = true, message = "Đã xóa đại lý thành công." });
 
-		//		return Json(new AgentResponse<bool>
-		//		{
-		//			Success = success,
-		//			Message = success ? "Cập nhật đại lý thành công" : "Cập nhật đại lý thất bại",
-		//			Data = success
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error updating agent");
-		//		return Json(new AgentResponse<RubberAgentDto>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
+                return BadRequest(new { success = false, message = "Xóa thất bại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Lỗi khi xóa đại lý ID: {id}");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//// ========================================
-		//// API - DELETE AGENT
-		//// ========================================
-		//[HttpDelete]
-		//public async Task<IActionResult> DeleteAgent(int id)
-		//{
-		//	try
-		//	{
-		//		// Check if agent exists
-		//		var agent = await _agentModels.GetAgentByIdAsync(id);
+        // ========================================
+        // POST: /Agent/ExportToExcel
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> ExportToExcel([FromBody] List<long> agentIds)
+        {
+            try
+            {
+                var fileContent = await _agentModels.ExportAgentsToExcelAsync(agentIds);
+                if (fileContent == null || fileContent.Length == 0)
+                    return BadRequest(new { success = false, message = "Không có dữ liệu để xuất." });
 
-		//		if (agent == null)
-		//		{
-		//			return Json(new AgentResponse<bool>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy đại lý",
-		//				Data = false
-		//			});
-		//		}
+                string fileName = agentIds != null && agentIds.Any()
+                    ? $"DaiLy_Selected_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                    : $"DaiLy_All_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
-		//		// Check if agent is used
-		//		var isUsed = await _agentModels.AgentIsUsedAsync(id);
-
-		//		if (isUsed)
-		//		{
-		//			return Json(new AgentResponse<bool>
-		//			{
-		//				Success = false,
-		//				Message = "Không thể xóa đại lý đang được sử dụng trong hệ thống",
-		//				Data = false
-		//			});
-		//		}
-
-		//		var success = await _agentModels.DeleteAgentAsync(id);
-
-		//		return Json(new AgentResponse<bool>
-		//		{
-		//			Success = success,
-		//			Message = success ? "Xóa đại lý thành công" : "Xóa đại lý thất bại",
-		//			Data = success
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error deleting agent");
-		//		return Json(new AgentResponse<bool>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = false
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - BULK DELETE AGENTS
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> BulkDeleteAgents([FromBody] BulkDeleteAgentDto dto)
-		//{
-		//	if (dto.AgentIds == null || !dto.AgentIds.Any())
-		//	{
-		//		return Json(new AgentResponse<int>
-		//		{
-		//			Success = false,
-		//			Message = "Vui lòng chọn ít nhất một đại lý để xóa",
-		//			Data = 0
-		//		});
-		//	}
-
-		//	try
-		//	{
-		//		// Check if any agents are being used
-		//		var usedAgents = new List<int>();
-		//		foreach (var agentId in dto.AgentIds)
-		//		{
-		//			var isUsed = await _agentModels.AgentIsUsedAsync(agentId);
-		//			if (isUsed)
-		//			{
-		//				usedAgents.Add(agentId);
-		//			}
-		//		}
-
-		//		if (usedAgents.Any())
-		//		{
-		//			return Json(new AgentResponse<int>
-		//			{
-		//				Success = false,
-		//				Message = $"Không thể xóa {usedAgents.Count} đại lý đang được sử dụng trong hệ thống",
-		//				Data = 0
-		//			});
-		//		}
-
-		//		var rowsAffected = await _agentModels.BulkDeleteAgentsAsync(dto.AgentIds);
-
-		//		return Json(new AgentResponse<int>
-		//		{
-		//			Success = true,
-		//			Message = $"Đã xóa {rowsAffected} đại lý thành công",
-		//			Data = rowsAffected
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error bulk deleting agents");
-		//		return Json(new AgentResponse<int>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = 0
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - GET AGENTS FOR DROPDOWN
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetAgentsForDropdown(bool activeOnly = true)
-		//{
-		//	try
-		//	{
-		//		var agents = await _agentModels.GetAgentsForDropdownAsync(activeOnly);
-
-		//		return Json(new AgentResponse<IEnumerable<AgentDropdownDto>>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy danh sách đại lý thành công",
-		//			Data = agents
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting agents for dropdown");
-		//		return Json(new AgentResponse<IEnumerable<AgentDropdownDto>>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - GET AGENT STATISTICS
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetAgentStatistics()
-		//{
-		//	try
-		//	{
-		//		var stats = await _agentModels.GetAgentStatisticsAsync();
-
-		//		return Json(new AgentResponse<AgentStatisticsDto>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy thống kê đại lý thành công",
-		//			Data = stats
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting agent statistics");
-		//		return Json(new AgentResponse<AgentStatisticsDto>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - GET AGENTS WITH POND COUNT
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetAgentsWithPondCount()
-		//{
-		//	try
-		//	{
-		//		var agents = await _agentModels.GetAgentsWithPondCountAsync();
-
-		//		return Json(new AgentResponse<IEnumerable<AgentWithPondCountDto>>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy danh sách đại lý kèm số lượng hồ thành công",
-		//			Data = agents
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting agents with pond count");
-		//		return Json(new AgentResponse<IEnumerable<AgentWithPondCountDto>>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - SEARCH AGENTS
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> SearchAgents(string keyword)
-		//{
-		//	try
-		//	{
-		//		if (string.IsNullOrWhiteSpace(keyword))
-		//		{
-		//			return Json(new AgentResponse<IEnumerable<RubberAgentDto>>
-		//			{
-		//				Success = false,
-		//				Message = "Vui lòng nhập từ khóa tìm kiếm",
-		//				Data = null
-		//			});
-		//		}
-
-		//		var agents = await _agentModels.SearchAgentsAsync(keyword);
-
-		//		return Json(new AgentResponse<IEnumerable<RubberAgentDto>>
-		//		{
-		//			Success = true,
-		//			Message = $"Tìm thấy {agents.Count} đại lý",
-		//			Data = agents
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error searching agents");
-		//		return Json(new AgentResponse<IEnumerable<RubberAgentDto>>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-	}
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xuất file Excel đại lý");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+    }
 }

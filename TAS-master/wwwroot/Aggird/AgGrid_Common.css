@@ -29,7 +29,7 @@
 
 .ag-row-selected .ag-cell-value,
 .ag-row-selected::before {
-    background: #ffffff;
+    background: var(--ag-data-background-color);
 }
 
 .ag-row-deleted .ag-cell-value,
@@ -56,11 +56,13 @@
 }
 
 .ag-pinned-left-cols-container .ag-cell:not(div[col-id="IS_ACTIVE"]),
-.ag-center-cols-container .ag-cell:not(div[col-id="IS_CHECK"]):not(div[col-id="IS_ACTIVE"]):not(div[col-id="Edit"]) {
+.ag-center-cols-container .ag-cell:not(div[col-id="IS_CHECK"]):not(div[col-id="IS_ACTIVE"]):not(div[col-id="Edit"]){
     padding-left: 0px !important;
-    padding-right: 0px !important;
+    padding-right: 0px;
 }
-
+.ag-center-cols-container .ag-cell:last-child {
+    padding-right: 1px !important;
+}
 /*.ag-theme-alpine {
     z-index:999999;
 }*/

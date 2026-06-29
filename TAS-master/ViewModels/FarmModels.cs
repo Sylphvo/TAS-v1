@@ -1,528 +1,241 @@
-﻿using Dapper;
+﻿using ClosedXML.Excel;
+using Dapper;
+using System.Data;
 using TAS.DTOs;
 using TAS.Models;
 using TAS.Repository;
 using TAS.TagHelpers;
+using System.IO;
 
 namespace TAS.ViewModels
 {
-	public class FarmModels
-	{
-		private readonly ICurrentUser _userManage;
-		private readonly ConnectDbHelper _dbHelper;
-		private readonly ILogger<FarmModels> _logger;
-		public FarmModels(ICurrentUser userManage, ILogger<FarmModels> logger, ConnectDbHelper dbHelper)
-		{
-			_userManage = userManage;
-			_logger = logger;
-			_dbHelper = dbHelper;
-		}
-		// ========================================
-		// GET TABLE DATA - With Filters & Pagination
-		// ========================================
-		public async Task<PagedResult<RubberFarmResponse>> GetFarmsWithFilterAsync(RubberFarmRequest filter)
-		{
-			try
-			{
-				var whereConditions = new List<string> { "1=1" };
-				var parameters = new DynamicParameters();
-
-				// --- 1. TÌM KIẾM TỔNG HỢP (Keyword) ---
-				if (!string.IsNullOrWhiteSpace(filter.Keyword))
-				{
-					whereConditions.Add(@"(
-						f.FarmCode LIKE @Keyword OR 
-						f.FarmerName LIKE @Keyword OR 
-						f.FarmPhone LIKE @Keyword OR 
-						f.FarmAddress LIKE @Keyword
-					)");
-					parameters.Add("@Keyword", $"%{filter.Keyword}%");
-				}
-
-				// --- 2. LỌC THEO ĐẠI LÝ (AgentCode) ---
-				if (!string.IsNullOrWhiteSpace(filter.AgentCode))
-				{
-					whereConditions.Add("f.AgentCode = @AgentCode");
-					parameters.Add("@AgentCode", filter.AgentCode);
-				}
-
-
-				string whereSql = string.Join(" AND ", whereConditions);
-
-				// --- BƯỚC 2: ĐẾM TỔNG SỐ DÒNG ---
-				var countSql = $@"
-				SELECT COUNT(1) 
-				FROM RubberFarm f 
-				LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-				WHERE {whereSql}";
-
-				var totalRecords = await _dbHelper.ExecuteScalarAsync<int>(countSql, parameters);
-
-				// --- BƯỚC 3: LẤY DỮ LIỆU PHÂN TRANG ---
-				var offset = (filter.PageIndex - 1) * filter.PageSize;
-
-				var dataSql = $@"
-				SELECT 
-					-- Tự động tính số thứ tự dựa trên vị trí trang
-					rowNo = ROW_NUMBER() OVER (ORDER BY f.RegisterDate DESC),
-					f.FarmId,
-					f.FarmCode,
-					f.AgentCode,
-					a.AgentName, -- Join lấy tên đại lý hiển thị
-					f.FarmerName,
-					f.FarmPhone,
-					f.FarmAddress,
-					f.IsActive,
-					f.RegisterDate,
-					f.RegisterPerson,
-					f.UpdateDate,
-					f.UpdatePerson
-				FROM RubberFarm f
-				LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-				WHERE {whereSql}
-				ORDER BY f.RegisterDate DESC
-				OFFSET @Offset ROWS
-				FETCH NEXT @PageSize ROWS ONLY";
-
-				parameters.Add("@Offset", offset);
-				parameters.Add("@PageSize", filter.PageSize);
-
-				// Sử dụng RubberFarmResponse để nhận các tính năng StatusName, StatusClass
-				var items = await _dbHelper.QueryAsync<RubberFarmResponse>(dataSql, parameters);
-
-				return new PagedResult<RubberFarmResponse>
-				{
-					Items = items.ToList(),
-					TotalRecords = totalRecords
-				};
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in GetTableDataAsync (RubberFarm)");
-				throw;
-			}
-		}
-
-		//// ========================================
-		//// GET FARM BY ID
-		//// ========================================
-		//public async Task<RubberFarm?> GetFarmByIdAsync(long farmId)
-		//{
-			
-
-		//	var query = @"
-  //              SELECT 
-  //                  f.FarmId,
-  //                  f.FarmCode,
-  //                  f.AgentCode,
-  //                  f.FarmerName,
-  //                  f.FarmPhone,
-  //                  f.FarmAddress,
-  //                  f.IsActive,
-  //                  f.Certificates,
-  //                  f.TotalAreaHa,
-  //                  f.RubberAreaHa,
-  //                  f.TotalExploit,
-  //                  f.RegisterDate,
-  //                  f.RegisterPerson,
-  //                  f.UpdateDate,
-  //                  f.UpdatePerson,
-  //                  a.AgentName,
-  //                  a.AgentAddress,
-  //                  f.Polygon
-  //              FROM RubberFarm f
-  //              LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-  //              WHERE f.FarmId = @FarmId";
-
-		//	return await dbHelper.QueryFirstOrDefaultAsync<RubberFarm>(query, new { FarmId = farmId });
-		//}
-
-		//// ========================================
-		//// GET FARM BY CODE
-		//// ========================================
-		//public async Task<RubberFarm?> GetFarmByCodeAsync(string farmCode)
-		//{
-			
-
-		//	var query = @"
-  //              SELECT 
-  //                  f.FarmId,
-  //                  f.FarmCode,
-  //                  f.AgentCode,
-  //                  f.FarmerName,
-  //                  f.FarmPhone,
-  //                  f.FarmAddress,
-  //                  f.IsActive,
-  //                  f.Certificates,
-  //                  f.TotalAreaHa,
-  //                  f.RubberAreaHa,
-  //                  f.TotalExploit,
-  //                  f.RegisterDate,
-  //                  f.RegisterPerson,
-  //                  f.UpdateDate,
-  //                  f.UpdatePerson,
-  //                  a.AgentName,
-  //                  f.Polygon
-  //              FROM RubberFarm f
-  //              LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-  //              WHERE f.FarmCode = @FarmCode";
-
-		//	return await dbHelper.QueryFirstOrDefaultAsync<RubberFarm>(query, new { FarmCode = farmCode });
-		//}
-
-		//// ========================================
-		//// GET ALL ACTIVE FARMS
-		//// ========================================
-		//public async Task<List<RubberFarm>> GetActiveFarmsAsync()
-		//{
-			
-
-		//	var query = @"
-  //              SELECT 
-  //                  f.FarmId,
-  //                  f.FarmCode,
-  //                  f.FarmerName,
-  //                  f.AgentCode,
-  //                  a.AgentName,
-  //                  f.IsActive
-  //              FROM RubberFarm f
-  //              LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-  //              WHERE f.IsActive = 1
-  //              ORDER BY f.FarmerName";
-
-		//	var result = await dbHelper.QueryAsync<RubberFarm>(query);
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET FARMS BY AGENT CODE
-		//// ========================================
-		//public async Task<List<RubberFarm>> GetFarmsByAgentCodeAsync(string agentCode)
-		//{
-			
-
-		//	var query = @"
-  //              SELECT 
-  //                  f.FarmId,
-  //                  f.FarmCode,
-  //                  f.FarmerName,
-  //                  f.FarmPhone,
-  //                  f.FarmAddress,
-  //                  f.IsActive,
-  //                  f.TotalAreaHa,
-  //                  f.RubberAreaHa,
-  //                  f.TotalExploit
-  //              FROM RubberFarm f
-  //              WHERE f.AgentCode = @AgentCode
-  //              ORDER BY f.FarmerName";
-
-		//	var result = await dbHelper.QueryAsync<RubberFarm>(query, new { AgentCode = agentCode });
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET FARMS FOR DROPDOWN
-		//// ========================================
-		//public async Task<List<FarmDropdownDto>> GetFarmsForDropdownAsync(bool activeOnly = true)
-		//{
-			
-
-		//	var whereClause = activeOnly ? "WHERE IsActive = 1" : "";
-
-		//	var query = $@"
-  //              SELECT 
-  //                  FarmId,
-  //                  FarmCode,
-  //                  FarmerName,
-  //                  AgentCode
-  //              FROM RubberFarm
-  //              {whereClause}
-  //              ORDER BY FarmerName";
-
-		//	var result = await dbHelper.QueryAsync<FarmDropdownDto>(query);
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET FARM STATISTICS
-		//// ========================================
-		//public async Task<FarmStatisticsDto> GetFarmStatisticsAsync()
-		//{
-
-
-		//	//var query = @"
-		//	//             SELECT 
-		//	//                 COUNT(*) AS TotalFarms,
-		//	//                 SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveFarms,
-		//	//                 SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS InactiveFarms,
-		//	//                 COUNT(DISTINCT CASE WHEN RegisterDate >= DATEADD(MONTH, -1, GETDATE()) THEN FarmId END) AS NewFarmsThisMonth,
-		//	//                 SUM(ISNULL(TotalAreaHa, 0)) AS TotalAreaHa,
-		//	//                 SUM(ISNULL(RubberAreaHa, 0)) AS TotalRubberAreaHa,
-		//	//                 SUM(ISNULL(TotalExploit, 0)) AS TotalExploitKg,
-		//	//                 COUNT(DISTINCT AgentCode) AS TotalAgents
-		//	//             FROM RubberFarm";
-
-		//	//return await dbHelper.QueryFirstOrDefaultAsync<FarmStatisticsDto>(query);
-		//	return new FarmStatisticsDto();
-		//}
-
-		//// ========================================
-		//// CHECK FARM CODE EXISTS
-		//// ========================================
-		//public async Task<bool> FarmCodeExistsAsync(string farmCode, long? excludeFarmId = null)
-		//{
-			
-
-		//	var query = excludeFarmId.HasValue
-		//		? "SELECT COUNT(*) FROM RubberFarm WHERE FarmCode = @FarmCode AND FarmId != @ExcludeFarmId"
-		//		: "SELECT COUNT(*) FROM RubberFarm WHERE FarmCode = @FarmCode";
-
-		//	var count = await dbHelper.ExecuteScalarAsync<int>(query, new
-		//	{
-		//		FarmCode = farmCode,
-		//		ExcludeFarmId = excludeFarmId
-		//	});
-
-		//	return count > 0;
-		//}
-
-		//// ========================================
-		//// CHECK FARM IS USED (has intakes)
-		//// ========================================
-		//public async Task<bool> FarmIsUsedAsync(long farmId)
-		//{
-			
-
-		//	var query = @"
-  //              SELECT COUNT(*) 
-  //              FROM RubberIntake 
-  //              WHERE FarmCode = (SELECT FarmCode FROM RubberFarm WHERE FarmId = @FarmId)";
-
-		//	var count = await dbHelper.ExecuteScalarAsync<int>(query, new { FarmId = farmId });
-
-		//	return count > 0;
-		//}
-
-		//// ========================================
-		//// CREATE FARM
-		//// ========================================
-		//public async Task<long> CreateFarmAsync(CreateFarmDto dto, string userName)
-		//{
-			
-
-		//	var insertQuery = @"
-  //              INSERT INTO RubberFarm (
-  //                  FarmCode, 
-  //                  AgentCode,
-  //                  FarmerName, 
-  //                  FarmPhone, 
-  //                  FarmAddress, 
-  //                  IsActive,
-  //                  Certificates,
-  //                  TotalAreaHa,
-  //                  RubberAreaHa,
-  //                  TotalExploit,
-  //                  RegisterDate, 
-  //                  RegisterPerson,
-  //                  Polygon
-  //              )
-  //              VALUES (
-  //                  @FarmCode, 
-  //                  @AgentCode,
-  //                  @FarmerName, 
-  //                  @FarmPhone, 
-  //                  @FarmAddress, 
-  //                  @IsActive,
-  //                  @Certificates,
-  //                  @TotalAreaHa,
-  //                  @RubberAreaHa,
-  //                  @TotalExploit,
-  //                  GETDATE(), 
-  //                  @RegisterPerson,
-  //                  " + (string.IsNullOrWhiteSpace(dto.Polygon)
-		//				? "NULL"
-		//				: $"geography::STGeomFromText('{dto.Polygon}', 4326)") + @"
-  //              );
-  //              SELECT CAST(SCOPE_IDENTITY() as bigint);";
-
-		//	var farmId = await dbHelper.ExecuteScalarAsync<long>(insertQuery, new
-		//	{
-		//		dto.FarmCode,
-		//		dto.AgentCode,
-		//		dto.FarmerName,
-		//		dto.FarmPhone,
-		//		dto.FarmAddress,
-		//		dto.IsActive,
-		//		dto.Certificates,
-		//		dto.TotalAreaHa,
-		//		dto.RubberAreaHa,
-		//		dto.TotalExploit,
-		//		RegisterPerson = userName
-		//	});
-
-		//	return farmId;
-		//}
-
-		//// ========================================
-		//// UPDATE FARM
-		//// ========================================
-		//public async Task<bool> UpdateFarmAsync(UpdateFarmDto dto, string userName)
-		//{
-			
-
-		//	var updateQuery = @"
-  //              UPDATE RubberFarm
-  //              SET 
-  //                  FarmCode = @FarmCode,
-  //                  AgentCode = @AgentCode,
-  //                  FarmerName = @FarmerName,
-  //                  FarmPhone = @FarmPhone,
-  //                  FarmAddress = @FarmAddress,
-  //                  IsActive = @IsActive,
-  //                  Certificates = @Certificates,
-  //                  TotalAreaHa = @TotalAreaHa,
-  //                  RubberAreaHa = @RubberAreaHa,
-  //                  TotalExploit = @TotalExploit,
-  //                  UpdateDate = GETDATE(),
-  //                  UpdatePerson = @UpdatePerson,
-  //                  Polygon = " + (string.IsNullOrWhiteSpace(dto.Polygon)
-		//				? "NULL"
-		//				: $"geography::STGeomFromText('{dto.Polygon}', 4326)") + @"
-  //              WHERE FarmId = @FarmId";
-
-		//	var rowsAffected = await dbHelper.ExecuteAsync(updateQuery, new
-		//	{
-		//		dto.FarmId,
-		//		dto.FarmCode,
-		//		dto.AgentCode,
-		//		dto.FarmerName,
-		//		dto.FarmPhone,
-		//		dto.FarmAddress,
-		//		dto.IsActive,
-		//		dto.Certificates,
-		//		dto.TotalAreaHa,
-		//		dto.RubberAreaHa,
-		//		dto.TotalExploit,
-		//		UpdatePerson = userName
-		//	});
-
-		//	return rowsAffected > 0;
-		//}
-
-		//// ========================================
-		//// DELETE FARM
-		//// ========================================
-		//public async Task<bool> DeleteFarmAsync(long farmId)
-		//{
-			
-
-		//	var deleteQuery = "DELETE FROM RubberFarm WHERE FarmId = @FarmId";
-		//	var rowsAffected = await dbHelper.ExecuteAsync(deleteQuery, new { FarmId = farmId });
-
-		//	return rowsAffected > 0;
-		//}
-
-		//// ========================================
-		//// BULK DELETE FARMS
-		//// ========================================
-		//public async Task<int> BulkDeleteFarmsAsync(List<long> farmIds)
-		//{
-			
-
-		//	var ids = string.Join(",", farmIds);
-		//	var deleteQuery = $"DELETE FROM RubberFarm WHERE FarmId IN ({ids})";
-		//	var rowsAffected = await dbHelper.ExecuteAsync(deleteQuery);
-
-		//	return rowsAffected;
-		//}
-
-		//// ========================================
-		//// APPROVE/UNAPPROVE FARM
-		//// ========================================
-		//public async Task<bool> ApproveFarmAsync(long farmId, bool isActive)
-		//{
-			
-
-		//	var updateQuery = @"
-  //              UPDATE RubberFarm 
-  //              SET IsActive = @IsActive 
-  //              WHERE FarmId = @FarmId";
-
-		//	var rowsAffected = await dbHelper.ExecuteAsync(updateQuery, new { FarmId = farmId, IsActive = isActive });
-
-		//	return rowsAffected > 0;
-		//}
-
-		//// ========================================
-		//// IMPORT POLYGON
-		//// ========================================
-		//public async Task<bool> ImportPolygonAsync(long farmId, string polygon)
-		//{
-			
-
-		//	var updateQuery = $@"
-  //              UPDATE RubberFarm 
-  //              SET Polygon = geography::STGeomFromText('{polygon}', 4326)
-  //              WHERE FarmId = @FarmId";
-
-		//	var rowsAffected = await dbHelper.ExecuteAsync(updateQuery, new { FarmId = farmId });
-
-		//	return rowsAffected > 0;
-		//}
-
-		//// ========================================
-		//// SEARCH FARMS (Simple)
-		//// ========================================
-		//public async Task<List<RubberFarm>> SearchFarmsAsync(string keyword)
-		//{
-			
-
-		//	var query = @"
-  //              SELECT 
-  //                  f.FarmId,
-  //                  f.FarmCode,
-  //                  f.AgentCode,
-  //                  f.FarmerName,
-  //                  f.FarmPhone,
-  //                  f.FarmAddress,
-  //                  f.IsActive,
-  //                  a.AgentName
-  //              FROM RubberFarm f
-  //              LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-  //              WHERE f.FarmCode LIKE @Keyword 
-  //                 OR f.FarmerName LIKE @Keyword 
-  //                 OR f.FarmPhone LIKE @Keyword
-  //              ORDER BY f.FarmerName";
-
-		//	var result = await dbHelper.QueryAsync<RubberFarm>(query, new { Keyword = $"%{keyword}%" });
-		//	return result.ToList();
-		//}
-
-		//// ========================================
-		//// GET FARMS BY IDS
-		//// ========================================
-		//public async Task<List<RubberFarm>> GetFarmsByIdsAsync(List<long> farmIds)
-		//{
-			
-
-		//	var ids = string.Join(",", farmIds);
-		//	var query = $@"
-  //              SELECT 
-  //                  f.FarmId,
-  //                  f.FarmCode,
-  //                  f.FarmerName,
-  //                  f.AgentCode,
-  //                  a.AgentName,
-  //                  f.FarmPhone,
-  //                  f.FarmAddress,
-  //                  f.IsActive
-  //              FROM RubberFarm f
-  //              LEFT JOIN RubberAgent a ON f.AgentCode = a.AgentCode
-  //              WHERE f.FarmId IN ({ids})
-  //              ORDER BY f.FarmerName";
-
-		//	var result = await dbHelper.QueryAsync<RubberFarm>(query);
-		//	return result.ToList();
-		//}
-	}
+    public class FarmModels
+    {
+        private readonly ICurrentUser _userManage;
+        private readonly ConnectDbHelper _dbHelper;
+        private readonly ILogger<FarmModels> _logger;
+
+        public FarmModels(ICurrentUser userManage, ILogger<FarmModels> logger, ConnectDbHelper dbHelper)
+        {
+            _userManage = userManage;
+            _logger = logger;
+            _dbHelper = dbHelper;
+        }
+
+        // ========================================
+        // 1. GET ALL WITH FILTER AND PAGINATION
+        // ========================================
+        public async Task<PagedResult<RubberFarmResponse>> GetFarmsWithFilterAsync(RubberFarmRequest filter)
+        {
+            try
+            {
+                var whereConditions = new List<string> { "1=1" };
+                var parameters = new DynamicParameters();
+
+                if (!string.IsNullOrWhiteSpace(filter.Keyword))
+                {
+                    whereConditions.Add(@"(
+                        f.FarmCode LIKE @Keyword OR 
+                        f.FarmName LIKE @Keyword OR 
+                        f.OwnerName LIKE @Keyword OR 
+                        f.Phone LIKE @Keyword OR
+                        f.Address LIKE @Keyword
+                    )");
+                    parameters.Add("@Keyword", $"%{filter.Keyword}%");
+                }
+
+                if (!string.IsNullOrEmpty(filter.AgentCode))
+                {
+                    whereConditions.Add("f.AgentCode = @AgentCode");
+                    parameters.Add("@AgentCode", filter.AgentCode);
+                }
+
+                string whereSql = string.Join(" AND ", whereConditions);
+
+                var countSql = $"SELECT COUNT(1) FROM RubberFarm f WHERE {whereSql}";
+                var totalRecords = await _dbHelper.ExecuteScalarAsync<int>(countSql, parameters);
+
+                var dataSql = $@"
+                SELECT 
+                    RowNo = ROW_NUMBER() OVER (ORDER BY f.FarmId DESC),
+                    f.FarmId, f.FarmCode, f.FarmName, f.OwnerName, f.AgentCode, 
+                    f.Phone, f.Area, f.Address, f.Coordinates, f.Status
+                FROM RubberFarm f
+                WHERE {whereSql}
+                ORDER BY f.FarmId DESC
+                OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
+
+                parameters.Add("@Skip", (filter.PageIndex - 1) * filter.PageSize);
+                parameters.Add("@Take", filter.PageSize);
+
+                var items = await _dbHelper.QueryAsync<RubberFarmResponse>(dataSql, parameters);
+
+                return new PagedResult<RubberFarmResponse>
+                {
+                    Items = items.ToList(),
+                    TotalRecords = totalRecords
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetFarmsWithFilterAsync");
+                throw;
+            }
+        }
+
+        // ========================================
+        // 2. GET BY ID
+        // ========================================
+        public async Task<RubberFarmResponse> GetFarmByIdAsync(int id)
+        {
+            try
+            {
+                string sql = "SELECT * FROM RubberFarm WHERE FarmId = @Id";
+                return await _dbHelper.QueryFirstOrDefaultAsync<RubberFarmResponse>(sql, new { Id = id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in GetFarmByIdAsync ID: {id}");
+                throw;
+            }
+        }
+
+        // ========================================
+        // 3. ADD OR UPDATE
+        // ========================================
+        public async Task<long> AddOrUpdateFarmAsync(RubberFarmRequest request)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@FarmCode", request.FarmCode);
+                parameters.Add("@FarmName", request.FarmName);
+                parameters.Add("@OwnerName", request.OwnerName);
+                parameters.Add("@AgentCode", request.AgentCode);
+                parameters.Add("@Phone", request.FarmPhone);
+                parameters.Add("@Area", request.Area);
+                parameters.Add("@Address", request.FarmAddress);
+                parameters.Add("@Coordinates", request.Coordinates);
+                parameters.Add("@Status", request.Status);
+
+                if (request.FarmId > 0)
+                {
+                    parameters.Add("@FarmId", request.FarmId);
+                    string updateSql = @"
+                        UPDATE RubberFarm SET 
+                            FarmCode = @FarmCode, FarmName = @FarmName, OwnerName = @OwnerName, 
+                            AgentCode = @AgentCode, Phone = @Phone, Area = @Area, 
+                            Address = @Address, Coordinates = @Coordinates, Status = @Status
+                        WHERE FarmId = @FarmId";
+                    await _dbHelper.ExecuteAsync(updateSql, parameters);
+                    return request.FarmId;
+                }
+                else
+                {
+                    string insertSql = @"
+                        INSERT INTO RubberFarm (FarmCode, FarmName, OwnerName, AgentCode, Phone, Area, Address, Coordinates, Status)
+                        VALUES (@FarmCode, @FarmName, @OwnerName, @AgentCode, @Phone, @Area, @Address, @Coordinates, @Status);
+                        SELECT CAST(SCOPE_IDENTITY() as bigint);";
+                    return await _dbHelper.ExecuteScalarAsync<long>(insertSql, parameters);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in AddOrUpdateFarmAsync");
+                throw;
+            }
+        }
+
+        // ========================================
+        // 4. BATCH SAVE & DELETE
+        // ========================================
+        public async Task<bool> SaveBatchFarmsAsync(List<RubberFarmRequest> requests)
+        {
+            try
+            {
+                foreach (var req in requests) { await AddOrUpdateFarmAsync(req); }
+                return true;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in SaveBatchFarmsAsync"); throw; }
+        }
+
+        public async Task<bool> DeleteFarmAsync(int farmId)
+        {
+            try
+            {
+                string sql = "DELETE FROM RubberFarm WHERE FarmId = @Id";
+                return await _dbHelper.ExecuteAsync(sql, new { Id = farmId }) > 0;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in DeleteFarmAsync"); throw; }
+        }
+
+        public async Task<bool> DeleteBatchFarmsAsync(List<long> farmIds)
+        {
+            try
+            {
+                string sql = "DELETE FROM RubberFarm WHERE FarmId IN @Ids";
+                return await _dbHelper.ExecuteAsync(sql, new { Ids = farmIds }) > 0;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in DeleteBatchFarmsAsync"); throw; }
+        }
+
+        // ========================================
+        // 5. EXPORT EXCEL
+        // ========================================
+        public async Task<byte[]> ExportFarmsToExcelAsync(List<long> farmIds)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                string sql = "SELECT FarmCode, FarmName, OwnerName, AgentCode, Phone, Area, Address, Status FROM RubberFarm ";
+
+                if (farmIds != null && farmIds.Any())
+                {
+                    sql += "WHERE FarmId IN @Ids ";
+                    parameters.Add("@Ids", farmIds);
+                }
+                sql += "ORDER BY FarmId DESC";
+
+                var items = await _dbHelper.QueryAsync<RubberFarmResponse>(sql, parameters);
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var ws = workbook.Worksheets.Add("Nông Trường");
+                    ws.Cell(1, 1).Value = "Mã NT";
+                    ws.Cell(1, 2).Value = "Tên NT";
+                    ws.Cell(1, 3).Value = "Chủ vườn";
+                    ws.Cell(1, 4).Value = "Mã Đại lý";
+                    ws.Cell(1, 5).Value = "Số điện thoại";
+                    ws.Cell(1, 6).Value = "Diện tích (Ha)";
+                    ws.Cell(1, 7).Value = "Địa chỉ";
+                    ws.Cell(1, 8).Value = "Trạng thái";
+
+                    ws.Range("A1:H1").Style.Font.Bold = true;
+                    ws.Range("A1:H1").Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                    int row = 2;
+                    foreach (var item in items)
+                    {
+                        ws.Cell(row, 1).Value = item.FarmCode;
+                        ws.Cell(row, 2).Value = item.FarmName;
+                        ws.Cell(row, 3).Value = item.OwnerName;
+                        ws.Cell(row, 4).Value = item.AgentCode;
+                        ws.Cell(row, 5).Value = item.FarmPhone;
+                        ws.Cell(row, 6).Value = item.Area;
+                        ws.Cell(row, 7).Value = item.FarmAddress;
+                        ws.Cell(row, 8).Value = item.Status == 1 ? "Hoạt động" : "Ngưng";
+                        row++;
+                    }
+
+                    ws.Columns().AdjustToContents();
+                    using (var ms = new MemoryStream())
+                    {
+                        workbook.SaveAs(ms);
+                        return ms.ToArray();
+                    }
+                }
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in ExportFarmsToExcelAsync"); throw; }
+        }
+    }
 }

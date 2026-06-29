@@ -1,4 +1,39 @@
-﻿
+﻿/* Lớp nền mờ che toàn màn hình */
+#loader-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--loader-wrapper); /* Màu trắng mờ */
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Hiệu ứng xoay tròn (Spinner) */
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db; /* Màu xanh chủ đạo */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 
 #orderGrid, #RubberIntake, #lotGrid, #agentGrid {
     height: 550px;
@@ -523,22 +558,8 @@ li.page-item button.page-link {
 /* =========================================
    AG GRID
 ========================================= */
-#orderGrid {
-    height: calc(100vh - 340px);
-    min-height: 500px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
+ /*Cấu hình màu sắc cho theme Quartz Dark*/
 
-.ag-theme-alpine {
-    --ag-header-background-color: #f8f9fa;
-    --ag-header-foreground-color: #2c3e50;
-    --ag-border-color: #e0e0e000;
-    --ag-row-hover-color: #f0f7ff;
-    --ag-selected-row-background-color: #e3f2fd;
-}
 
 .ag-header-cell-label {
     font-weight: 600;
@@ -1157,6 +1178,7 @@ div[data-ref="eFloatingFilterBody"] .ag-text-field-input:disabled {
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
+    position: relative;
 }
 
 /* Hoặc chỉ áp dụng cho cells */
@@ -1291,7 +1313,7 @@ div[col-id="note"] {
 .ag-paging-page-summary-panel {
     gap: calc( 8px * 1.5) !important;
 }
-.ag-pinned-left-cols-container .ag-row-hover, .ag-pinned-left-cols-container .ag-row-hover:not(.ag-full-width-row):before {
+, .ag-pinned-left-cols-container .ag-row-hover:not(.ag-full-width-row):before {
     background-image: unset !important;
     background: none !important;
 }
@@ -1300,12 +1322,16 @@ div[col-id="note"] {
     background: #d3d3d3 !important;
 }
 .ag-row-no-focus {
-    background-color: transparent !important;
+    background-color: var(--ag-data-background-color) !important;
 }
 
 .ag-center-cols-container .ag-row {
     border-bottom: 0px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
 }
+    /*.ag-center-cols-container .ag-row.ag-row-hover {
+        border-right: 1px solid #e0e0e0;
+    }*/
 .ag-header-container .ag-header-cell {
     border-right: 0px solid #e0e0e0;
     border-left: 1px solid #e0e0e0;
@@ -1357,11 +1383,11 @@ div[col-id="note"] {
     inset: 0;
     pointer-events: none;
     position: absolute;
-    top: -2px;
+    top: 0px;
 }
 /* chỉnh sửa vị trí select */
 .ag-viewport.ag-center-cols-viewport .ag-row-selected::before{
-    top: -3px;
+    top: 0px;
     bottom: 3px;
 }
 /* chỉnh sửa nền  */
@@ -1373,12 +1399,7 @@ div[col-id="note"] {
     border-radius: 3px !important;
 }
 
-/*.ag-viewport.ag-center-cols-viewport .ag-row-first {
-}
 
-.ag-viewport.ag-center-cols-viewport .ag-row-last {
-
-}*/
 .ag-pinned-left-cols-container .ag-row:not(.ag-row-hover) {
     opacity: 0;
     border: none !important;
@@ -1405,25 +1426,22 @@ div[col-id="note"] {
     border: 1px solid #e0e0e0;
 }
 
-div[col-id="orderCode"] {
-    color: #2c3e50;
-    font-weight: 600;
-}
+
 /*màu nền của cột ẩn*/
 .ag-pinned-left-header div.ag-header-cell[col-id="selected"], .ag-pinned-left-header div.ag-header-cell[col-id="selected"] div[data-ref="eFloatingFilterBody"] {
-    background: #fff;
-    border:none !important;
+    background: var(--ag-data-background-color);
+    border: none !important;
 }
 .ag-pinned-left-header {
     border-width:0px !important;
 }
 
 .ag-row-selected .editcolumn:not(div[col-id="selected"]) .ag-cell-value {
-    background: #ffffff !important;
+    background: var(--ag-data-background-color) !important;
     cursor: pointer;
 }
 .ag-row-selected .noteditcolumn:not(div[col-id="selected"]) .ag-cell-value {
-    background: #ffffff !important;
+    background: var(--ag-data-background-color) !important;
     cursor: no-drop;
 }
 div[col-id="selected"].ag-cell {

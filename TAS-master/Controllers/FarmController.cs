@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TAS.DTOs;
 using TAS.Models;
 using TAS.Resources;
@@ -6,544 +7,190 @@ using TAS.ViewModels;
 
 namespace TAS.Controllers
 {
-	public class FarmController : Controller
-	{
-		private readonly FarmModels models;
-		private readonly ILogger<FarmController> _logger;
-		private readonly CommonModels _common;
-		public FarmController(FarmModels _models, CommonModels common, ILogger<FarmController> logger)
-		{
-			models = _models;
-			_common = common;
-			_logger = logger;
-		}
+    [Authorize]
+    public class FarmController : Controller
+    {
+        private readonly FarmModels _farmModels;
+        private readonly ILogger<FarmController> _logger;
+        private readonly CommonModels _common;
 
+        public FarmController(FarmModels farmModels, CommonModels common, ILogger<FarmController> logger)
+        {
+            _farmModels = farmModels;
+            _common = common;
+            _logger = logger;
+        }
 
-		//public IActionResult InformationGarden()
-		//{
-		//	ViewBag.ComboAgent = _common.ComboAgent();
-		//	return View();
-		//}
-		// ========================================
-		// VIEW - Farm Management Page
-		// ========================================
-		[Breadcrumb(nameof(Language.key_nhavuon), "#", nameof(Language.key_management_info), true)]
-		public IActionResult Index()
-		{
-			ViewData["Title"] = _common.GetValueByKey("key_nhavuon");
-			return View();
-		}
+        // ========================================
+        // GET: /Farm/Index
+        // ========================================
+        [Breadcrumb(nameof(Language.key_nhavuon), "#", nameof(Language.key_management_info), true)]
+        public IActionResult Index()
+        {
+            ViewData["Title"] = _common.GetValueByKey("key_nhavuon");
+            return View();
+        }
 
-		// ========================================
-		// API - GET ALL FARMS (with filters)
-		// ========================================
-		[HttpGet]
-		public async Task<IActionResult> GetAllFarms([FromQuery] RubberFarmRequest filter)
-		{
-			try
-			{
-				var ponds = await models.GetFarmsWithFilterAsync(filter);
-				return Json(new { success = true, data = ponds });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in GetAllPonds");
-				return Json(new { success = false, message = "Lỗi khi tải dữ liệu" });
-			}
-		}
+        // ========================================
+        // GET: /Farm/GetAll
+        // ========================================
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] RubberFarmRequest filter)
+        {
+            try
+            {
+                var farms = await _farmModels.GetFarmsWithFilterAsync(filter);
+                return Json(new { success = true, data = farms });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách nông trường");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//// ========================================
-		//// API - GET FARM BY ID
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetFarmById(long id)
-		//{
-		//	try
-		//	{
-		//		var farm = await models.GetFarmByIdAsync(id);
+        // ========================================
+        // GET: /Farm/GetFarmById/{id}
+        // ========================================
+        [HttpGet]
+        [Route("Farm/GetFarmById/{id}")]
+        public async Task<IActionResult> GetFarmById(int id)
+        {
+            try
+            {
+                if (id <= 0) return BadRequest(new { success = false, message = "ID không hợp lệ" });
 
-		//		if (farm == null)
-		//		{
-		//			return Json(new FarmResponse<RubberFarm>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy nhà vườn",
-		//				Data = null
-		//			});
-		//		}
+                var farm = await _farmModels.GetFarmByIdAsync(id);
+                if (farm != null) return Ok(new { success = true, data = farm });
 
-		//		return Json(new FarmResponse<RubberFarm>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy thông tin nhà vườn thành công",
-		//			Data = farm
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting farm by id: {FarmId}", id);
-		//		return Json(new FarmResponse<RubberFarm>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
+                return NotFound(new { success = false, message = "Không tìm thấy thông tin nông trường" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Lỗi khi lấy thông tin nông trường ID: {id}");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//// ========================================
-		//// API - CREATE FARM
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> CreateFarm([FromBody] CreateFarmDto dto)
-		//{
-		//	if (!ModelState.IsValid)
-		//	{
-		//		var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-		//		return Json(new FarmResponse<RubberFarm>
-		//		{
-		//			Success = false,
-		//			Message = string.Join(", ", errors),
-		//			Data = null
-		//		});
-		//	}
+        // ========================================
+        // POST: /Farm/SaveInline (hoặc AddOrUpdateFarm)
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> SaveInline([FromBody] RubberFarmRequest request)
+        {
+            try
+            {
+                if (request == null) return BadRequest(new { success = false, message = "Dữ liệu không hợp lệ." });
 
-		//	try
-		//	{
-		//		// Check if FarmCode already exists
-		//		var exists = await models.FarmCodeExistsAsync(dto.FarmCode);
+                long resultId = await _farmModels.AddOrUpdateFarmAsync(request);
+                bool isUpdate = request.FarmId > 0;
 
-		//		if (exists)
-		//		{
-		//			return Json(new FarmResponse<RubberFarm>
-		//			{
-		//				Success = false,
-		//				Message = $"Mã nhà vườn '{dto.FarmCode}' đã tồn tại",
-		//				Data = null
-		//			});
-		//		}
+                return Ok(new
+                {
+                    success = true,
+                    message = isUpdate ? "Cập nhật thành công!" : "Thêm mới thành công!",
+                    data = resultId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lưu thông tin nông trường");
+                return StatusCode(500, new { success = false, message = "Đã xảy ra lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//		var userName = User.Identity?.Name ?? "SYSTEM";
-		//		var farmId = await models.CreateFarmAsync(dto, userName);
+        // ========================================
+        // POST: /Farm/SaveBatchFarms
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> SaveBatchFarms([FromBody] List<RubberFarmRequest> requests)
+        {
+            try
+            {
+                if (requests == null || !requests.Any())
+                    return BadRequest(new { success = false, message = "Không có dữ liệu để lưu." });
 
-		//		return Json(new FarmResponse<long>
-		//		{
-		//			Success = true,
-		//			Message = "Tạo nhà vườn thành công",
-		//			Data = farmId
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error creating farm");
-		//		return Json(new FarmResponse<RubberFarm>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
+                var result = await _farmModels.SaveBatchFarmsAsync(requests);
 
-		//// ========================================
-		//// API - UPDATE FARM
-		//// ========================================
-		//[HttpPut]
-		//public async Task<IActionResult> UpdateFarm([FromBody] UpdateFarmDto dto)
-		//{
-		//	if (!ModelState.IsValid)
-		//	{
-		//		var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-		//		return Json(new FarmResponse<RubberFarm>
-		//		{
-		//			Success = false,
-		//			Message = string.Join(", ", errors),
-		//			Data = null
-		//		});
-		//	}
+                if (result) return Ok(new { success = true, message = $"Đã lưu thành công {requests.Count} nông trường!" });
+                return BadRequest(new { success = false, message = "Lưu thất bại, vui lòng thử lại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lưu hàng loạt nông trường");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//	try
-		//	{
-		//		// Check if farm exists
-		//		var farm = await models.GetFarmByIdAsync(dto.FarmId);
+        // ========================================
+        // POST: /Farm/DeleteMultiple
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> DeleteMultiple([FromBody] List<long> farmIds)
+        {
+            try
+            {
+                if (farmIds == null || !farmIds.Any())
+                    return BadRequest(new { success = false, message = "Không có nông trường nào được chọn để xóa." });
 
-		//		if (farm == null)
-		//		{
-		//			return Json(new FarmResponse<RubberFarm>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy nhà vườn",
-		//				Data = null
-		//			});
-		//		}
+                var result = await _farmModels.DeleteBatchFarmsAsync(farmIds);
 
-		//		// Check if FarmCode is used by another farm
-		//		var isDuplicate = await models.FarmCodeExistsAsync(dto.FarmCode, dto.FarmId);
+                if (result) return Ok(new { success = true, message = $"Đã xóa thành công {farmIds.Count} nông trường!" });
+                return BadRequest(new { success = false, message = "Xóa thất bại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xóa nhiều nông trường");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//		if (isDuplicate)
-		//		{
-		//			return Json(new FarmResponse<RubberFarm>
-		//			{
-		//				Success = false,
-		//				Message = $"Mã nhà vườn '{dto.FarmCode}' đã được sử dụng bởi nhà vườn khác",
-		//				Data = null
-		//			});
-		//		}
+        // ========================================
+        // DELETE: /Farm/Delete/{farmId}
+        // ========================================
+        [HttpDelete]
+        [Route("Farm/Delete/{farmId}")]
+        public async Task<IActionResult> Delete(int farmId)
+        {
+            try
+            {
+                if (farmId <= 0) return BadRequest(new { success = false, message = "ID không hợp lệ." });
 
-		//		var userName = User.Identity?.Name ?? "SYSTEM";
-		//		var success = await models.UpdateFarmAsync(dto, userName);
+                var result = await _farmModels.DeleteFarmAsync(farmId);
+                if (result) return Ok(new { success = true, message = "Đã xóa nông trường thành công." });
 
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = success,
-		//			Message = success ? "Cập nhật nhà vườn thành công" : "Cập nhật nhà vườn thất bại",
-		//			Data = success
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error updating farm");
-		//		return Json(new FarmResponse<RubberFarm>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
+                return BadRequest(new { success = false, message = "Xóa thất bại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Lỗi khi xóa nông trường ID: {farmId}");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-		//// ========================================
-		//// API - DELETE FARM
-		//// ========================================
-		//[HttpDelete]
-		//public async Task<IActionResult> DeleteFarm(long id)
-		//{
-		//	try
-		//	{
-		//		// Check if farm exists
-		//		var farm = await models.GetFarmByIdAsync(id);
+        // ========================================
+        // POST: /Farm/ExportSelected
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> ExportSelected([FromBody] List<long> farmIds)
+        {
+            try
+            {
+                var fileContent = await _farmModels.ExportFarmsToExcelAsync(farmIds);
+                if (fileContent == null || fileContent.Length == 0)
+                    return BadRequest(new { success = false, message = "Không có dữ liệu để xuất." });
 
-		//		if (farm == null)
-		//		{
-		//			return Json(new FarmResponse<bool>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy nhà vườn",
-		//				Data = false
-		//			});
-		//		}
+                string fileName = farmIds != null && farmIds.Any()
+                    ? $"NongTruong_Selected_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                    : $"NongTruong_All_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
-		//		// Check if farm is used
-		//		var isUsed = await models.FarmIsUsedAsync(id);
-
-		//		if (isUsed)
-		//		{
-		//			return Json(new FarmResponse<bool>
-		//			{
-		//				Success = false,
-		//				Message = "Không thể xóa nhà vườn đang có dữ liệu thu mua",
-		//				Data = false
-		//			});
-		//		}
-
-		//		var success = await models.DeleteFarmAsync(id);
-
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = success,
-		//			Message = success ? "Xóa nhà vườn thành công" : "Xóa nhà vườn thất bại",
-		//			Data = success
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error deleting farm");
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = false
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - BULK DELETE FARMS
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> BulkDeleteFarms([FromBody] BulkDeleteFarmDto dto)
-		//{
-		//	if (dto.FarmIds == null || !dto.FarmIds.Any())
-		//	{
-		//		return Json(new FarmResponse<int>
-		//		{
-		//			Success = false,
-		//			Message = "Vui lòng chọn ít nhất một nhà vườn để xóa",
-		//			Data = 0
-		//		});
-		//	}
-
-		//	try
-		//	{
-		//		// Check if any farms are being used
-		//		var usedFarms = new List<long>();
-		//		foreach (var farmId in dto.FarmIds)
-		//		{
-		//			var isUsed = await models.FarmIsUsedAsync(farmId);
-		//			if (isUsed)
-		//			{
-		//				usedFarms.Add(farmId);
-		//			}
-		//		}
-
-		//		if (usedFarms.Any())
-		//		{
-		//			return Json(new FarmResponse<int>
-		//			{
-		//				Success = false,
-		//				Message = $"Không thể xóa {usedFarms.Count} nhà vườn đang có dữ liệu thu mua",
-		//				Data = 0
-		//			});
-		//		}
-
-		//		var rowsAffected = await models.BulkDeleteFarmsAsync(dto.FarmIds);
-
-		//		return Json(new FarmResponse<int>
-		//		{
-		//			Success = true,
-		//			Message = $"Đã xóa {rowsAffected} nhà vườn thành công",
-		//			Data = rowsAffected
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error bulk deleting farms");
-		//		return Json(new FarmResponse<int>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = 0
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - APPROVE/UNAPPROVE FARM
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> ApproveFarm([FromBody] ApproveFarmDto dto)
-		//{
-		//	try
-		//	{
-		//		var farm = await models.GetFarmByIdAsync(dto.FarmId);
-
-		//		if (farm == null)
-		//		{
-		//			return Json(new FarmResponse<bool>
-		//			{
-		//				Success = false,
-		//				Message = "Không tìm thấy nhà vườn",
-		//				Data = false
-		//			});
-		//		}
-
-		//		var success = await models.ApproveFarmAsync(dto.FarmId, dto.IsActive);
-
-		//		var message = dto.IsActive ? "Duyệt nhà vườn thành công" : "Hủy duyệt nhà vườn thành công";
-
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = success,
-		//			Message = success ? message : "Thao tác thất bại",
-		//			Data = success
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error approving farm");
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = false
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - IMPORT POLYGON
-		//// ========================================
-		//[HttpPost]
-		//public async Task<IActionResult> ImportPolygon([FromBody] ImportPolygonDto dto)
-		//{
-		//	if (string.IsNullOrWhiteSpace(dto.Polygon))
-		//	{
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = false,
-		//			Message = "Dữ liệu polygon không hợp lệ",
-		//			Data = false
-		//		});
-		//	}
-
-		//	try
-		//	{
-		//		var success = await models.ImportPolygonAsync(dto.FarmId, dto.Polygon);
-
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = success,
-		//			Message = success ? "Import polygon thành công" : "Import polygon thất bại",
-		//			Data = success
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error importing polygon");
-		//		return Json(new FarmResponse<bool>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = false
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - GET FARMS FOR DROPDOWN
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetFarmsForDropdown(bool activeOnly = true)
-		//{
-		//	try
-		//	{
-		//		var farms = await models.GetFarmsForDropdownAsync(activeOnly);
-
-		//		return Json(new FarmResponse<IEnumerable<FarmDropdownDto>>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy danh sách nhà vườn thành công",
-		//			Data = farms
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting farms for dropdown");
-		//		return Json(new FarmResponse<IEnumerable<FarmDropdownDto>>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - GET FARMS BY AGENT CODE
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetFarmsByAgentCode(string agentCode)
-		//{
-		//	try
-		//	{
-		//		if (string.IsNullOrWhiteSpace(agentCode))
-		//		{
-		//			return Json(new FarmResponse<IEnumerable<RubberFarm>>
-		//			{
-		//				Success = false,
-		//				Message = "Mã đại lý không hợp lệ",
-		//				Data = null
-		//			});
-		//		}
-
-		//		var farms = await models.GetFarmsByAgentCodeAsync(agentCode);
-
-		//		return Json(new FarmResponse<IEnumerable<RubberFarm>>
-		//		{
-		//			Success = true,
-		//			Message = $"Tìm thấy {farms.Count} nhà vườn",
-		//			Data = farms
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting farms by agent code");
-		//		return Json(new FarmResponse<IEnumerable<RubberFarm>>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - GET FARM STATISTICS
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> GetFarmStatistics()
-		//{
-		//	try
-		//	{
-		//		var stats = await models.GetFarmStatisticsAsync();
-
-		//		return Json(new FarmResponse<FarmStatisticsDto>
-		//		{
-		//			Success = true,
-		//			Message = "Lấy thống kê nhà vườn thành công",
-		//			Data = stats
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error getting farm statistics");
-		//		return Json(new FarmResponse<FarmStatisticsDto>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-		//// ========================================
-		//// API - SEARCH FARMS
-		//// ========================================
-		//[HttpGet]
-		//public async Task<IActionResult> SearchFarms(string keyword)
-		//{
-		//	try
-		//	{
-		//		if (string.IsNullOrWhiteSpace(keyword))
-		//		{
-		//			return Json(new FarmResponse<IEnumerable<RubberFarm>>
-		//			{
-		//				Success = false,
-		//				Message = "Vui lòng nhập từ khóa tìm kiếm",
-		//				Data = null
-		//			});
-		//		}
-
-		//		var farms = await models.SearchFarmsAsync(keyword);
-
-		//		return Json(new FarmResponse<IEnumerable<RubberFarm>>
-		//		{
-		//			Success = true,
-		//			Message = $"Tìm thấy {farms.Count} nhà vườn",
-		//			Data = farms
-		//		});
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_logger.LogError(ex, "Error searching farms");
-		//		return Json(new FarmResponse<IEnumerable<RubberFarm>>
-		//		{
-		//			Success = false,
-		//			Message = $"Lỗi: {ex.Message}",
-		//			Data = null
-		//		});
-		//	}
-		//}
-
-	}
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xuất file Excel nông trường");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+    }
 }

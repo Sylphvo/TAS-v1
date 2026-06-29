@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -134,8 +134,8 @@ namespace TAS.Data
 				entity.HasKey(e => e.IntakeId);
 
 				entity.Property(e => e.IntakeCode).HasMaxLength(50);
-				entity.Property(e => e.FarmCode).HasMaxLength(50).IsRequired();
-				entity.Property(e => e.FarmerName).HasMaxLength(255).IsRequired();
+				entity.Property(e => e.FarmCode).HasMaxLength(50).IsRequired(false);
+				entity.Property(e => e.FarmerName).HasMaxLength(255).IsRequired(false);
 				entity.Property(e => e.RegisterPerson).HasMaxLength(50);
 				entity.Property(e => e.UpdatePerson).HasMaxLength(50);
 

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TAS.Models
@@ -14,13 +14,11 @@ namespace TAS.Models
 		[MaxLength(50)]
 		public string? IntakeCode { get; set; }
 
-		[Required]
 		[MaxLength(50)]
-		public string FarmCode { get; set; } = string.Empty;
+		public string? FarmCode { get; set; }
 
-		[Required]
 		[MaxLength(255)]
-		public string FarmerName { get; set; } = string.Empty;
+		public string? FarmerName { get; set; }
 
 		[Required]
 		[Column(TypeName = "decimal(10,2)")]

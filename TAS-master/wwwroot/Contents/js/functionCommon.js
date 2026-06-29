@@ -8,7 +8,7 @@ var colorSortOrder_3 = '#f2f2f2';//xám nhạt
 var colorSortOrder_4 = '#fbd4b4';//màu cam nhạt 
 var colorpickerSuite = '';
 var gridOptionsTraceability, ListDataFull, ListRowChild, gridApi, pagerApi;//khai báo các biến quan trọng trong lưới aggrid
-var sortData = { sortColumnEventActual: '', sortOrderEventActual: '' }
+var sortData = { sortColumnEventActual: '', sortOrderEventActual: '' } //Biến lưu thông tin cột đang được sắp xếp và thứ tự sắp xếp để xử lý sự kiện sắp xếp
 //set thông báo 
 const Toast = Swal.mixin({
     toast: true,
@@ -4011,18 +4011,21 @@ function renderServerPagination(agPagingId, totalRecords, currentPage, pageSize,
     let endRecord = currentPage * pageSize;
     if (endRecord > totalRecords) endRecord = totalRecords;
 
+    // 1. Lặp qua mảng listPageSize để tạo các option số
+    let optionsHtml = arrConstant.listPageSize.map(size =>
+        `<option value="${size}" ${pageSize == size ? 'selected' : ''}>${size}</option>`
+    ).join('\n'); // Nối các mảng lại thành 1 chuỗi, cách nhau bởi dấu xuống dòng
+    let isCheckAllOption = arrConstant.listPageSize.includes(pageSize);
+    // 2. Thêm option "All" vào cuối chuỗi
+    optionsHtml += `\n<option value="${totalRecords}" ${!isCheckAllOption || pageSize == totalRecords ? 'selected' : ''}>All</option>`;
+
     // 3. Render HTML (Giữ nguyên cấu trúc của bạn)
     const html = `
     <div class="grid-info">
         <div class="ag-paging-grid">
             <span>${typeof arrMsg !== 'undefined' ? arrMsg.key_rowperpage : 'Rows per page'}</span>:
             <select class="datatable-selector selector-paging cboSelect2SearchPage" id="${els.selectId}">
-                <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
-                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
-                <option value="15" ${pageSize == 15 ? 'selected' : ''}>15</option>
-                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
-                <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
-                <option value="${totalRecords}" ${pageSize == totalRecords ? 'selected' : ''}>All</option>
+                ${optionsHtml}
             </select>
         </div>
     </div>
@@ -4482,3 +4485,40 @@ async function IsToastConfirmDeleteNoLength() {
     let isConfirm = await ToastConfirm(message);
     return isConfirm;
 }
+
+// ========================================
+// NOTIFICATIONS
+// ========================================
+const UI = {
+    showLoading: function () {
+        $('#loader-wrapper').fadeIn(200);
+    },
+    hideLoading: function () {
+        $('#loader-wrapper').fadeOut(200);
+    }
+};
+
+// ========================================
+// Sự kiện phím
+// ========================================
+// Hàm này nhận vào một HÀM ĐỘNG (callback)
+const createDoubleEnterHandler = (callback) => {
+    // Trả về hàm event listener thực sự
+    return (event) => {
+        if (event.key === 'Enter') {
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - arrConstant.lastEnterTime;
+
+            if (timeDiff < 300 && timeDiff > 0) {
+                // GỌI HÀM ĐỘNG TẠI ĐÂY
+                if (typeof callback === 'function') {
+                    callback();
+                }
+
+                arrConstant.lastEnterTime = 0;
+            } else {
+                arrConstant.lastEnterTime = currentTime;
+            }
+        }
+    };
+};

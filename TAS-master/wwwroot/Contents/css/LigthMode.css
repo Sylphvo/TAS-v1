@@ -1,0 +1,21 @@
+﻿:root {
+    --bs-body-bg: #f8f9fa;
+    --bs-body-bg-rgb: 248,249,250;
+    --pc-heading-color: #1d2630;
+    --pc-active-background: #f3f5f7;
+    --pc-sidebar-background: transparent;
+    --pc-sidebar-color: #5b6b79;
+    --pc-sidebar-color-rgb: 91,107,121;
+    --pc-sidebar-active-color: #0d6efd;
+    --pc-sidebar-shadow: none;
+    --pc-sidebar-caption-color: #3e4853;
+    --pc-sidebar-border: 1px dashed #bec8d0;
+    --pc-sidebar-user-background: #f3f5f7;
+    --pc-header-background: rgba(var(--bs-body-bg-rgb), 0.7);
+    --pc-header-color: #5b6b79;
+    --pc-header-shadow: none;
+    --pc-card-box-shadow: none;
+    --pc-header-submenu-background: #ffffff;
+    --pc-header-submenu-color: #5b6b79;
+    --loader-wrapper: rgba(255, 255, 255, 0.8);
+}

@@ -16,112 +16,112 @@ var arrValue = {
     comboFarmCode: [], // combo thông tin nhà vườn
     comboOrderCode: [], // combo đơn hàng
     selectFirst: true,
-    loadFirst: false,	
+    loadFirst: false,
 };
 
 var columnDefs =
-[
-    {
-        headerName: 'Số thứ tự',
-        field: 'rowNo',
-        minWidth: 80,
-        width: 80,
-    },
-    {
-        headerName: 'Tên đại lý',
-        field: 'agentCode',
-        cellEditor: SelectEditorWithTextDisplay,
-        editable: true,
-        width: 120,
-        filter: 'agTextColumnFilter',
-        cellStyle: CellStyle_Col_Model,
-        valueFormatter: (params) => {
-            if (!params.value) return '';
-            return params.data.agentName;
+    [
+        {
+            headerName: 'Số thứ tự',
+            field: 'rowNo',
+            minWidth: 80,
+            width: 80,
         },
-        suppressFillHandle: false // Chỉ bật fill cho riêng cột này
-    },
-    {
-        headerName: 'Tên Nhà Vườn',
-        field: 'farmCode',
-        cellEditor: SelectEditorWithTextDisplay,
-        editable: true,
-        width: 120,
-        filter: 'agTextColumnFilter',
-        valueFormatter: (params) => {
-            if (!params.value) return '';
-            return params.data.farmerName;
+        {
+            headerName: 'Tên đại lý',
+            field: 'agentCode',
+            cellEditor: SelectEditorWithTextDisplay,
+            editable: true,
+            width: 120,
+            filter: 'agTextColumnFilter',
+            cellStyle: CellStyle_Col_Model,
+            valueFormatter: (params) => {
+                if (!params.value) return '';
+                return params.data.agentName;
+            },
+            suppressFillHandle: false // Chỉ bật fill cho riêng cột này
         },
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'KL Mủ (kg)',
-        field: 'rubberKg',
-        width: 120,
-        editable: true,
-        type: 'numericColumn',
-        valueFormatter: params => formatNumber(params.value),
-        cellStyle: CellStyle_Col_Model,
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'TSC',
-        field: 'tscPercent',
-        width: 100,
-        editable: true,
-        type: 'numericColumn',
-        valueFormatter: params => formatNumber(params.value, 2),
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'DRC',
-        field: 'drcPercent',
-        width: 100,
-        editable: true,
-        type: 'numericColumn',
-        valueFormatter: params => formatNumber(params.value, 2),
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'Thành phẩm',
-        field: 'finishedProductKg',
-        width: 100,
-        editable: true,
-        type: 'numericColumn',
-        valueFormatter: params => formatNumber(params.value),
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'Thành Phẩm Ly Tâm',
-        field: 'centrifugeProductKg',
-        width: 100,
-        editable: true,
-        type: 'numericColumn',
-        valueFormatter: params => formatNumber(params.value),
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'Trạng thái',
-        field: 'statusText',
-        width: 120,
-        editable: false,
-        cellRenderer: CellRenderStatus,
-        suppressFillHandle: false
-    },
-    {
-        headerName: 'Người cập nhật',
-        field: 'timeDate_Person',
-        width: 130,
-        editable: false,
-		hide: true
-    },
-    {
-        headerName: 'Thời gian',
-        field: 'timeDate',
-        width: 150,
-        editable: false,
-    }
-];
+        {
+            headerName: 'Tên Nhà Vườn',
+            field: 'farmCode',
+            cellEditor: SelectEditorWithTextDisplay,
+            editable: true,
+            width: 120,
+            filter: 'agTextColumnFilter',
+            valueFormatter: (params) => {
+                if (!params.value) return '';
+                return params.data.farmerName;
+            },
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'KL Mủ (kg)',
+            field: 'rubberKg',
+            width: 120,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value),
+            cellStyle: CellStyle_Col_Model,
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'TSC',
+            field: 'tscPercent',
+            width: 100,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value, 2),
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'DRC',
+            field: 'drcPercent',
+            width: 100,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value, 2),
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'Thành phẩm',
+            field: 'finishedProductKg',
+            width: 100,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value),
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'Thành Phẩm Ly Tâm',
+            field: 'centrifugeProductKg',
+            width: 100,
+            editable: true,
+            type: 'numericColumn',
+            valueFormatter: params => formatNumber(params.value),
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'Trạng thái',
+            field: 'statusText',
+            width: 120,
+            editable: false,
+            cellRenderer: CellRenderStatus,
+            suppressFillHandle: false
+        },
+        {
+            headerName: 'Người cập nhật',
+            field: 'timeDate_Person',
+            width: 130,
+            editable: false,
+            hide: true
+        },
+        {
+            headerName: 'Thời gian',
+            field: 'timeDate',
+            width: 150,
+            editable: false,
+        }
+    ];
 var gridOptions = CreateGridOption(columnDefs);
 
 function initPage() {
@@ -151,9 +151,9 @@ function RegisterEventPageIntake() {
 function onGridReady(params) {
     gridApiIntake = params.api;
     gridColumnApi = params.columnApi;
-    
+
     // Auto size columns
-    gridApiIntake.sizeColumnsToFit();    
+    gridApiIntake.sizeColumnsToFit();
 }
 
 // ========================================
@@ -192,7 +192,7 @@ async function loadData(pageIndex, pageSize) {
             type: 'POST',
             data: filterData
         });
-        
+
         if (response.success) {
             var pagedResult = response.data;
             rowData = pagedResult.items;
@@ -217,8 +217,8 @@ async function loadData(pageIndex, pageSize) {
         } else {
             //NotificationToast('error', response.message || 'Lỗi khi tải dữ liệu');
         }
-		
-        
+
+
 
     } catch (error) {
         console.error('Error loading data:', error);
@@ -242,11 +242,11 @@ function addNewRow() {
         agentName: '',
         farmCode: '',
         farmerName: '',
-        rubberKg: 0,
-        tscPercent: 0,
-        drcPercent: 0,
-        finishedProductKg: 0,
-        centrifugeProductKg: 0,
+        rubberKg: 1000,
+        tscPercent: 30,
+        drcPercent: 27,
+        finishedProductKg: 270,
+        centrifugeProductKg: 405,
         status: 0,
         statusText: arrValue.MsgProgress,
         timeDate_Person: '',
@@ -267,14 +267,14 @@ function cancelRow(rowIndex) {
 async function saveRow(rowIndex) {
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
     const data = rowNode.data;
-    
-    // Validate
-    if (!data.farmCode) {
-        NotificationToast('error', 'Vui lòng chọn mã nhà vườn');
-        return;
-    }
-    
-    
+
+    // Validate (Bỏ qua bắt buộc chọn nhà vườn)
+    // if (!data.farmCode) {
+    //     NotificationToast('error', 'Vui lòng chọn mã nhà vườn');
+    //     return;
+    // }
+
+
     try {
         const response = await $.ajax({
             url: '/RubberIntake/AddOrUpdate',
@@ -294,7 +294,7 @@ async function saveRow(rowIndex) {
                 status: data.status
             })
         });
-        
+
         if (response.success) {
             NotificationToast('success', 'Lưu thành công');
             // Update intakeId if new
@@ -323,7 +323,7 @@ async function deleteRow(rowIndex) {
     if (!await IsToastConfirmDeleteNoLength()) return;
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
     const data = rowNode.data;
-    
+
     // If new row (no intakeId), just remove from grid
     if (!data.intakeId || data.intakeId === 0) {
         gridApiIntake.applyTransaction({ remove: [data] });
@@ -331,16 +331,16 @@ async function deleteRow(rowIndex) {
         NotificationToast('success', 'Đã xóa dòng');
         return;
     }
-    
-    
-    
+
+
+
     try {
         const response = await $.ajax({
             url: '/RubberIntake/Delete',
             type: 'POST',
             data: { intakeId: data.intakeId }
         });
-        
+
         if (response.success) {
             gridApiIntake.applyTransaction({ remove: [data] });
             //updateRowNumbers();
@@ -352,14 +352,14 @@ async function deleteRow(rowIndex) {
         console.error('Error deleting row:', error);
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
-        
+
     }
 }
 
 // Delete Selected Rows
 async function deleteSelected() {
     const selectedRows = gridApiIntake.getSelectedRows();
-    
+
     if (selectedRows.length === 0) {
         NotificationToast('warning', 'Vui lòng chọn các dòng cần xóa');
         return;
@@ -367,11 +367,11 @@ async function deleteSelected() {
 
 
     if (!await IsToastConfirmDelete(selectedRows.length)) return;
-    
+
     const intakeIds = selectedRows
         .filter(row => row.intakeId > 0)
         .map(row => row.intakeId);
-    
+
     if (intakeIds.length === 0) {
         // Just remove from grid
         gridApiIntake.applyTransaction({ remove: selectedRows });
@@ -379,7 +379,7 @@ async function deleteSelected() {
         NotificationToast('success', 'Đã xóa các dòng mới');
         return;
     }
-    
+
     try {
         const response = await $.ajax({
             url: '/RubberIntake/DeleteMultiple',
@@ -387,7 +387,7 @@ async function deleteSelected() {
             contentType: 'application/json',
             data: JSON.stringify(intakeIds)
         });
-        
+
         if (response.success) {
             gridApiIntake.applyTransaction({ remove: selectedRows });
             //updateRowNumbers();
@@ -398,7 +398,7 @@ async function deleteSelected() {
     } catch (error) {
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
-        
+
     }
 }
 
@@ -407,19 +407,19 @@ async function deleteSelected() {
 async function approveRow(rowIndex, status) {
     const rowNode = gridApiIntake.getDisplayedRowAtIndex(rowIndex);
     const data = rowNode.data;
-    
+
     if (!data.intakeId || data.intakeId === 0) {
         NotificationToast('warning', 'Vui lòng lưu dòng trước khi duyệt');
         return;
     }
-    
+
     try {
         const response = await $.ajax({
             url: '/RubberIntake/Approve',
             type: 'POST',
             data: { intakeId: data.intakeId, status: status }
         });
-        
+
         if (response.success) {
             data.status = status;
             data.statusText = arrValue.MsgProgress;
@@ -433,7 +433,7 @@ async function approveRow(rowIndex, status) {
         //console.error('Error approving row:', error);
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
-        
+
     }
 }
 
@@ -443,16 +443,16 @@ async function approveAll() {
     if (!await ToastConfirm(str)) {
         return;
     }
-    
-    
-    
+
+
+
     try {
         const response = await $.ajax({
             url: '/RubberIntake/ApproveAll',
             type: 'POST',
             data: { status: 1 }
         });
-        
+
         if (response.success) {
             NotificationToast('success', response.message);
             loadData();
@@ -463,7 +463,7 @@ async function approveAll() {
         console.error('Error approving all:', error);
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
-        
+
     }
 }
 
@@ -479,17 +479,17 @@ function importExcel() {
 async function handleFileImport(event) {
     const file = event.files[0];
     if (!file) return;
-    
-    
-    
+
+
+
     try {
         const data = await readExcelFile(file);
-        
+
         if (data.length === 0) {
             NotificationToast('warning', 'File Excel không có dữ liệu');
             return;
         }
-        
+
         // Map Excel data to model
         const importData = data.map(row => ({
             farmCode: row['Mã Nhà vườn'] || '',
@@ -500,7 +500,7 @@ async function handleFileImport(event) {
             finishedProductKg: parseFloat(row['Thành phẩm (kg)']) || 0,
             centrifugeProductKg: parseFloat(row['Thành phẩm ly tâm (kg)']) || 0
         }));
-        
+
         // Send to server
         const response = await $.ajax({
             url: '/RubberIntake/ImportExcel',
@@ -508,7 +508,7 @@ async function handleFileImport(event) {
             contentType: 'application/json',
             data: JSON.stringify(importData)
         });
-        
+
         if (response.success) {
             NotificationToast('success', response.message);
             loadData();
@@ -519,7 +519,7 @@ async function handleFileImport(event) {
         console.error('Error importing Excel:', error);
         NotificationToast('error', 'Lỗi khi đọc file Excel');
     } finally {
-        
+
         event.value = '';  // Reset file input
     }
 }
@@ -530,14 +530,14 @@ async function exportExcel() {
     const farmCode = $('#cboFarm').val();
     const orderCode = $('#cboOrder').val();
     const status = $('#cboStatus').val();
-    
+
     try {
         const response = await $.ajax({
             url: '/RubberIntake/ExportExcel',
             type: 'POST',
             data: { agentCode, farmCode, orderCode, status }
         });
-        
+
         if (response.success && response.data) {
             // Prepare data for export
             const exportData = response.data.map(row => ({
@@ -556,16 +556,16 @@ async function exportExcel() {
                 'Người cập nhật': row.timeDate_Person,
                 'Thời gian': row.timeDate
             }));
-            
+
             // Create workbook and export
             const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Cập nhật số liệu');
-            
+
             // Generate filename
-            const fileName = `CapNhatSoLieu_${new Date().toISOString().slice(0,10)}.xlsx`;
+            const fileName = `CapNhatSoLieu_${new Date().toISOString().slice(0, 10)}.xlsx`;
             XLSX.writeFile(wb, fileName);
-            
+
             NotificationToast('success', 'Export Excel thành công');
         } else {
             NotificationToast('error', response.message || 'Export thất bại');
@@ -574,7 +574,7 @@ async function exportExcel() {
         console.error('Error exporting Excel:', error);
         NotificationToast('error', 'Lỗi kết nối server');
     } finally {
-        
+
     }
 }
 
@@ -585,8 +585,8 @@ async function exportExcel() {
 function readExcelFile(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        
-        reader.onload = function(e) {
+
+        reader.onload = function (e) {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
@@ -597,7 +597,7 @@ function readExcelFile(file) {
                 reject(error);
             }
         };
-        
+
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
     });
@@ -653,13 +653,13 @@ function onCellValueChanged(event) {
             newValue: event.newValue,
             data: event.data // Dữ liệu của cả dòng
         });
-        
+
     }
-	else if (event.source == "edit") {// B. Nếu là edit trực tiếp: XỬ LÝ NGAY
+    else if (event.source == "edit") {// B. Nếu là edit trực tiếp: XỬ LÝ NGAY
         if (event.colDef.field == "agentCode") {
             event.data.agentName = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].text;
             event.data.agentCode = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].value;
-           
+
         }
         if (event.colDef.field == "farmCode") {
             event.data.farmerName = objDataAgentOrFarm.filter(x => x.value == event.newValue)[objDataAgentOrFarm.length - objDataAgentOrFarm.length].text;
@@ -668,13 +668,13 @@ function onCellValueChanged(event) {
         gridApiIntake.applyTransaction({ update: [event.data] });
         saveRow(event.rowIndex);
     }
-    
+
     //edit từng dòng
-	// Cập nhật các trường liên quan
+    // Cập nhật các trường liên quan
     if (event.colDef.field === 'rubberKg' || event.colDef.field === 'tscPercent') {
         const rubberKg = event.data.rubberKg || 0;
         const tscPercent = event.data.tscPercent || 0;
-        
+
         if (rubberKg > 0 && tscPercent > 0) {
             event.data.finishedProductKg = Math.round((rubberKg * tscPercent / 100) * 100) / 100;
             gridApiIntake.applyTransaction({ update: [event.data] });
@@ -715,7 +715,7 @@ async function saveBatchRecords(fillHandleBatch) {
         return;
     }
     let dataSaveBatch = fillHandleBatch.map(x => x.data);
-    try {   
+    try {
         const response = await $.ajax({
             url: '/RubberIntake/saveBatchRecords',
             type: 'POST',
@@ -760,12 +760,12 @@ async function loadAllCombos() {
             url: '/Common/GetAllCombos',
             type: 'POST'
         });
-        
+
         if (response.success) {
             arrValue.comboAgent = response.comboAgent;
             arrValue.comboFarmCode = response.comboFarmCode;
             arrValue.comboOrderCode = response.comboOrderCode;
-			// Render combos
+            // Render combos
             RenderComboBox(arrValue.comboAgent, 'cboAgent', arrValue.selectFirst);
             RenderComboBox(arrValue.comboFarmCode, 'cboFarm', arrValue.selectFirst);
             RenderComboBox(arrValue.comboOrderCode, 'cboOrder', arrValue.selectFirst);
@@ -862,4 +862,15 @@ function CellRenderStatus(params) {
         statusClass = 'badge badge-success';
     }
     return `<span class="${statusClass}">${params.data.statusText}</span>`;
+}
+
+function onSelectionChanged() {
+    const selectedRows = gridApiIntake.getSelectedRows();
+    const count = selectedRows.length;
+
+    if (count >= 2) {
+        $('#btnDeleteSelected').prop('disabled', false); // Mở khóa nút
+    } else {
+        $('#btnDeleteSelected').prop('disabled', true);  // Khóa nút
+    }
 }

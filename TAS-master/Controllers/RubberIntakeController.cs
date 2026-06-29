@@ -16,21 +16,23 @@ namespace TAS.Controllers
 			_models = models;
 			_common = common;
 		}
+        #region VIEW: Trang chính 
+        // ========================================
+        // VIEW: Trang chính
+        // ========================================
+        [Breadcrumb(nameof(Language.key_capnhatsolieu), "#", "", false)]
+        public IActionResult Index()
+        {
+            ViewData["Title"] = Language.key_capnhatsolieu;
+            return View();
+        }
+        #endregion
 
-		// ========================================
-		// VIEW: Trang chính
-		// ========================================
-		[Breadcrumb(nameof(Language.key_capnhatsolieu), "#", "", false)]
-		public IActionResult Index()
-		{
-			ViewData["Title"] = Language.key_capnhatsolieu;
-			return View();
-		}
 
-		// ========================================
-		// API: Lấy danh sách FULL
-		// ========================================
-		[HttpPost]
+        // ========================================
+        // API: Lấy danh sách FULL
+        // ========================================
+        [HttpPost]
 		public async Task<IActionResult> GetAllIntakes(RubberIntakeRequest req)
 		{
 			try

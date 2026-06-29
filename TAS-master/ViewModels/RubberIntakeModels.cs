@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Org.BouncyCastle.Ocsp;
 using System.Data;
 using TAS.DTOs;
@@ -55,7 +55,7 @@ namespace TAS.ViewModels
 					agentCode = i.AgentCode,
 					agentName = a.AgentName,
 					farmCode = i.FarmCode,
-					farmerName = f.FarmerName,
+					farmerName = f.FarmName,
 					rubberKg = i.RubberKg,
 					tscPercent = i.TSCPercent,
 					drcPercent = i.DRCPercent,
@@ -71,8 +71,8 @@ namespace TAS.ViewModels
 					registerDate = i.RegisterDate,
 					timeDate = FORMAT(ISNULL(i.UpdateDate, i.RegisterDate), 'dd/MM/yyyy HH:mm')
 				FROM RubberIntake i
-				INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
-				INNER JOIN RubberAgent a ON a.AgentCode = i.AgentCode
+				LEFT JOIN RubberFarm f ON f.FarmCode = i.FarmCode
+				LEFT JOIN RubberAgent a ON a.AgentCode = i.AgentCode
 				WHERE 1=1 {filterSql}
 				ORDER BY {req.sortColumn} {req.sortOrder}
 				OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
@@ -123,8 +123,8 @@ namespace TAS.ViewModels
                         status = i.Status,
                         registerDate = i.RegisterDate
                     FROM RubberIntake i
-                    INNER JOIN RubberFarm f ON f.FarmCode = i.FarmCode
-                    INNER JOIN RubberAgent a ON a.AgentCode = f.AgentCode
+                    LEFT JOIN RubberFarm f ON f.FarmCode = i.FarmCode
+                    LEFT JOIN RubberAgent a ON a.AgentCode = f.AgentCode
                     WHERE i.IntakeId = @IntakeId
                 ";
 
@@ -148,9 +148,9 @@ namespace TAS.ViewModels
 				if (request == null)
 					throw new ArgumentNullException(nameof(request));
 
-				// Validate
-				if (string.IsNullOrWhiteSpace(request.farmCode))
-					throw new ArgumentException("Mã nhà vườn không được để trống");
+				// Validate (Bỏ qua bắt buộc mã nhà vườn)
+				// if (string.IsNullOrWhiteSpace(request.farmCode))
+				// 	throw new ArgumentException("Mã nhà vườn không được để trống");
 
 				var sql = @"
                     IF EXISTS (SELECT 1 FROM RubberIntake WHERE IntakeId = @IntakeId)

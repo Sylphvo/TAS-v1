@@ -5,7 +5,7 @@ var arrConstant = {
     msgFinish: arrMsg.key_hoanthanh, // Đã tạo đơn hàng
     currentPage: 1, // Đã tạo đơn hàng
     pageIndex: 1, // Đã tạo đơn hàng
-    pageSize: 5, // Đã tạo đơn hàng
+    pageSize: 10, // Đã tạo đơn hàng
 
     SortOrder_Lot: 1, // Order
     SortOrder_Agent: 2,// Agent
@@ -15,6 +15,8 @@ var arrConstant = {
     PrefixOrder: 'EXP_',
     PrefixIntake: 'INT_',
     PrefixLot: 'LOT_',
+    listPageSize: [10, 15, 20, 50],
+    lastEnterTime:0
 };
 class SelectEditorWithTextDisplay {
     init(params) {
@@ -207,7 +209,8 @@ function CreateGridOption(columnDefs) {
         {
             headerName: '',
             field: 'selected',
-            width: 80,
+            width: 140,
+            minwidth: 140,
             pinned: 'left', // Giữ pinned để cố định icon bên trái
             lockPosition: true,
             suppressMenu: true,
@@ -271,6 +274,7 @@ function CreateGridOption(columnDefs) {
         onGridReady: onGridReady,// Load Data
         onCellValueChanged: onCellValueChanged,// Edit Cell
         //onRowDragEnd: onRowDragEnd,// Drag and Drop
+        onSelectionChanged: onSelectionChanged,// Chọn dòng
 
         singleClickEdit: true,// Double click to edit
         onFillEnd: onFillEnd// Fill Handle
@@ -294,7 +298,7 @@ function cancelRow(rowIndex, strCode) {
 }
 function LoadDataAgGrid(gridApiDynamic, pageIndex, pageSize, strUrl, functionDynamic) {
 	// 1. Hiện loading
-    showLoading();  
+    UI.showLoading();  
     if (typeof (pageIndex) == 'number') {
         arrConstant.pageIndex = pageIndex;
     } else {
@@ -341,6 +345,32 @@ function LoadDataAgGrid(gridApiDynamic, pageIndex, pageSize, strUrl, functionDyn
         error: function (xhr) {
             NotificationToast("error", 'Lỗi kết nối: ' + xhr.statusText);
         },
-        complete: hideLoading
+        complete: function () {
+            UI.hideLoading();
+        }
     });
+}
+
+function layout_change(e) {
+    PFN_createCookie('theme', e, 1)
+    document.getElementsByTagName("body")[0].setAttribute("data-pc-theme", PFN_readCookie('theme'));
+    PFN_readCookie('theme') == 'dark' ?
+        (
+            updateLogo(".pc-sidebar .m-header .logo-lg", "../Logo/LogoWhite.png")
+            , updateLogo(".navbar-brand .logo-lg", "../Logo/LogoWhite.png")
+            , updateLogo(".auth-main.v1 .auth-sidefooter img", "../Logo/LogoWhite.png")
+            , updateLogo(".footer-top .footer-logo", "../Logo/LogoWhite.png")
+            , updateActiveButton('.theme-layout .btn[data-value="false"]')
+            , $('body').css('background', '#131920')
+
+        ) :
+        (
+            updateLogo(".pc-sidebar .m-header .logo-lg", "../Logo/LogoBlack.png")
+            , updateLogo(".navbar-brand .logo-lg", "../Logo/LogoBlack.png")
+            , updateLogo(".auth-main.v1 .auth-sidefooter img", "../Logo/LogoBlack.png")
+            , updateLogo(".footer-top .footer-logo", "../Logo/LogoBlack.png")
+            , updateActiveButton('.theme-layout .btn[data-value="true"]')
+            , $('body').css('background', '')
+        )
+    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-quartz-' + PFN_readCookie('theme'));
 }

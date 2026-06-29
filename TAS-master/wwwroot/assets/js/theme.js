@@ -42,31 +42,6 @@ function layout_rtl_change(e) {
     "true" === e ? (rtl_flag = !0, t.setAttribute("data-pc-direction", "rtl"), a.setAttribute("dir", "rtl"), a.setAttribute("lang", "ar"), o && (o.classList.remove("active"), document.querySelector(".theme-direction .btn[data-value='true']").classList.add("acxtive"))) : (rtl_flag = !1, t.setAttribute("data-pc-direction", "ltr"), a.removeAttribute("dir"), a.removeAttribute("lang"), o && (o.classList.remove("active"), document.querySelector(".theme-direction .btn[data-value='false']").classList.add("active")))
 }
 
-function layout_change(e) {
-    PFN_createCookie('theme', e, 1)
-    document.getElementsByTagName("body")[0].setAttribute("data-pc-theme", PFN_readCookie('theme'));
-    PFN_readCookie('theme') == 'dark' ?
-        (
-            updateLogo(".pc-sidebar .m-header .logo-lg", "../Logo/LogoWhite.png")
-            , updateLogo(".navbar-brand .logo-lg", "../Logo/LogoWhite.png")
-            , updateLogo(".auth-main.v1 .auth-sidefooter img", "../Logo/LogoWhite.png")
-            , updateLogo(".footer-top .footer-logo", "../Logo/LogoWhite.png")
-            , updateActiveButton('.theme-layout .btn[data-value="false"]')
-            , $('body').css('background', '#131920')
-            
-        ) :
-        (
-            updateLogo(".pc-sidebar .m-header .logo-lg", "../Logo/LogoBlack.png")
-            , updateLogo(".navbar-brand .logo-lg", "../Logo/LogoBlack.png")
-            , updateLogo(".auth-main.v1 .auth-sidefooter img", "../Logo/LogoBlack.png")
-            , updateLogo(".footer-top .footer-logo", "../Logo/LogoBlack.png")
-            , updateActiveButton('.theme-layout .btn[data-value="true"]')
-            , $('body').css('background', '')
-        )
-    $('div[theme="aggrid"]').removeClass().addClass('ag-theme-quartz-' + PFN_readCookie('theme'));
-    
-    //$('div[theme="aggrid"]').removeClass().setAttribute("data-ag-theme-mode", PFN_readCookie('theme'));
-}
 
 function updateLogo(e, t) {
     e = document.querySelector(e);

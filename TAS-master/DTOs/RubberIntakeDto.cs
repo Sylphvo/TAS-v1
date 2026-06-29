@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TAS.DTOs;
 
@@ -15,8 +15,8 @@ namespace TAS.DTOs
 		public string? intakeCode { get; set; }
 		public string? agentCode { get; set; }
 		public string? agentName { get; set; }
-		public string farmCode { get; set; } = string.Empty;
-		public string farmerName { get; set; } = string.Empty;
+		public string? farmCode { get; set; }
+		public string? farmerName { get; set; }
 		public decimal rubberKg { get; set; }
 		public decimal? tscPercent { get; set; }
 		public decimal? drcPercent { get; set; }
@@ -37,8 +37,8 @@ namespace TAS.DTOs
 	{
 		public string? agentCode { get; set; }
 		public string? agentName { get; set; }
-		public string farmCode { get; set; } = string.Empty;
-		public string farmerName { get; set; } = string.Empty;
+		public string? farmCode { get; set; }
+		public string? farmerName { get; set; }
 		public decimal rubberKg { get; set; }
 		public decimal? tscPercent { get; set; }
 		public decimal? drcPercent { get; set; }

@@ -122,6 +122,64 @@ namespace TAS.Controllers
 				return StatusCode(500, new { success = false, message = ex.Message });
 			}
 		}
+        [HttpPost]
+        public async Task<IActionResult> SaveBatchOrders([FromBody] List<RubberOrderRequest> orders)
+        {
+            // Kiểm tra dữ liệu đầu vào
+            if (orders == null || !orders.Any())
+            {
+                return BadRequest(new { success = false, message = "Không có dữ liệu để lưu." });
+            }
 
-	}
+            // Validate dữ liệu cơ bản
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            try
+            {
+                // Gọi xuống Models để xử lý lưu hàng loạt
+                var result = await _orderModels.SaveBatchOrdersAsync(orders);
+
+                if (result)
+                {
+                    return Ok(new { success = true, message = "Lưu tất cả thành công!" });
+                }
+                return BadRequest(new { success = false, message = "Lưu thất bại, vui lòng thử lại." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lưu hàng loạt đơn hàng");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteBatchOrders([FromBody] List<long> orderIds)
+        {
+            try
+            {
+                // Kiểm tra danh sách rỗng
+                if (orderIds == null || !orderIds.Any())
+                {
+                    return BadRequest(new { success = false, message = "Không có đơn hàng nào được chọn để xóa." });
+                }
+
+                // Gọi hàm xóa nhiều từ Models
+                var result = await _orderModels.DeleteBatchOrdersAsync(orderIds);
+
+                if (result)
+                {
+                    return Ok(new { success = true, message = $"Đã xóa thành công {orderIds.Count} đơn hàng!" });
+                }
+
+                return BadRequest(new { success = false, message = "Xóa thất bại hoặc các đơn hàng này đã bị xóa trước đó." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xóa nhiều đơn hàng");
+                return StatusCode(500, new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+    }
 }

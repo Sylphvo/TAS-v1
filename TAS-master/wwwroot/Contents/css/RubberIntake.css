@@ -288,15 +288,7 @@ div[col-id="farmerName"] .ag-fill-handle {
     box-sizing: border-box;
 }*/
 /* Dark mode customizations for AG Grid */
-.ag-theme-quartz-dark {
-    --ag-background-color: #131920;
-    --ag-header-background-color: #1c2229;
-    --ag-odd-row-background-color: #131920;
-    --ag-row-hover-color: #2a2a2a;
-    --ag-selected-row-background-color: #3b3b3b;
-    --ag-foreground-color: #ffffffcc;
-    --ag-border-color: #ffffffcc;
-}
+
 .ag-center-cols-container .select2-container .select2-selection--single {
     height: 100%;
 }

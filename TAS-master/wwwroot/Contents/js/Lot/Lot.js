@@ -1,13 +1,8 @@
-// ========================================
-// POND.JS - Pond Management (Refactored)
-// ========================================
-
+//#region 1. GLOBAL VARIABLES & INITIALIZE PAGE
 var gridApiLot;
 let gridColumnApi;
 let rowData = [];
-// ========================================
-// INITIALIZE PAGE
-// ========================================
+
 function initLotPage() {
 	gridApiLot = agGrid.createGrid(document.querySelector("#lotGrid"), gridOptions);
 	gridApiDynamic = gridApiLot;
@@ -16,11 +11,10 @@ function initLotPage() {
 	// Load initial data
 	loadLots();
 }
+//#endregion
 
-// ========================================
-// SETUP AG GRID
-// ========================================
-var columnDefs =  [
+//#region 2. SETUP AG GRID & COLUMNS
+var columnDefs = [
 	{
 		headerName: 'Số thứ tự',
 		field: 'rowNo',
@@ -83,8 +77,10 @@ var columnDefs =  [
 			return renderStatusBadge(params.value);
 		}
 	}
-] ;
+];
+
 var gridOptions = CreateGridOption(columnDefs);
+
 function onGridReady(params) {
 	gridApiLot = params.api;
 	gridColumnApi = params.columnApi;
@@ -92,45 +88,38 @@ function onGridReady(params) {
 	// Auto size columns
 	gridApiLot.sizeColumnsToFit();
 }
-function onCellValueChanged(event) {
-	let rowIndex = event.node.rowIndex;
-	let colDef = event.colDef.field;
-	saveOrder(rowIndex);
-}
-function onFillEnd(params) {
-	return;
-}
-// ========================================
-// RENDER STATUS BADGE
-// ========================================
-function renderStatusBadge(status) {
-	const statusMap = {
-		1: { text: 'Sẵn sàng', class: 'badge-success' },
-		2: { text: 'Đang sản xuất', class: 'badge-warning' },
-		3: { text: 'Bảo trì', class: 'badge-danger' }
-	};
+//#endregion
 
-	const statusInfo = statusMap[status] || { text: 'Không xác định', class: 'badge-secondary' };
-	return `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>`;
-}
-
-// ========================================
-// SETUP EVENT HANDLERS
-// ========================================
+//#region 3. EVENT HANDLERS
 function setupEventHandlers() {
 	$('#btnRefresh').on('click', loadLots);
 	$('#btnAdd').on('click', AddNewRow); // Đổi sang add dòng trực tiếp
 	$('#btnExport').on('click', exportAllToExcel);
-	$('#btnExportSelected').on('click', exportSelectedToExcel);
+	$('#btnDeleteSelected').on('click', exportSelectedToExcel);
 
 	$('#quickFilter').on('input', function () {
 		gridApiLot.setGridOption('quickFilterText', $(this).val());
 	});
 }
 
-// ========================================
-// LOAD PONDS
-// ========================================
+function onCellValueChanged(event) {
+	let rowIndex = event.node.rowIndex;
+	let colDef = event.colDef.field;
+	saveLot(rowIndex); // Sửa tạm: Nếu ở dưới dùng saveLot thì đổi thành saveLot thay vì saveOrder
+}
+
+function onSelectionChanged() {
+	const count = gridApiLot.getSelectedRows().length;
+	$('#selectedRecords').text(count > 0 ? `Đã chọn: ${count}` : "").toggle(count > 0);
+	$('#btnDeleteSelected').prop('disabled', count < 2);
+}
+
+function onFillEnd(params) {
+	return;
+}
+//#endregion
+
+//#region 4. CRUD OPERATIONS (LOAD, ADD, SAVE, DELETE)
 function loadLots(pageIndex, pageSize) {
 	let strUrl = '/Lot/GetAllLots';
 	let functionCallback = function (newPage, newSize) {
@@ -139,21 +128,6 @@ function loadLots(pageIndex, pageSize) {
 	LoadDataAgGrid(gridApiLot, pageIndex, pageSize, strUrl, functionCallback);
 }
 
-// ========================================
-// ACTION RENDERER (Giống Order.js)
-// ========================================
-function CellRenderAction(params) {
-	// Define action buttons
-	let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveLot(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
-	let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex}, 'lotCode')" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
-	let deleteLot = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.lotId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
-	// CHỈ hiện nút lưu khi chưa lưu
-	return params.data.lotId === 0 ? `${strSave}${strCancel}` : `${deleteLot}`;
-}
-
-// ========================================
-// SHOW ADD ROW (Thêm trực tiếp vào Grid)
-// ========================================
 function AddNewRow() {
 	const newItem = {
 		lotId: 0,
@@ -172,13 +146,10 @@ function AddNewRow() {
 	RefeshSingleColumn(gridApiLot, 'selected');
 }
 
-// ========================================
-// SAVE ORDER
-// ========================================
 function saveLot(rowIndex) {
 	const rowNode = gridApiLot.getDisplayedRowAtIndex(rowIndex);
 	const data = rowNode.data;
-	showLoading();
+	UI.showLoading();
 
 	$.ajax({
 		url: `/Lot/AddOrUpdateLot`,
@@ -197,61 +168,39 @@ function saveLot(rowIndex) {
 			NotificationToast("error", 'Lỗi khi lưu: ' + error);
 		},
 		complete: function () {
-			hideLoading();
+			UI.hideLoading();
 		}
 	});
 }
 
-// ========================================
-// DELETE POND
-// ========================================
 function deleteLot(pondId) {
 	if (!confirm('Bạn có chắc chắn muốn xóa hồ này?')) return;
 
-	showLoading();
+	UI.showLoading();
 	$.ajax({
-		url: `/Lot/DeletePond/${pondId}`,
+		url: `/Lot/DeleteLot/${pondId}`,
 		type: 'DELETE',
 		success: function (response) {
 			if (response.success) {
 				NotificationToast("success", response.message);
-				//loadLots();
+				loadLots();
 			} else {
 				NotificationToast("error", response.message);
 			}
 		},
-		complete: hideLoading
+        complete: function () {
+            UI.hideLoading();
+        }
 	});
 }
+//#endregion
 
-// ========================================
-// UTILS
-// ========================================
-function onSelectionChanged() {
-	const count = gridApiLot.getSelectedRows().length;
-	$('#selectedRecords').text(count > 0 ? `Đã chọn: ${count}` : "").toggle(count > 0);
-	$('#btnExportSelected').prop('disabled', count === 0);
-}
-
-function updateStatusBar(total) {
-	$('#totalRecords').text(`Tổng: ${total} hồ`);
-}
-
-function updateLastUpdateTime() {
-	$('#lastUpdate').text(`Cập nhật lần cuối: ${new Date().toLocaleTimeString('vi-VN')}`);
-}
-
-function showLoading() { console.log('Loading...'); }
-function hideLoading() { console.log('Complete'); }
-
-// ========================================
-// EXPORT TO EXCEL
-// ========================================
+//#region 5. EXCEL EXPORT
 function exportAllToExcel() {
-	showLoading();
+	UI.showLoading();
 
 	$.ajax({
-		url: '/Order/ExportToExcel',
+		url: '/Order/ExportToExcel', // Bạn có cần đổi URL này thành /Lot/ExportToExcel không?
 		type: 'POST',
 		contentType: 'application/json',
 		data: JSON.stringify([]),
@@ -265,7 +214,7 @@ function exportAllToExcel() {
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `Orders_${new Date().toISOString().split('T')[0]}.xlsx`;
+			a.download = `Lots_${new Date().toISOString().split('T')[0]}.xlsx`; // Đã đổi tên file xuất ra thành Lots_
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
@@ -277,24 +226,24 @@ function exportAllToExcel() {
 			NotificationToast("error", 'Lỗi khi xuất Excel');
 		},
 		complete: function () {
-			hideLoading();
+			UI.hideLoading();
 		}
 	});
 }
 
 function exportSelectedToExcel() {
-	const selectedRows = gridApiOrder.getSelectedRows();
+	const selectedRows = gridApiLot.getSelectedRows(); // Đã sửa lỗi gridApiOrder thành gridApiLot
 	if (selectedRows.length === 0) {
-		NotificationToast("error", 'Vui lòng chọn ít nhất 1 đơn hàng');
+		NotificationToast("error", 'Vui lòng chọn ít nhất 1 hồ');
 		return;
 	}
 
-	const orderIds = selectedRows.map(row => row.orderId);
+	const orderIds = selectedRows.map(row => row.lotId); // Đã sửa từ orderId thành lotId
 
-	showLoading();
+	UI.showLoading();
 
 	$.ajax({
-		url: '/Order/ExportToExcel',
+		url: '/Order/ExportToExcel', // Kiểm tra lại URL nhé
 		type: 'POST',
 		contentType: 'application/json',
 		data: JSON.stringify(orderIds),
@@ -308,7 +257,7 @@ function exportSelectedToExcel() {
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `Orders_Selected_${new Date().toISOString().split('T')[0]}.xlsx`;
+			a.download = `Lots_Selected_${new Date().toISOString().split('T')[0]}.xlsx`;
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
@@ -320,7 +269,41 @@ function exportSelectedToExcel() {
 			NotificationToast("error", 'Lỗi khi xuất Excel');
 		},
 		complete: function () {
-			hideLoading();
+			UI.hideLoading();
 		}
 	});
 }
+//#endregion
+
+//#region 6. UTILITIES & RENDERERS
+function renderStatusBadge(status) {
+	const statusMap = {
+		1: { text: 'Sẵn sàng', class: 'badge-success' },
+		2: { text: 'Đang sản xuất', class: 'badge-warning' },
+		3: { text: 'Bảo trì', class: 'badge-danger' }
+	};
+
+	const statusInfo = statusMap[status] || { text: 'Không xác định', class: 'badge-secondary' };
+	return `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>`;
+}
+
+function CellRenderAction(params) {
+	// Define action buttons
+	let strSave = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="saveLot(${params.node.rowIndex})" title="Lưu"><i class="ti ti-check f-20"></i></a>`;
+	let strCancel = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="cancelRow(${params.node.rowIndex}, 'lotCode')" title="Bỏ"><i class="ti ti-x f-20"></i></a>`;
+	let deleteLotBtn = `<a href="#" class=" avtar-xs btn-link-secondary" onclick="deleteLot(${params.data.lotId})" title="${arrMsg.key_delete}"><i class="ti ti-trash f-20"></i></a>`;
+	// CHỈ hiện nút lưu khi chưa lưu
+	return params.data.lotId === 0 ? `${strSave}${strCancel}` : `${deleteLotBtn}`;
+}
+
+function updateStatusBar(total) {
+	$('#totalRecords').text(`Tổng: ${total} hồ`);
+}
+
+function updateLastUpdateTime() {
+	$('#lastUpdate').text(`Cập nhật lần cuối: ${new Date().toLocaleTimeString('vi-VN')}`);
+}
+
+
+
+//#endregion

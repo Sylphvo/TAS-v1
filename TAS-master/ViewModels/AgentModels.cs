@@ -1,182 +1,234 @@
-﻿using Dapper;
-using Microsoft.AspNetCore.Identity;
+﻿using ClosedXML.Excel;
+using Dapper;
+using System.Data;
 using TAS.DTOs;
 using TAS.DTOs.TAS.DTOs;
 using TAS.Repository;
 using TAS.TagHelpers;
+using System.IO;
 
 namespace TAS.ViewModels
 {
-	// ========================================
-	// AGENT TABLE MODELS - SQL QUERIES
-	// ========================================
-	public class AgentModels
-	{
-		private readonly ICurrentUser _userManage;
-		private readonly ConnectDbHelper _dbHelper;
-		private readonly ILogger<AgentModels> _logger;
+    public class AgentModels
+    {
+        private readonly ICurrentUser _userManage;
+        private readonly ConnectDbHelper _dbHelper;
+        private readonly ILogger<AgentModels> _logger;
 
-		public AgentModels(ConnectDbHelper dbHelper, ILogger<AgentModels> logger, ICurrentUser userManage)
-		{
-			_dbHelper = dbHelper;
-			_logger = logger;
-			_userManage = userManage;
-		}
+        public AgentModels(ConnectDbHelper dbHelper, ILogger<AgentModels> logger, ICurrentUser userManage)
+        {
+            _dbHelper = dbHelper;
+            _logger = logger;
+            _userManage = userManage;
+        }
 
-		// ========================================
-		// GET TABLE DATA - With Filters & Pagination
-		// ========================================
-		public async Task<PagedResult<RubberAgentResponse>> GetAgentsWithFilterAsync(RubberAgentRequest filter)
-		{
-			try
-			{
-				var whereConditions = new List<string> { "1=1" };
-				var parameters = new DynamicParameters();
+        // ========================================
+        // 1. GET ALL WITH FILTER AND PAGINATION
+        // ========================================
+        public async Task<PagedResult<RubberAgentResponse>> GetAgentsWithFilterAsync(RubberAgentRequest filter)
+        {
+            try
+            {
+                var whereConditions = new List<string> { "1=1" };
+                var parameters = new DynamicParameters();
 
-				// --- 1. TÌM KIẾM THEO TỪ KHÓA (Keyword) ---
-				if (!string.IsNullOrWhiteSpace(filter.Keyword))
-				{
-					whereConditions.Add(@"(
-						AgentCode LIKE @Keyword OR 
-						AgentName LIKE @Keyword OR 
-						AgentPhone LIKE @Keyword OR 
-						AgentAddress LIKE @Keyword
-					)");
-					parameters.Add("@Keyword", $"%{filter.Keyword}%");
-				}
+                if (!string.IsNullOrWhiteSpace(filter.Keyword))
+                {
+                    whereConditions.Add(@"(
+                        AgentCode LIKE @Keyword OR 
+                        AgentName LIKE @Keyword OR 
+                        AgentPhone LIKE @Keyword OR 
+                        AgentAddress LIKE @Keyword OR
+                        Email LIKE @Keyword
+                    )");
+                    parameters.Add("@Keyword", $"%{filter.Keyword}%");
+                }
 
-				// --- 2. LỌC THEO TRẠNG THÁI (IsActive) ---
-				//if (filter.IsActive)
-				//{
-				//	whereConditions.Add("IsActive = @IsActive");
-				//	parameters.Add("@IsActive", filter.IsActive);
-				//}
+                if (filter.Status.HasValue)
+                {
+                    whereConditions.Add("Status = @Status");
+                    parameters.Add("@Status", filter.Status.Value);
+                }
 
-				string whereSql = string.Join(" AND ", whereConditions);
+                string whereSql = string.Join(" AND ", whereConditions);
+                var countSql = $"SELECT COUNT(1) FROM RubberAgent WHERE {whereSql}";
+                var totalRecords = await _dbHelper.ExecuteScalarAsync<int>(countSql, parameters);
 
-				// --- BƯỚC 2: ĐẾM TỔNG SỐ DÒNG ---
-				var countSql = $"SELECT COUNT(1) FROM RubberAgent WHERE {whereSql}";
-				var totalRecords = await _dbHelper.ExecuteScalarAsync<int>(countSql, parameters);
+                var dataSql = $@"
+                SELECT 
+                    RowNo = ROW_NUMBER() OVER (ORDER BY AgentId DESC),
+                    AgentId, AgentCode, AgentName, AgentAddress, AgentPhone, Email, Notes, Status
+                FROM RubberAgent
+                WHERE {whereSql}
+                ORDER BY AgentId DESC
+                OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
 
-				// --- BƯỚC 3: LẤY DỮ LIỆU PHÂN TRANG ---
-				var offset = (filter.PageIndex - 1) * filter.PageSize;
+                parameters.Add("@Skip", (filter.PageIndex - 1) * filter.PageSize);
+                parameters.Add("@Take", filter.PageSize);
 
-				var dataSql = $@"
-				SELECT 
-					-- Tính toán rowNo dựa trên số trang và thứ tự
-					rowNo = ROW_NUMBER() OVER (ORDER BY AgentId DESC),
-					AgentId,
-					AgentCode,
-					AgentName,
-					OwnerName,
-					AgentPhone,
-					AgentAddress,
-					IsActive,
-					RegisterDate,
-					RegisterPerson,
-					UpdateDate,
-					UpdatePerson
+                var items = await _dbHelper.QueryAsync<RubberAgentResponse>(dataSql, parameters);
 
-				FROM RubberAgent
-				WHERE {whereSql}
-				ORDER BY AgentId -- Mặc định đại lý mới nhất lên đầu
-				OFFSET @Offset ROWS
-				FETCH NEXT @PageSize ROWS ONLY";
+                return new PagedResult<RubberAgentResponse>
+                {
+                    Items = items.ToList(),
+                    TotalRecords = totalRecords
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetAgentsWithFilterAsync");
+                throw;
+            }
+        }
 
-				parameters.Add("@Offset", offset);
-				parameters.Add("@PageSize", filter.PageSize);
+        // ========================================
+        // 2. GET BY ID
+        // ========================================
+        public async Task<RubberAgentResponse> GetAgentByIdAsync(int id)
+        {
+            try
+            {
+                string sql = "SELECT * FROM RubberAgent WHERE AgentId = @Id";
+                return await _dbHelper.QueryFirstOrDefaultAsync<RubberAgentResponse>(sql, new { Id = id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in GetAgentByIdAsync ID: {id}");
+                throw;
+            }
+        }
 
-				// Map kết quả vào RubberAgentResponse để trả về các field UI Helpers
-				var items = await _dbHelper.QueryAsync<RubberAgentResponse>(dataSql, parameters);
+        // ========================================
+        // 3. ADD OR UPDATE
+        // ========================================
+        public async Task<long> SaveAgentAsync(RubberAgentRequest request)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@AgentCode", request.AgentCode);
+                parameters.Add("@AgentName", request.AgentName);
+                parameters.Add("@Address", request.AgentAddress);
+                parameters.Add("@Phone", request.AgentPhone);
+                parameters.Add("@Email", request.Email);
+                parameters.Add("@Notes", request.Notes);
+                parameters.Add("@Status", request.Status);
 
-				return new PagedResult<RubberAgentResponse>
-				{
-					Items = items.ToList(),
-					TotalRecords = totalRecords
-				};
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in GetTableDataAsync (RubberAgent)");
-				throw;
-			}
-		}
+                if (request.AgentId > 0)
+                {
+                    parameters.Add("@AgentId", request.AgentId);
+                    string updateSql = @"
+                        UPDATE RubberAgent SET 
+                            AgentCode = @AgentCode, AgentName = @AgentName, AgentAddress = @Address, 
+                            AgentPhone = @Phone, Email = @Email, Notes = @Notes, Status = @Status
+                        WHERE AgentId = @AgentId";
+                    await _dbHelper.ExecuteAsync(updateSql, parameters);
+                    return request.AgentId;
+                }
+                else
+                {
+                    string insertSql = @"
+                        INSERT INTO RubberAgent (AgentCode, AgentName, AgentAddress, AgentPhone, Email, Notes, Status)
+                        VALUES (@AgentCode, @AgentName, @Address, @Phone, @Email, @Notes, @Status);
+                        SELECT CAST(SCOPE_IDENTITY() as bigint);";
+                    return await _dbHelper.ExecuteScalarAsync<long>(insertSql, parameters);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in SaveAgentAsync");
+                throw;
+            }
+        }
 
-		// ========================================
-		// Thêm/Sửa 1 Đại lý (Agent)
-		// ========================================
-		public int AddOrUpdateAgent(RubberAgentRequest request)
-		{
-			try
-			{
-				if (request == null)
-					throw new ArgumentNullException(nameof(request));
+        // ========================================
+        // 4. BATCH SAVE & DELETE
+        // ========================================
+        public async Task<bool> SaveBatchAgentsAsync(List<RubberAgentRequest> requests)
+        {
+            try
+            {
+                foreach (var req in requests) { await SaveAgentAsync(req); }
+                return true;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in SaveBatchAgentsAsync"); throw; }
+        }
 
-				// Validate
-				if (string.IsNullOrWhiteSpace(request.AgentName))
-					throw new ArgumentException("Tên đại lý không được để trống");
+        public async Task<bool> DeleteAgentAsync(int id)
+        {
+            try
+            {
+                string sql = "DELETE FROM RubberAgent WHERE AgentId = @Id";
+                return await _dbHelper.ExecuteAsync(sql, new { Id = id }) > 0;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in DeleteAgentAsync"); throw; }
+        }
 
-				var sql = @"
-					IF EXISTS (SELECT 1 FROM Agent WHERE AgentId = @AgentId)
-					BEGIN
-						-- Update
-						UPDATE Agent SET
-							AgentCode = @AgentCode,
-							AgentName = @AgentName,
-							OwnerName = @OwnerName,
-							AgentPhone = @AgentPhone,
-							AgentAddress = @AgentAddress,
-							IsActive = @IsActive,
-							UpdateDate = GETDATE(),
-							UpdatePerson = @UpdatePerson
-						WHERE AgentId = @AgentId;
-                
-						SELECT @AgentId;
-					END
-					ELSE
-					BEGIN
-						-- Insert
-						INSERT INTO Agent (
-							AgentCode, AgentName, OwnerName, AgentPhone, AgentAddress, 
-							IsActive, RegisterDate, RegisterPerson
-						)
-						VALUES (
-							@AgentCode, @AgentName, @OwnerName, @AgentPhone, @AgentAddress, 
-							@IsActive, GETDATE(), @RegisterPerson
-						);
-                
-						SELECT CAST(SCOPE_IDENTITY() AS INT);
-					END
-				";
+        public async Task<bool> DeleteBatchAgentsAsync(List<long> agentIds)
+        {
+            try
+            {
+                string sql = "DELETE FROM RubberAgent WHERE AgentId IN @Ids";
+                return await _dbHelper.ExecuteAsync(sql, new { Ids = agentIds }) > 0;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in DeleteBatchAgentsAsync"); throw; }
+        }
 
-				// Generate AgentCode nếu là Insert và chưa có mã truyền vào
-				// (Bạn có thể điều chỉnh lại logic sinh mã theo rule của dự án)
-				var agentCode = request.AgentId > 0
-					? request.AgentCode
-					: (string.IsNullOrWhiteSpace(request.AgentCode)
-						? $"AG{DateTime.Now:yyMMdd}{Guid.NewGuid().ToString()[..4].ToUpper()}"
-						: request.AgentCode);
+        // ========================================
+        // 5. EXPORT EXCEL
+        // ========================================
+        public async Task<byte[]> ExportAgentsToExcelAsync(List<long> agentIds)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                string sql = "SELECT AgentCode, AgentName, AgentAddress, AgentPhone, Email, Notes, Status FROM RubberAgent ";
 
-				var result = _dbHelper.QueryFirstOrDefault<int>(sql, new
-				{
-					AgentId = request.AgentId,
-					AgentCode = agentCode,
-					AgentName = request.AgentName,
-					OwnerName = request.OwnerName,
-					AgentPhone = request.AgentPhone,
-					AgentAddress = request.AgentAddress,
-					IsActive = request.IsActive ? 1 : 0, // Mặc định là 1 (Active) nếu null
-					UpdatePerson = _userManage.Name,
-					RegisterPerson = _userManage.Name
-				});
+                if (agentIds != null && agentIds.Any())
+                {
+                    sql += "WHERE AgentId IN @Ids ";
+                    parameters.Add("@Ids", agentIds);
+                }
+                sql += "ORDER BY AgentId DESC";
 
-				return result;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in AddOrUpdateAgent");
-				throw;
-			}
-		}
-	}
+                var items = await _dbHelper.QueryAsync<RubberAgentResponse>(sql, parameters);
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var ws = workbook.Worksheets.Add("Đại Lý");
+                    ws.Cell(1, 1).Value = "Mã Đại lý";
+                    ws.Cell(1, 2).Value = "Tên Đại lý";
+                    ws.Cell(1, 3).Value = "Địa chỉ";
+                    ws.Cell(1, 4).Value = "Điện thoại";
+                    ws.Cell(1, 5).Value = "Email";
+                    ws.Cell(1, 6).Value = "Ghi chú";
+                    ws.Cell(1, 7).Value = "Trạng thái";
+
+                    ws.Range("A1:G1").Style.Font.Bold = true;
+                    ws.Range("A1:G1").Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                    int row = 2;
+                    foreach (var item in items)
+                    {
+                        ws.Cell(row, 1).Value = item.AgentCode;
+                        ws.Cell(row, 2).Value = item.AgentName;
+                        ws.Cell(row, 3).Value = item.AgentAddress;
+                        ws.Cell(row, 4).Value = item.AgentPhone;
+                        ws.Cell(row, 5).Value = item.Email;
+                        ws.Cell(row, 6).Value = item.Notes;
+                        ws.Cell(row, 7).Value = item.Status == 1 ? "Hoạt động" : "Ngưng";
+                        row++;
+                    }
+
+                    ws.Columns().AdjustToContents();
+                    using (var ms = new MemoryStream())
+                    {
+                        workbook.SaveAs(ms);
+                        return ms.ToArray();
+                    }
+                }
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error in ExportAgentsToExcelAsync"); throw; }
+        }
+    }
 }

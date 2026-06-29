@@ -22,14 +22,17 @@ namespace TAS.DTOs
 
 		[Required(ErrorMessage = "Tên chủ nông trường không được để trống")]
 		[MaxLength(200)]
-		public string FarmerName { get; set; } = string.Empty;
+		public string OwnerName { get; set; } = string.Empty;
 
 		[Phone(ErrorMessage = "Số điện thoại không đúng định dạng")]
 		public string? FarmPhone { get; set; }
+        public string? FarmName { get; set; }
+        public string? Area { get; set; }
+        public string? Coordinates { get; set; }
+        public string? FarmAddress { get; set; }
+        public int Status { get; set; }
 
-		public string? FarmAddress { get; set; }
-
-		public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;
 		public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
 		public int PageSize { get; set; } = 10;      // Số dòng mỗi trang
 		public string? Keyword { get; set; }         // Tìm kiếm chung (Mã, Tên, Agent...)
@@ -48,13 +51,17 @@ namespace TAS.DTOs
 		// --- Dữ liệu gốc từ Database ---
 		public long rowNo { get; set; }
 		public long FarmId { get; set; }
-		public string FarmCode { get; set; } = string.Empty;
-		public string AgentCode { get; set; } = string.Empty;
-		public string AgentName { get; set; } = string.Empty; // Join từ bảng Agent
-		public string FarmerName { get; set; } = string.Empty;
+		public string? FarmCode { get; set; } 
+		public string? AgentCode { get; set; }
+		public string? AgentName { get; set; } // Join từ bảng Agent
+		public string? OwnerName { get; set; }
+		public string? FarmName { get; set; }
 		public string? FarmPhone { get; set; }
-		public string? FarmAddress { get; set; }
+		public string? Area { get; set; }
+        public string? Coordinates { get; set; }
+        public string? FarmAddress { get; set; }
 		public bool IsActive { get; set; }
+		public int Status { get; set; }
 
 		public DateTime RegisterDate { get; set; }
 		public string? RegisterPerson { get; set; }

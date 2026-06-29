@@ -19,6 +19,8 @@ namespace TAS.DTOs
 			public string? AgentPhone { get; set; }
 			public string? OwnerName { get; set; }
 			public string? AgentAddress { get; set; }
+			public string? Email { get; set; }
+			public string? Notes { get; set; }
 			public bool IsActive { get; set; }
 			// 1: Sẵn sàng, 2: Đang sản xuất, 3: Bảo trì
 			public int PageIndex { get; set; } = 1;      // Trang hiện tại (Mặc định trang 1)
@@ -44,8 +46,11 @@ namespace TAS.DTOs
 			public string AgentName { get; set; } = string.Empty;
 			public string? AgentPhone { get; set; }
 			public string? AgentAddress { get; set; }
-			public bool IsActive { get; set; }
-			public DateTime RegisterDate { get; set; }
+            public string? Email { get; set; }
+            public string? Notes { get; set; }
+            public bool IsActive { get; set; }
+            public int? Status { get; set; }
+            public DateTime RegisterDate { get; set; }
 			public string? RegisterPerson { get; set; }
 		}
 	}

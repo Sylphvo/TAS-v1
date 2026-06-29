@@ -3578,9 +3578,9 @@ textarea.is-invalid.dataTable-input {
 }
 
 .btn:disabled, .introjs-tooltip .introjs-button:disabled, .btn.disabled, .introjs-tooltip .disabled.introjs-button, fieldset:disabled .btn, fieldset:disabled .introjs-tooltip .introjs-button, .introjs-tooltip fieldset:disabled .introjs-button {
-	color: var(--bs-btn-disabled-color);
+	/*color: var(--bs-btn-disabled-color);*/
 	pointer-events: none;
-	background-color: var(--bs-btn-disabled-bg);
+	/*background-color: var(--bs-btn-disabled-bg);*/
 	border-color: var(--bs-btn-disabled-border-color);
 	opacity: var(--bs-btn-disabled-opacity);
 }

@@ -215,5 +215,51 @@ namespace TAS.ViewModels
 				throw;
 			}
 		}
-	}
+        /// <summary>
+        /// Lưu danh sách đơn hàng (Thêm mới hoặc Cập nhật)
+        /// </summary>
+        /// <param name="orders">Danh sách đơn hàng cần lưu</param>
+        /// <returns></returns>
+        public async Task<bool> SaveBatchOrdersAsync(List<RubberOrderRequest> orders)
+        {
+            try
+            {
+                // Lặp qua từng phần tử và tái sử dụng hàm AddOrUpdateOrderAsync đã có sẵn
+                foreach (var order in orders)
+                {
+                    await AddOrUpdateOrderAsync(order);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in SaveBatchOrdersAsync");
+                throw;
+            }
+        }
+        /// <summary>
+        /// Xóa nhiều đơn hàng cùng lúc dựa vào danh sách ID
+        /// </summary>
+        public async Task<bool> DeleteBatchOrdersAsync(List<long> orderIds)
+        {
+            try
+            {
+                // Dapper sẽ tự động map List<long> vào mệnh đề IN @Ids
+                // Ví dụ: DELETE FROM RubberOrder WHERE OrderId IN (1, 2, 3)
+                string sql = "DELETE FROM RubberOrder WHERE OrderId IN @Ids";
+
+                // ExecuteAsync trả về số dòng bị ảnh hưởng (số dòng bị xóa)
+                int affectedRows = await _dbHelper.ExecuteAsync(sql, new { Ids = orderIds });
+
+                // Nếu số dòng xóa được lớn hơn 0 nghĩa là thành công
+                return affectedRows > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in DeleteBatchOrdersAsync");
+                throw;
+            }
+        }
+    }
 }
