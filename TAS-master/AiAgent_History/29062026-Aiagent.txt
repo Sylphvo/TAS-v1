@@ -1,0 +1,13 @@
+--- Lịch sử Chat & Công việc ngày 29/06/2026 ---
+
+1. Cập nhật và ghi nhận Blueprint kiến trúc mới (Monolith, Direct DB, No Web API).
+2. Xử lý yêu cầu làm nullable cột Đại lý (AgentCode) và Nhà vườn (FarmCode) trong module Thu mua (RubberIntake).
+   - Đã sửa Model `RubberIntake.cs` và `AppDbContext.cs`.
+   - Cập nhật DTO `RubberIntakeDto.cs`.
+   - Cập nhật JS `RubberIntake.js` bỏ validate phía Client.
+   - Fix các lệnh SQL (Dapper) trong `RubberIntakeModels.cs` chuyển từ `INNER JOIN` sang `LEFT JOIN` để không bị ẩn dữ liệu.
+   - Chạy lệnh Migration thành công.
+3. Hỗ trợ đóng gói (Publish) ứng dụng ra thành file `TAS.exe` chạy độc lập trong thư mục `TAS_Demo` để tiện lợi cho việc Demo.
+4. Tạo thư mục `AiAgent_History` và lên lịch tự động tóm tắt công việc ghi ra file txt vào lúc 12h đêm mỗi ngày.
+
+--- Hết ngày 29/06/2026 ---
